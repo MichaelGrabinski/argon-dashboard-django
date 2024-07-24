@@ -1,0 +1,43 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Vehicle Management{% endblock title %}
+
+{% block stylesheets %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container">
+    <h1>Vehicle Management</h1>
+    <ul class="nav nav-tabs" id="vehicleTabs" role="tablist">
+        {% for vehicle in vehicles %}
+            <li class="nav-item">
+                <a class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ vehicle.pk }}" data-toggle="tab" href="#vehicle-{{ vehicle.pk }}" role="tab" aria-controls="vehicle-{{ vehicle.pk }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                    <img src="{% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %}" alt="{{ vehicle.license_plate }}" class="img-thumbnail" style="width: 50px; height: 50px;">
+                    {{ vehicle.license_plate }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="vehicleTabsContent">
+        {% for vehicle in vehicles %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="vehicle-{{ vehicle.pk }}" role="tabpanel" aria-labelledby="tab-{{ vehicle.pk }}">
+                <h2>{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year }})</h2>
+                <p><strong>VIN:</strong> {{ vehicle.vin }}</p>
+                <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                <p><strong>Owner:</strong> {{ vehicle.owner_name }}</p>
+                <p><strong>Purchase Date:</strong> {{ vehicle.purchase_date }}</p>
+                <p><strong>Purchase Price:</strong> ${{ vehicle.purchase_price }}</p>
+                <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
+                <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-primary">View Details</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock javascripts %}

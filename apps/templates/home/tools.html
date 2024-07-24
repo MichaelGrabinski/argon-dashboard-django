@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
 {% block title %} Tool List {% endblock title %}
 
@@ -10,15 +11,17 @@
         margin: 10px 0;
         border-radius: 5px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .tool-card img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin-bottom: 10px;
+        display: flex;
+        flex-direction: row;
     }
     .tool-details, .record-details {
-        margin-bottom: 10px;
+        flex: 2;
+        margin-right: 15px;
+    }
+    .tool-image, .record-image {
+        flex: 1;
+        max-width: 150px; /* Limit the image size */
+        height: auto;
     }
     .tool-list, .record-list {
         list-style-type: none;
@@ -32,14 +35,13 @@
 
 {% block content %}
 <div class="container">
-<p> </p>
     <h1>Tool Management</h1>
+    <p>Template Loaded: tools.html</p>  <!-- Unique identifier -->
+
     <form method="POST" class="form-inline mb-3">
         {% csrf_token %}
         {{ form.as_p }}
-       <p>&nbsp; &nbsp; &nbsp;</p>
-	   
-	   <button type="submit" class="btn btn-primary">Search</button>
+        <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
     <h2>Tools</h2>
@@ -47,11 +49,15 @@
 
     {% for tool in tools %}
         <div class="tool-card">
-            <h3>{{ tool.name }}</h3>
             <div class="tool-details">
+                <h3>{{ tool.name }}</h3>
                 <p><strong>Location:</strong> {{ tool.location }}</p>
-                <img src="{{ tool.image.url }}" alt="{{ tool.name }}">
             </div>
+            {% if tool.image %}
+                <img src="{% static tool.image.name %}" alt="{{ tool.name }}" class="tool-image">
+            {% else %}
+                <p>No image available</p>
+            {% endif %}
         </div>
     {% empty %}
         <p>No tools found.</p>
@@ -62,8 +68,8 @@
 
     {% for record in records %}
         <div class="record-card">
-            <h3>{{ record.tool.name }} - {{ record.date }}</h3>
             <div class="record-details">
+                <h3>{{ record.tool.name }} - {{ record.date }}</h3>
                 <p>{{ record.description }}</p>
                 <p><strong>Performed by:</strong> {{ record.performed_by }}</p>
             </div>
@@ -73,6 +79,23 @@
     {% endfor %}
 </div>
 
+<!-- Add debug information -->
+<div class="container mt-5">
+    <h2>Debug Information:</h2>
+    <p>Tools:</p>
+    <ul class="tool-list">
+        {% for tool in tools %}
+            <li>{{ tool.name }} (Location: {{ tool.location }})</li>
+        {% endfor %}
+    </ul>
+
+    <p>Maintenance Records:</p>
+    <ul class="record-list">
+        {% for record in records %}
+            <li>{{ record.tool.name }} - {{ record.date }} (Performed by: {{ record.performed_by }})</li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock content %}
 
 {% include "includes/footer.html" %}

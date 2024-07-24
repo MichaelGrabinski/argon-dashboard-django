@@ -6,7 +6,7 @@ from django.template import loader
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404
 from .forms import ToolSearchForm
-from apps.home.models import Tool, MaintenanceRecord, Property, Floor, Unit
+from apps.home.models import Tool, MaintenanceRecord, Property, Floor, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance
 
 
 @login_required(login_url="/login/")
@@ -116,3 +116,26 @@ def unit_detail(request, property_pk, floor_pk, unit_pk):
         'rent_payments': rent_payments,
     }
     return render(request, 'home/unit_detail.html', context)
+    
+    
+def vehicle_overview(request):
+    vehicles = Vehicle.objects.all()
+    context = {
+        'vehicles': vehicles,
+    }
+    return render(request, 'vehicles/vehicle_overview.html', context)
+
+def vehicle_detail(request, pk):
+    vehicle = get_object_or_404(Vehicle, pk=pk)
+    images = vehicle.images.all()
+    current_repairs = vehicle.repairs.filter(status__in=['in_progress', 'pending_parts'])
+    maintenance_history = vehicle.maintenance_history.all()
+    scheduled_maintenance = vehicle.scheduled_maintenance.all()
+    context = {
+        'vehicle': vehicle,
+        'images': images,
+        'current_repairs': current_repairs,
+        'maintenance_history': maintenance_history,
+        'scheduled_maintenance': scheduled_maintenance,
+    }
+    return render(request, 'vehicles/vehicle_detail.html', context)

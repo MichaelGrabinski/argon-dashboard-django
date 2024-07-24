@@ -1,22 +1,45 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Properties List{% endblock title %}
+{% block title %}Properties Management{% endblock title %}
+
+{% block stylesheets %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+{% endblock stylesheets %}
 
 {% block content %}
 <div class="container">
-    <h1>Properties List</h1>
-    <form method="GET" class="form-inline mb-3">
-        <input type="text" name="search" class="form-control" placeholder="Search properties...">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-    <div class="list-group">
+    <h1>Properties Management</h1>
+    <ul class="nav nav-tabs" id="propertyTabs" role="tablist">
         {% for property in properties %}
-            <a href="{% url 'property_detail' property.pk %}" class="list-group-item list-group-item-action">
-                <h5 class="mb-1">{{ property.name }}</h5>
-                <p class="mb-1">{{ property.location }}</p>
-                <small>Number of floors: {{ property.number_of_floors }}</small>
-            </a>
+            <li class="nav-item">
+                <a class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ property.pk }}" data-toggle="tab" href="#property-{{ property.pk }}" role="tab" aria-controls="property-{{ property.pk }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ property.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="propertyTabsContent">
+        {% for property in properties %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="property-{{ property.pk }}" role="tabpanel" aria-labelledby="tab-{{ property.pk }}">
+                <h2>{{ property.name }}</h2>
+                <p><strong>Location:</strong> {{ property.location }}</p>
+                <p><strong>Owner:</strong> {{ property.owner_name }}</p>
+                <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
+
+                <h3>Floors</h3>
+                <div class="list-group">
+                    {% for floor in property.floors.all %}
+                        <a href="{% url 'floor_detail' property.pk floor.pk %}" class="list-group-item list-group-item-action">
+                            Floor {{ floor.floor_number }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
         {% endfor %}
     </div>
 </div>
 {% endblock content %}
+
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock javascripts %}

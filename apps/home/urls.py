@@ -16,9 +16,13 @@ urlpatterns = [
     path('properties/<int:property_pk>/floors/<int:floor_pk>/', views.floor_detail, name='floor_detail'),
     path('properties/<int:property_pk>/floors/<int:floor_pk>/units/<int:unit_pk>/', views.unit_detail, name='unit_detail'),
    
+    path('vehicles/', views.vehicle_overview, name='vehicle_overview'),
+    path('vehicles/<int:pk>/', views.vehicle_detail, name='vehicle_detail'),
+    
     # Matches any HTML file
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
 
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
