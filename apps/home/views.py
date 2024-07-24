@@ -1,8 +1,4 @@
 # -*- encoding: utf-8 -*-
-"""
-Copyright (c) 2019 - present AppSeed.us
-"""
-
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -42,3 +38,21 @@ def pages(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+
+
+from django.shortcuts import render
+from .models import Tool
+from .forms import ToolSearchForm
+
+def tool_list(request):
+    form = ToolSearchForm(request.POST or None)
+    if form.is_valid():
+        name = form.cleaned_data.get("name")
+        tools = Tool.objects.filter(name__icontains=name)
+    else:
+        tools = Tool.objects.all()
+    context = {
+        'form': form,
+        'tools': tools,
+    }
+    return render(request, 'tools/tools.html', context)
