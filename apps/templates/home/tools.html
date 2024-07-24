@@ -1,33 +1,78 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %} Dashboard {% endblock title %}
+{% block title %} Tool List {% endblock title %}
 
-<!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<style>
+    .tool-card, .record-card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tool-card img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .tool-details, .record-details {
+        margin-bottom: 10px;
+    }
+    .tool-list, .record-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .tool-list li, .record-list li {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock stylesheets %}
 
 {% block content %}
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Search</button>
-</form>
-{% for tool in tools %}
-    <div>
-        <h2>{{ tool.name }}</h2>
-        <p>{{ tool.location }}</p>
-        <img src="{{ tool.image.url }}" alt="{{ tool.name }}">
-    </div>
-{% empty %}
-    <p>No tools found.</p>
-{% endfor %}
-{% endblock %}
+<div class="container">
+<p> </p>
+    <h1>Tool Management</h1>
+    <form method="POST" class="form-inline mb-3">
+        {% csrf_token %}
+        {{ form.as_p }}
+       <p>&nbsp; &nbsp; &nbsp;</p>
+	   
+	   <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <h2>Tools</h2>
+    <p>Number of tools: {{ tools|length }}</p>  <!-- Debug statement -->
+
+    {% for tool in tools %}
+        <div class="tool-card">
+            <h3>{{ tool.name }}</h3>
+            <div class="tool-details">
+                <p><strong>Location:</strong> {{ tool.location }}</p>
+                <img src="{{ tool.image.url }}" alt="{{ tool.name }}">
+            </div>
+        </div>
+    {% empty %}
+        <p>No tools found.</p>
+    {% endfor %}
+
+    <h2>Maintenance Records</h2>
+    <p>Number of records: {{ records|length }}</p>  <!-- Debug statement -->
+
+    {% for record in records %}
+        <div class="record-card">
+            <h3>{{ record.tool.name }} - {{ record.date }}</h3>
+            <div class="record-details">
+                <p>{{ record.description }}</p>
+                <p><strong>Performed by:</strong> {{ record.performed_by }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p>No maintenance records found.</p>
+    {% endfor %}
+</div>
+
+{% endblock content %}
 
 {% include "includes/footer.html" %}
-
-<!-- Specific JS goes HERE -->
-{% block javascripts %}
-
-  <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
-  <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
-
-{% endblock javascripts %}

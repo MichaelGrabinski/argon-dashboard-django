@@ -1,0 +1,45 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Tool Detail {% endblock title %}
+
+{% block content %}
+<div>
+    <h2>{{ tool.name }}</h2>
+    <p>Status: {{ tool.get_status_display }}</p>
+    <p>Location: {{ tool.location }}</p>
+    <p>Assigned to: {{ tool.assigned_to }}</p>
+    <p>Purchase Date: {{ tool.purchase_date }}</p>
+    <p>Manufacturer: {{ tool.manufacturer }}</p>
+    <p>Model Number: {{ tool.model_number }}</p>
+    <img src="{{ tool.image.url }}" alt="{{ tool.name }}">
+</div>
+
+<div>
+    <h3>Maintenance History</h3>
+    {% if maintenance_records %}
+        <ul>
+        {% for record in maintenance_records %}
+            <li>{{ record.date }}: {{ record.description }} (Performed by: {{ record.performed_by }})</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No maintenance records found.</p>
+    {% endif %}
+</div>
+
+<div id="map" style="height: 400px;"></div>
+
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var marker = L.marker([51.5, -0.09]).addTo(map)
+        .bindPopup('Location of {{ tool.name }}.')
+        .openPopup();
+</script>
+{% endblock content %}
+
+{% include "includes/footer.html" %}

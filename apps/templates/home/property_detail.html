@@ -1,0 +1,21 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Property Detail{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ property.name }}</h1>
+    <p><strong>Location:</strong> {{ property.location }}</p>
+    <p><strong>Owner:</strong> {{ property.owner_name }}</p>
+    <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
+
+    <h2>Floors</h2>
+    <div class="list-group">
+        {% for floor in floors %}
+            <a href="{% url 'floor_detail' property.pk floor.pk %}" class="list-group-item list-group-item-action">
+                Floor {{ floor.floor_number }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
