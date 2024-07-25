@@ -1,34 +1,49 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %} <!-- Load the custom filters -->
 
-{% block title %}Properties Management{% endblock title %}
-
-{% block stylesheets %}
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-{% endblock stylesheets %}
+{% block title %} Properties List {% endblock title %}
 
 {% block content %}
 <div class="container">
-    <h1>Properties Management</h1>
+    <h1>Properties List</h1>
     <ul class="nav nav-tabs" id="propertyTabs" role="tablist">
         {% for property in properties %}
             <li class="nav-item">
-                <a class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ property.pk }}" data-toggle="tab" href="#property-{{ property.pk }}" role="tab" aria-controls="property-{{ property.pk }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ property.name }}</a>
+                <a class="nav-link {% if forloop.first %}active{% endif %}" id="property-{{ property.id }}-tab" data-toggle="tab" href="#property-{{ property.id }}" role="tab" aria-controls="property-{{ property.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                    {{ property.name }}
+                </a>
             </li>
         {% endfor %}
     </ul>
     <div class="tab-content" id="propertyTabsContent">
         {% for property in properties %}
-            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="property-{{ property.pk }}" role="tabpanel" aria-labelledby="tab-{{ property.pk }}">
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="property-{{ property.id }}" role="tabpanel" aria-labelledby="property-{{ property.id }}-tab">
                 <h2>{{ property.name }}</h2>
                 <p><strong>Location:</strong> {{ property.location }}</p>
                 <p><strong>Owner:</strong> {{ property.owner_name }}</p>
                 <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
+                <p><strong>Manager:</strong> {{ property.manager_name }}</p>
+                <p><strong>Notes:</strong> {{ property.notes }}</p>
+                <p><strong>Open Tickets:</strong> {{ property.open_tickets_count }}</p>
 
-                <h3>Floors</h3>
+                {% if property.image_or_video %}
+                    <div class="media-container">
+                        {% if property.image_or_video.url|endswith:".mp4" %}
+                            <video controls>
+                                <source src="{{ property.image_or_video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% else %}
+                            <img src="{{ property.image_or_video.url }}" alt="{{ property.name }}">
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <h3>Units</h3>
                 <div class="list-group">
-                    {% for floor in property.floors.all %}
-                        <a href="{% url 'floor_detail' property.pk floor.pk %}" class="list-group-item list-group-item-action">
-                            Floor {{ floor.floor_number }}
+                    {% for unit in property.units.all %}
+                        <a href="{% url 'unit_detail' property.pk unit.pk %}" class="list-group-item list-group-item-action">
+                            Unit {{ unit.unit_number }}
                         </a>
                     {% endfor %}
                 </div>
@@ -37,9 +52,3 @@
     </div>
 </div>
 {% endblock content %}
-
-{% block javascripts %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-{% endblock javascripts %}

@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Property Detail{% endblock title %}
+{% block title %} Property Detail {% endblock title %}
 
 {% block content %}
 <div class="container">
@@ -8,12 +8,28 @@
     <p><strong>Location:</strong> {{ property.location }}</p>
     <p><strong>Owner:</strong> {{ property.owner_name }}</p>
     <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
+    <p><strong>Manager:</strong> {{ property.manager_name }}</p>
+    <p><strong>Notes:</strong> {{ property.notes }}</p>
+    <p><strong>Open Tickets:</strong> {{ property.open_tickets_count }}</p>
 
-    <h2>Floors</h2>
+    {% if property.image_or_video %}
+        <div class="media-container">
+            {% if property.image_or_video.url.endswith ".mp4" %}
+                <video controls>
+                    <source src="{{ property.image_or_video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% else %}
+                <img src="{{ property.image_or_video.url }}" alt="{{ property.name }}">
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <h2>Units</h2>
     <div class="list-group">
-        {% for floor in floors %}
-            <a href="{% url 'floor_detail' property.pk floor.pk %}" class="list-group-item list-group-item-action">
-                Floor {{ floor.floor_number }}
+        {% for unit in units %}
+            <a href="{% url 'unit_detail' property.pk unit.pk %}" class="list-group-item list-group-item-action">
+                Unit {{ unit.unit_number }}
             </a>
         {% endfor %}
     </div>

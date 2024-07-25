@@ -1,0 +1,87 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Task List {% endblock title %}
+
+{% block stylesheets %}
+<style>
+    .status-open { border-left: 5px solid #007bff; } /* Blue */
+    .status-closed { border-left: 5px solid #6c757d; } /* Gray */
+    .status-in_progress { border-left: 5px solid #ffc107; } /* Yellow */
+    .status-waiting_for_materials { border-left: 5px solid #17a2b8; } /* Teal */
+    .status-on_hold { border-left: 5px solid #dc3545; } /* Red */
+    .priority-low { border-left: 5px solid #28a745; } /* Green */
+    .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
+    .priority-high { border-left: 5px solid #dc3545; } /* Red */
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container">
+    <h1>Task List</h1>
+    <ul class="nav nav-tabs" id="taskTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="open-tasks-tab" data-toggle="tab" href="#open-tasks" role="tab" aria-controls="open-tasks" aria-selected="true">Open Tasks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="assigned-tasks-tab" data-toggle="tab" href="#assigned-tasks" role="tab" aria-controls="assigned-tasks" aria-selected="false">Assigned to You</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="closed-tasks-tab" data-toggle="tab" href="#closed-tasks" role="tab" aria-controls="closed-tasks" aria-selected="false">Closed Tasks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="scheduling-tab" data-toggle="tab" href="#scheduling" role="tab" aria-controls="scheduling" aria-selected="false">Scheduling & Gantt</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="taskTabsContent">
+        <div class="tab-pane fade show active" id="open-tasks" role="tabpanel" aria-labelledby="open-tasks-tab">
+            <form method="GET" class="form-inline mb-3">
+                <input type="text" name="search" class="form-control" placeholder="Search tasks..." value="{{ query }}">
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="waiting_for_materials" {% if status_filter == 'waiting_for_materials' %}selected{% endif %}>Waiting for Materials</option>
+                    <option value="on_hold" {% if status_filter == 'on_hold' %}selected{% endif %}>On Hold</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+
+            <div class="list-group">
+                {% for task in open_tasks %}
+                    <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="assigned-tasks" role="tabpanel" aria-labelledby="assigned-tasks-tab">
+            <div class="list-group">
+                {% for task in assigned_tasks %}
+                    <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="closed-tasks" role="tabpanel" aria-labelledby="closed-tasks-tab">
+            <div class="list-group">
+                {% for task in closed_tasks %}
+                    <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="scheduling" role="tabpanel" aria-labelledby="scheduling-tab">
+            <a href="{% url 'gantt_chart' %}" class="btn btn-primary">View Gantt Chart</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

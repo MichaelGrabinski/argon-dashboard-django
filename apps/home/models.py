@@ -4,9 +4,14 @@ from django.contrib.auth.models import User
 from django.db import models
 import os
 
-# Create your models here.
 def get_static_image_path(instance, filename):
     return os.path.join('tools_images', filename)
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class Tool(models.Model):
     STATUS_CHOICES = (
@@ -25,57 +30,54 @@ class Tool(models.Model):
     assigned_to = models.CharField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=200)
     image = models.ImageField(upload_to=get_static_image_path, null=True, blank=True)
+    location_image = models.ImageField(upload_to=get_static_image_path, null=True, blank=True)
+    location_x = models.FloatField(null=True, blank=True)
+    location_y = models.FloatField(null=True, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     def __str__(self):
         return self.name
 
 class MaintenanceRecord(models.Model):
-    tool = models.ForeignKey(Tool, on_delete=models.CASCADE, related_name='maintenance_records')
+    tool = models.ForeignKey(Tool, on_delete=models.CASCADE, related_name='maintenance_logs')
     date = models.DateField()
     description = models.TextField()
     performed_by = models.CharField(max_length=200)
 
     def __str__(self):
         return f"{self.tool.name} - {self.date}"
-
-
+        
 class Property(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
-    number_of_floors = models.IntegerField()
     owner_name = models.CharField(max_length=200)
     owner_contact = models.CharField(max_length=200)
+    manager_name = models.CharField(max_length=200, null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+    image_or_video = models.FileField(upload_to='property_media/', null=True, blank=True)
 
     def __str__(self):
         return self.name
 
-class Floor(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='floors')
-    floor_number = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.property.name} - Floor {self.floor_number}"
-
 class Unit(models.Model):
-    floor = models.ForeignKey(Floor, on_delete=models.CASCADE, related_name='units')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units', default=1)  # Provide a default value
     unit_number = models.CharField(max_length=10)
     tenant_name = models.CharField(max_length=200, null=True, blank=True)
     rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     lease_agreement = models.FileField(upload_to='lease_agreements/', null=True, blank=True)
-    image = models.ImageField(upload_to='unit_images/', null=True, blank=True)
+    image_or_video = models.FileField(upload_to='unit_media/', null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f"Unit {self.unit_number} - {self.floor}"
+        return f"Unit {self.unit_number} - {self.property}"
 
-class UnitImage(models.Model):
-    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='unit_gallery/')
+class Document(models.Model):
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='documents')
+    file = models.FileField(upload_to='unit_documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Image for {self.unit}"
-
-class MaintenanceLog(models.Model):
-    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='maintenance_logs')
+class MaintenanceRecord(models.Model):
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='maintenance_records', default=1)  # Provide a default value
     date = models.DateField()
     description = models.TextField()
     performed_by = models.CharField(max_length=200)
@@ -101,7 +103,6 @@ class RentPayment(models.Model):
     def __str__(self):
         return f"{self.unit} - {self.date} - {self.status}"
         
-        
 class Vehicle(models.Model):
     STATUS_CHOICES = (
         ('available', 'Available'),
@@ -119,10 +120,12 @@ class Vehicle(models.Model):
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     image = models.ImageField(upload_to='vehicle_images/', null=True, blank=True)
+    media = models.FileField(upload_to='vehicle_media/', null=True, blank=True)  # Renamed field to accept both video and GIFs
 
     def __str__(self):
         return f"{self.make} {self.model} ({self.license_plate})"
-
+        
+      
 class VehicleImage(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='vehicle_gallery/')
@@ -161,3 +164,58 @@ class ScheduledMaintenance(models.Model):
 
     def __str__(self):
         return f"Scheduled Maintenance for {self.vehicle} - {self.due_date}"
+        
+class TagHouse(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class Task(models.Model):
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('in_progress', 'In Progress'),
+        ('waiting_for_materials', 'Waiting for Materials'),
+        ('on_hold', 'On Hold'),
+    )
+
+    PRIORITY_CHOICES = (
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    )
+
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='open')
+    due_date = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    category = models.CharField(max_length=100, null=True, blank=True)
+    hours = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)  # Add tags field
+
+    def __str__(self):
+        return self.title
+
+
+class Attachment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='attachments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+class Comment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ActivityLog(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='activity_logs')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=200)
+    timestamp = models.DateTimeField(auto_now_add=True)

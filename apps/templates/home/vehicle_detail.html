@@ -2,44 +2,101 @@
 
 {% block title %}Vehicle Detail{% endblock title %}
 
+{% block stylesheets %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .vehicle-image-background {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.1; /* Adjust the transparency */
+    }
+    .vehicle-info {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .left-side {
+        padding: 20px;
+    }
+    .right-side {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .right-side img, .right-side video {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+    }
+</style>
+{% endblock stylesheets %}
+
 {% block content %}
-<div class="container">
-    <h1>{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year }})</h1>
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-8">
-            <h2>General Information</h2>
-            <p><strong>VIN:</strong> {{ vehicle.vin }}</p>
-            <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
-            <p><strong>Owner:</strong> {{ vehicle.owner_name }}</p>
-            <p><strong>Purchase Date:</strong> {{ vehicle.purchase_date }}</p>
-            <p><strong>Purchase Price:</strong> ${{ vehicle.purchase_price }}</p>
-            <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
+        <div class="col-md-8 left-side">
+            <div class="vehicle-info">
+                <h2>Notes</h2>
+                <ul>
+                    <li>Note 1</li>
+                    <li>Note 2</li>
+                </ul>
+                <h2>Repairs Needed</h2>
+                <ul>
+                    <li>Repair 1</li>
+                    <li>Repair 2</li>
+                </ul>
+                <h2>Image Gallery</h2>
+                <div class="row">
+                    {% for image in images %}
+                        <div class="col-md-3">
+                            <a href="{{ image.image.url }}" target="_blank">
+                                <img src="{{ image.image.url }}" alt="Gallery Image" class="img-thumbnail">
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+                <h2>General Information</h2>
+                <p><strong>Make:</strong> {{ vehicle.make }}</p>
+                <p><strong>Model:</strong> {{ vehicle.model }}</p>
+                <p><strong>Year:</strong> {{ vehicle.year }}</p>
+                <p><strong>VIN:</strong> {{ vehicle.vin }}</p>
+                <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                <p><strong>Owner:</strong> {{ vehicle.owner_name }}</p>
+                <p><strong>Purchase Date:</strong> {{ vehicle.purchase_date }}</p>
+                <p><strong>Purchase Price:</strong> ${{ vehicle.purchase_price }}</p>
+                <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
+            </div>
         </div>
-        <div class="col-md-4">
-            {% if vehicle.image %}
-                <img src="{{ vehicle.image.url }}" alt="{{ vehicle.license_plate }}" class="img-fluid">
+        <div class="col-md-4 right-side">
+            {% if vehicle.media %}
+                {% if vehicle.media.url.endswith:".mp4" %}
+                    <video src="{{ vehicle.media.url }}" autoplay loop muted></video>
+                {% else %}
+                    <img src="{{ vehicle.media.url }}" alt="{{ vehicle.license_plate }}">
+                {% endif %}
             {% else %}
-                <p>No image available</p>
+                {% if vehicle.image %}
+                    <img src="{{ vehicle.image.url }}" alt="{{ vehicle.license_plate }}">
+                {% else %}
+                    <p>No image available</p>
+                {% endif %}
             {% endif %}
         </div>
     </div>
+</div>
+{% endblock content %}
 
-    <h2>Image Gallery</h2>
-    <div class="row">
-        {% for image in images %}
-            <div class="col-md-3">
-                <a href="{{ image.image.url }}" target="_blank">
-                    <img src="{{ image.image.url }}" alt="Gallery Image" class="img-thumbnail">
-                </a>
-            </div>
-        {% endfor %}
-    </div>
-
-    <h2>Current Repairs</h2>
-    <div class="list-group">
-        {% for repair in current_repairs %}
-            <div class="list-group-item">
-                <h5>{{ repair.description }}</h5>
-                <p><strong>Assigned Personnel:</strong> {{ repair.assigned_personnel }}</p>
-                <p><strong>Start Date:</strong> {{ repair.start_date }}</p>
-                <
+{% block javascripts %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock javascripts %}

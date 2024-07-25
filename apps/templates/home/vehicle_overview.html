@@ -1,9 +1,30 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
 {% block title %}Vehicle Management{% endblock title %}
 
 {% block stylesheets %}
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .vehicle-image-background {
+        background-size: cover;
+        background-position: center;
+        height: 100vh;
+    }
+    .vehicle-info {
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .left-side {
+        padding: 20px;
+    }
+    .right-side {
+        background-size: cover;
+        background-position: center;
+        height: 100vh;
+    }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -22,14 +43,44 @@
     <div class="tab-content" id="vehicleTabsContent">
         {% for vehicle in vehicles %}
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="vehicle-{{ vehicle.pk }}" role="tabpanel" aria-labelledby="tab-{{ vehicle.pk }}">
-                <h2>{{ vehicle.make }} {{ vehicle.model }} ({{ vehicle.year }})</h2>
-                <p><strong>VIN:</strong> {{ vehicle.vin }}</p>
-                <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
-                <p><strong>Owner:</strong> {{ vehicle.owner_name }}</p>
-                <p><strong>Purchase Date:</strong> {{ vehicle.purchase_date }}</p>
-                <p><strong>Purchase Price:</strong> ${{ vehicle.purchase_price }}</p>
-                <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
-                <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-primary">View Details</a>
+                <div class="row">
+                    <div class="col-md-8 left-side">
+                        <div class="vehicle-info">
+                            <h2>Notes</h2>
+                            <ul>
+                                <li>Note 1</li>
+                                <li>Note 2</li>
+                            </ul>
+                            <h2>Repairs Needed</h2>
+                            <ul>
+                                <li>Repair 1</li>
+                                <li>Repair 2</li>
+                            </ul>
+                            <h2>Image Gallery</h2>
+                            <div class="row">
+                                {% for image in vehicle.images.all %}
+                                    <div class="col-md-3">
+                                        <a href="{{ image.image.url }}" target="_blank">
+                                            <img src="{{ image.image.url }}" alt="Gallery Image" class="img-thumbnail">
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <h2>General Information</h2>
+                            <p><strong>Make:</strong> {{ vehicle.make }}</p>
+                            <p><strong>Model:</strong> {{ vehicle.model }}</p>
+                            <p><strong>Year:</strong> {{ vehicle.year }}</p>
+                            <p><strong>VIN:</strong> {{ vehicle.vin }}</p>
+                            <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                            <p><strong>Owner:</strong> {{ vehicle.owner_name }}</p>
+                            <p><strong>Purchase Date:</strong> {{ vehicle.purchase_date }}</p>
+                            <p><strong>Purchase Price:</strong> ${{ vehicle.purchase_price }}</p>
+                            <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 right-side" style="background-image: url({% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>

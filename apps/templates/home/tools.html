@@ -13,6 +13,7 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         display: flex;
         flex-direction: row;
+        cursor: pointer;
     }
     .tool-details, .record-details {
         flex: 2;
@@ -20,8 +21,10 @@
     }
     .tool-image, .record-image {
         flex: 1;
-        max-width: 150px; /* Limit the image size */
-        height: auto;
+        width: 150px; /* Fixed width */
+        height: 150px; /* Fixed height */
+        object-fit: cover; /* Ensures the image covers the area while maintaining aspect ratio */
+        border-radius: 5px; /* Optional: Adds rounded corners */
     }
     .tool-list, .record-list {
         list-style-type: none;
@@ -30,17 +33,51 @@
     .tool-list li, .record-list li {
         margin-bottom: 5px;
     }
+    .overlay-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 1050px; /* Adjust the width as needed */
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8); /* 20% transparent background */
+        display: none;
+        z-index: 1000;
+        padding: 20px;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        transform: translateX(-1%); /* Adjust this value to move more to the left */
+    }
+    .overlay-container img {
+        width: 100%;
+        height: auto;
+    }
+    .circle-overlay {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        border: 3px solid red;
+        border-radius: 50%;
+        animation: oscillate 2s infinite;
+    }
+    @keyframes oscillate {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
 </style>
 {% endblock stylesheets %}
 
 {% block content %}
 <div class="container">
     <h1>Tool Management</h1>
-    <p>Template Loaded: tools.html</p>  <!-- Unique identifier -->
 
-    <form method="POST" class="form-inline mb-3">
-        {% csrf_token %}
-        {{ form.as_p }}
+    <form method="GET" class="form-inline mb-3">
+        <input type="text" name="search" class="form-control" placeholder="Search tools or maintenance logs..." value="{{ query }}">
+        <select name="tag" class="form-control">
+            <option value="">All Tags</option>
+            {% for tag in form.fields.tag.queryset %}
+                <option value="{{ tag.id }}" {% if tag.id|stringformat:"s" == request.GET.tag %}selected{% endif %}>{{ tag.name }}</option>
+            {% endfor %}
+        </select>
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
@@ -48,10 +85,12 @@
     <p>Number of tools: {{ tools|length }}</p>  <!-- Debug statement -->
 
     {% for tool in tools %}
-        <div class="tool-card">
+        <div class="tool-card" onclick="showToolLocation('{{ tool.name }}', '{% static tool.location_image.name %}', {{ tool.location_x }}, {{ tool.location_y }})">
             <div class="tool-details">
                 <h3>{{ tool.name }}</h3>
                 <p><strong>Location:</strong> {{ tool.location }}</p>
+                <p>{{ tool.description }}</p>
+                <p><strong>Tags:</strong> {% for tag in tool.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
             </div>
             {% if tool.image %}
                 <img src="{% static tool.image.name %}" alt="{{ tool.name }}" class="tool-image">
@@ -79,23 +118,42 @@
     {% endfor %}
 </div>
 
-<!-- Add debug information -->
-<div class="container mt-5">
-    <h2>Debug Information:</h2>
-    <p>Tools:</p>
-    <ul class="tool-list">
-        {% for tool in tools %}
-            <li>{{ tool.name }} (Location: {{ tool.location }})</li>
-        {% endfor %}
-    </ul>
-
-    <p>Maintenance Records:</p>
-    <ul class="record-list">
-        {% for record in records %}
-            <li>{{ record.tool.name }} - {{ record.date }} (Performed by: {{ record.performed_by }})</li>
-        {% endfor %}
-    </ul>
+<!-- Overlay Container -->
+<div class="overlay-container" id="tool-location-overlay" onclick="hideToolLocation()">
+    <img id="location-image" src="" alt="Tool Location">
+    <div id="circle-overlay" class="circle-overlay"></div>
 </div>
+
+
 {% endblock content %}
+
+{% block javascripts %}
+<script>
+    function showToolLocation(toolName, locationImageUrl, locationX, locationY) {
+        var overlayContainer = document.getElementById('tool-location-overlay');
+        var locationImage = document.getElementById('location-image');
+        var circleOverlay = document.getElementById('circle-overlay');
+
+        locationImage.src = locationImageUrl;
+        circleOverlay.style.left = locationX + '%';
+        circleOverlay.style.top = locationY + '%';
+
+        overlayContainer.style.display = 'block';
+    }
+
+    function hideToolLocation() {
+        var overlayContainer = document.getElementById('tool-location-overlay');
+        overlayContainer.style.display = 'none';
+    }
+
+    // Prevent the overlay from closing when clicking on the image or circle
+    document.getElementById('location-image').addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+    document.getElementById('circle-overlay').addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+</script>
+{% endblock javascripts %}
 
 {% include "includes/footer.html" %}

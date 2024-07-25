@@ -1,14 +1,67 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Unit Detail{% endblock title %}
+{% block title %} Unit Detail {% endblock title %}
 
 {% block content %}
 <div class="container">
-    <h1>{{ property.name }} - Floor {{ floor.floor_number }} - Unit {{ unit.unit_number }}</h1>
+    <h1>{{ property.name }} - Unit {{ unit.unit_number }}</h1>
     
     <div class="row">
         <div class="col-md-8">
             <h2>General Info</h2>
             <p><strong>Tenant:</strong> {{ unit.tenant_name }}</p>
             <p><strong>Rent:</strong> ${{ unit.rent_amount }}</p>
-            <p><strong>Lease Agreement:</strong
+            <p><strong>Notes:</strong> {{ unit.notes }}</p>
+
+            <h2>Documents</h2>
+            <ul>
+                {% for document in documents %}
+                    <li><a href="{{ document.file.url }}">{{ document.file.name }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <h2>Open Tickets</h2>
+            <ul>
+                {% for ticket in open_tickets %}
+                    <li><a href="{% url 'task_detail' ticket.pk %}">{{ ticket.title }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <h2>Maintenance Records</h2>
+            <ul>
+                {% for record in maintenance_records %}
+                    <li>{{ record.date }}: {{ record.description }} (Performed by: {{ record.performed_by }})</li>
+                {% endfor %}
+            </ul>
+
+            <h2>Open Repairs</h2>
+            <ul>
+                {% for repair in open_repairs %}
+                    <li>{{ repair.reported_date }}: {{ repair.description }}</li>
+                {% endfor %}
+            </ul>
+
+            <h2>Rent Payments</h2>
+            <ul>
+                {% for payment in rent_payments %}
+                    <li>{{ payment.date }}: ${{ payment.amount }} ({{ payment.get_status_display }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-4">
+            {% if unit.image_or_video %}
+                <div class="media-container">
+                    {% if unit.image_or_video.url.endswith ".mp4" %}
+                        <video controls>
+                            <source src="{{ unit.image_or_video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% else %}
+                        <img src="{{ unit.image_or_video.url }}" alt="{{ unit.unit_number }}">
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
