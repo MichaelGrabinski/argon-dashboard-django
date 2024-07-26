@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-
+{% load static %}
 {% block title %} Task List {% endblock title %}
 
 {% block stylesheets %}
@@ -12,6 +12,23 @@
     .priority-low { border-left: 5px solid #28a745; } /* Green */
     .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
     .priority-high { border-left: 5px solid #dc3545; } /* Red */
+</style>
+<link rel="stylesheet" href="{% static 'dhtmlxgantt.css' %}">
+<link rel="stylesheet" href="{% static 'dhtmlxtree.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css">
+<style>
+    #gantt_here {
+        width: 100%;
+        height: 600px;
+    }
+    #project_tree {
+        width: 100%;
+        height: 600px;
+    }
+    #calendar {
+        width: 100%;
+        height: 600px;
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -29,7 +46,13 @@
             <a class="nav-link" id="closed-tasks-tab" data-toggle="tab" href="#closed-tasks" role="tab" aria-controls="closed-tasks" aria-selected="false">Closed Tasks</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="scheduling-tab" data-toggle="tab" href="#scheduling" role="tab" aria-controls="scheduling" aria-selected="false">Scheduling & Gantt</a>
+            <a class="nav-link" id="scheduling-tab" data-toggle="tab" href="#scheduling" role="tab" aria-controls="scheduling" aria-selected="false">Scheduling</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="gantt-tab" data-toggle="tab" href="#gantt" role="tab" aria-controls="gantt" aria-selected="false">Gantt Chart</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="project-management-tab" data-toggle="tab" href="#project-management" role="tab" aria-controls="project-management" aria-selected="false">Project Management</a>
         </li>
     </ul>
     <div class="tab-content" id="taskTabsContent">
@@ -86,8 +109,96 @@
             </div>
         </div>
         <div class="tab-pane fade" id="scheduling" role="tabpanel" aria-labelledby="scheduling-tab">
-            <a href="{% url 'gantt_chart' %}" class="btn btn-primary">View Gantt Chart</a>
+            <h2>Scheduling</h2>
+            <div id="calendar"></div>
+        </div>
+        <div class="tab-pane fade" id="gantt" role="tabpanel" aria-labelledby="gantt-tab">
+            <h2>Gantt Chart</h2>
+            <div id="gantt_here"></div>
+        </div>
+        <div class="tab-pane fade" id="project-management" role="tabpanel" aria-labelledby="project-management-tab">
+            <h2>Project Management</h2>
+            <div id="project_tree"></div>
         </div>
     </div>
 </div>
 {% endblock content %}
+
+{% block javascripts %}
+<script src="{% static 'dhtmlxgantt.js' %}"></script>
+<script src="{% static 'dhtmlxtree.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+<script>
+    // Initialize Gantt Chart
+    gantt.config.columns = [
+        {name:"text", label:"Task name", width:"*", tree:true },
+        {name:"start_date", label:"Start time", align: "center" },
+        {name:"duration", label:"Duration", align: "center" }
+    ];
+
+    gantt.init("gantt_here");
+
+    gantt.parse({
+        data: [
+            {% for task in tasks %}
+            {
+                id: {{ task.id }},
+                text: "{{ task.title }}",
+                start_date: "{{ task.created_at|date:'d-m-Y H:i' }}",
+                duration: {{ task.hours }},
+                progress: 0.4,
+                open: true
+            },
+            {% endfor %}
+        ]
+    });
+
+    // Initialize Project Management Tree
+var projectTreeData = [
+        { id: 1, text: "Project", open: true, items: [
+            { id: 2, text: "Epic 1", open: true, items: [
+                { id: 3, text: "Sprint 1", open: true, items: [
+                    { id: 4, text: "Task 1" },
+                    { id: 5, text: "Task 2" }
+                ]},
+                { id: 6, text: "Sprint 2", open: true, items: [
+                    { id: 7, text: "Task 3" },
+                    { id: 8, text: "Task 4" }
+                ]}
+            ]},
+            { id: 9, text: "Epic 2", open: true, items: [
+                { id: 10, text: "Sprint 3", open: true, items: [
+                    { id: 11, text: "Task 5" },
+                    { id: 12, text: "Task 6" }
+                ]}
+            ]}
+        ]}
+    ];
+
+    var tree = new dhtmlXTreeObject("project_tree", "100%", "100%", 0);
+    tree.setImagePath("{% static 'dhtmlxtree/imgs/' %}");
+    tree.loadJSONObject({ id: 0, item: projectTreeData });
+
+    // Initialize FullCalendar
+    $(document).ready(function() {
+        $('#calendar').fullCalendar({
+            events: [
+                {% for task in tasks %}
+                {
+                    title: "{{ task.title }}",
+                    start: "{{ task.due_date|date:'Y-m-d' }}",
+                    description: "{{ task.description }}",
+                    color: "{% if task.priority == 'high' %}#dc3545{% elif task.priority == 'medium' %}#ffc107{% else %}#28a745{% endif %}"
+                },
+                {% endfor %}
+            ],
+            eventRender: function(event, element) {
+                element.qtip({
+                    content: event.description
+                });
+            }
+        });
+    });
+</script>
+{% endblock javascripts %}

@@ -1,14 +1,17 @@
-
-{% extends 'layouts/base.html' %}
-
 {% block title %} Create Task {% endblock title %}
 
 {% block content %}
+
+<!--
 <style>
     .quick-task-widget {
         margin-left: 20%; /* Offset to the right by 20% */
     }
 </style>
+
+-->
+
+
 <form method="post" action="{% url 'create_quick_task' %}" class="quick-task-widget">
     {% csrf_token %}
     {{ form.as_p }}

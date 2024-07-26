@@ -13,12 +13,29 @@ from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickT
 from django.contrib.auth.models import User
 from django import forms
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .models import Task, Tool, MaintenanceRecord
+
 @login_required(login_url="/login/")
 def index(request):
-    context = {'segment': 'index'}
+    total_open_tickets = Task.objects.filter(status='open').count()
+    tickets_assigned_to_you = Task.objects.filter(assigned_to=request.user).count()
+    total_tools = Tool.objects.count()
+    total_maintenance_records = MaintenanceRecord.objects.count()
+    total_users = User.objects.count()
 
-    html_template = loader.get_template('home/index.html')
-    return HttpResponse(html_template.render(context, request))
+    context = {
+        'segment': 'index',
+        'total_open_tickets': total_open_tickets,
+        'tickets_assigned_to_you': tickets_assigned_to_you,
+        'total_tools': total_tools,
+        'total_maintenance_records': total_maintenance_records,
+        'total_users': total_users,
+    }
+
+    return render(request, 'home/index.html', context)
 
 
 @login_required(login_url="/login/")
