@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% load custom_filters %} <!-- Load the custom filters -->
-{% load static %}
+
 {% block title %} Properties List {% endblock title %}
 
 {% block content %}
@@ -34,8 +34,7 @@
                                 Your browser does not support the video tag.
                             </video>
                         {% else %}
-						<img src="{% static property.image_or_video.url %}" alt="{{ property.name }}">
-                          <!--  <img src="{{ property.image_or_video.url }}" alt="{{ property.name }}"> -->
+                            <img src="{{ property.image_or_video.url }}" alt="{{ property.name }}">
                         {% endif %}
                     </div>
                 {% endif %}

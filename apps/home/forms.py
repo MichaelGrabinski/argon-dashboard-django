@@ -11,7 +11,7 @@ class ToolSearchForm(forms.Form):
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'due_date', 'priority', 'category', 'hours', 'assigned_to']
+        fields = ['title', 'description', 'status', 'due_date', 'priority', 'category', 'hours', 'assigned_to', 'location']
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -25,11 +25,11 @@ class AttachmentForm(forms.ModelForm):
 
 class AssignTaskForm(forms.Form):
     user = forms.ModelChoiceField(queryset=User.objects.all(), required=True, label='Assign to')
-    
+
 class QuickTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'priority', 'category', 'hours', 'assigned_to']
+        fields = ['title', 'description', 'priority', 'category', 'hours', 'assigned_to', 'location']
         widgets = {
             'title': forms.TextInput(attrs={'value': 'New Task'}),
             'description': forms.Textarea(attrs={'value': 'Description of the task'}),
@@ -37,4 +37,5 @@ class QuickTaskForm(forms.ModelForm):
             'category': forms.TextInput(attrs={'value': 'General'}),
             'hours': forms.NumberInput(attrs={'value': 1}),
             'assigned_to': forms.Select(attrs={'value': None}),
+            'location': forms.Select(),  # Use a dropdown for location
         }

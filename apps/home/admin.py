@@ -1,9 +1,10 @@
 from django.contrib import admin
 from .models import Tool
-from .models import Tool, MaintenanceRecord, Tag, Property, Unit, OpenRepair, RentPayment, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance
+from .models import Tool, MaintenanceRecord, Tag, Property, Unit, OpenRepair, RentPayment, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, Task
 
 
 # Register your models here.
+admin.site.register(Task)
 admin.site.register(Tool)
 admin.site.register(MaintenanceRecord)
 admin.site.register(Tag)

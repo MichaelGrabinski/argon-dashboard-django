@@ -44,6 +44,12 @@
                     <option value="on_hold" {% if status_filter == 'on_hold' %}selected{% endif %}>On Hold</option>
                     <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
                 </select>
+                <select name="location" class="form-control">
+                    <option value="">All Locations</option>
+                    {% for location in locations %}
+                        <option value="{{ location.name }}" {% if location_filter == location.name %}selected{% endif %}>{{ location.name }}</option>
+                    {% endfor %}
+                </select>
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
 
@@ -52,7 +58,7 @@
                     <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
                         <h5 class="mb-1">{{ task.title }}</h5>
                         <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
-                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
                     </a>
                 {% endfor %}
             </div>
@@ -63,7 +69,7 @@
                     <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
                         <h5 class="mb-1">{{ task.title }}</h5>
                         <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
-                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
                     </a>
                 {% endfor %}
             </div>
@@ -74,7 +80,7 @@
                     <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
                         <h5 class="mb-1">{{ task.title }}</h5>
                         <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
-                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }}</small>
+                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
                     </a>
                 {% endfor %}
             </div>

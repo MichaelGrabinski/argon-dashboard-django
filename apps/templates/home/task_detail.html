@@ -27,6 +27,7 @@
             <p><strong>Hours:</strong> {{ task.hours }}</p>
             <p><strong>Due Date:</strong> {{ task.due_date }}</p>
             <p><strong>Assigned To:</strong> {% if task.assigned_to %}{{ task.assigned_to.username }}{% else %}Not assigned{% endif %}</p>
+            <p><strong>Location:</strong> {{ task.location.name }}</p>
             <p><strong>Created By:</strong> {{ task.created_by.username }}</p>
             <p><strong>Created At:</strong> {{ task.created_at }}</p>
             <p><strong>Updated At:</strong> {{ task.updated_at }}</p>

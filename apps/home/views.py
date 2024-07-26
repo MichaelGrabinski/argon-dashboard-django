@@ -6,7 +6,7 @@ from django.template import loader
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect 
 from .forms import ToolSearchForm
-from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse
+from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
@@ -84,45 +84,6 @@ def tool_detail(request, pk):
     return render(request, 'home/tool_detail.html', context)
     
     
-def properties_list(request):
-    properties = Property.objects.all()
-    for property in properties:
-        property.open_tickets_count = Task.objects.filter(tags__name=property.name, status='open').count()
-    context = {
-        'properties': properties,
-    }
-    return render(request, 'home/properties_list.html', context)
-
-def property_detail(request, pk):
-    property = get_object_or_404(Property, pk=pk)
-    units = property.units.all()
-    context = {
-        'property': property,
-        'units': units,
-    }
-    return render(request, 'home/property_detail.html', context)
-
-def unit_detail(request, property_pk, unit_pk):
-    property = get_object_or_404(Property, pk=property_pk)
-    unit = get_object_or_404(Unit, pk=unit_pk, property=property)
-    documents = unit.documents.all()
-    maintenance_records = unit.maintenance_records.all()
-    open_repairs = unit.open_repairs.all()
-    rent_payments = unit.rent_payments.all()
-    open_tickets = Task.objects.filter(tags__name=unit.unit_number, status='open')
-    
-    context = {
-        'property': property,
-        'unit': unit,
-        'documents': documents,
-        'maintenance_records': maintenance_records,
-        'open_repairs': open_repairs,
-        'rent_payments': rent_payments,
-        'open_tickets': open_tickets,
-    }
-    return render(request, 'home/unit_detail.html', context)
-    
-    
 def vehicle_overview(request):
     vehicles = Vehicle.objects.all()
     context = {
@@ -146,19 +107,61 @@ def vehicle_detail(request, pk):
     return render(request, 'home/vehicle_detail.html', context)
     
     
+def properties_list(request):
+    properties = Property.objects.all()
+    for property in properties:
+        property.open_tickets_count = Task.objects.filter(tags__name=property.name, status='open').count()
+    context = {
+        'properties': properties,
+    }
+    return render(request, 'home/properties_list.html', context)
+
+def property_detail(request, pk):
+    property = get_object_or_404(Property, pk=pk)
+    units = property.units.all()
+    context = {
+        'property': property,
+        'units': units,
+    }
+    return render(request, 'home/property_detail.html', context)
+
+def unit_detail(request, property_pk, unit_pk):
+    property = get_object_or_404(Property, pk=property_pk)
+    unit = get_object_or_404(Unit, pk=unit_pk, property=property)
+    documents = unit.documents.all()
+    maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
+    open_repairs = unit.open_repairs.all()
+    rent_payments = unit.rent_payments.all()
+    open_tickets = Task.objects.filter(location=unit.unit_number, status='open')
+    
+    context = {
+        'property': property,
+        'unit': unit,
+        'documents': documents,
+        'maintenance_records': maintenance_records,
+        'open_repairs': open_repairs,
+        'rent_payments': rent_payments,
+        'open_tickets': open_tickets,
+    }
+    return render(request, 'home/unit_detail.html', context)
+
 def task_list(request):
     query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
+    location_filter = request.GET.get('location', '')
     tasks = Task.objects.all()
     
     if query:
         tasks = tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if status_filter:
         tasks = tasks.filter(status=status_filter)
+    if location_filter:
+        tasks = tasks.filter(location__name__icontains=location_filter)
     
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)
     closed_tasks = tasks.filter(status='closed')
+    locations = Location.objects.all()
     
     context = {
         'open_tasks': open_tasks,
@@ -166,7 +169,9 @@ def task_list(request):
         'closed_tasks': closed_tasks,
         'query': query,
         'status_filter': status_filter,
-        'assign_task_form': AssignTaskForm(),  # Ensure AssignTaskForm is included here
+        'location_filter': location_filter,
+        'locations': locations,
+        'assign_task_form': AssignTaskForm(),
     }
     return render(request, 'home/task_list.html', context)
 
@@ -239,13 +244,6 @@ def create_task(request):
     }
     return render(request, 'home/create_task.html', context)
 
-def gantt_chart(request):
-    tasks = Task.objects.all()
-    context = {
-        'tasks': tasks,
-    }
-    return render(request, 'home/gantt_chart.html', context)
-    
 def create_quick_task(request):
     if request.method == 'POST':
         form = QuickTaskForm(request.POST)
@@ -263,3 +261,10 @@ def create_quick_task(request):
         'form': form,
     }
     return render(request, 'home/quick_task_widget.html', context)
+    
+def gantt_chart(request):
+    tasks = Task.objects.all()
+    context = {
+        'tasks': tasks,
+    }
+    return render(request, 'home/gantt_chart.html', context)

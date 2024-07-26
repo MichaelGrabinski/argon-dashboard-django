@@ -1,4 +1,5 @@
 {% extends 'layouts/base.html' %}
+{% load custom_filters %} <!-- Load the custom filters -->
 
 {% block title %} Unit Detail {% endblock title %}
 
@@ -51,7 +52,7 @@
         <div class="col-md-4">
             {% if unit.image_or_video %}
                 <div class="media-container">
-                    {% if unit.image_or_video.url.endswith ".mp4" %}
+                    {% if unit.image_or_video.url|endswith:".mp4" %}
                         <video controls>
                             <source src="{{ unit.image_or_video.url }}" type="video/mp4">
                             Your browser does not support the video tag.

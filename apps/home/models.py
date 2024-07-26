@@ -3,10 +3,17 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db import models
 import os
+#from .models import Location
 
 def get_static_image_path(instance, filename):
     return os.path.join('tools_images', filename)
 
+class Location(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+        
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
 
@@ -38,15 +45,6 @@ class Tool(models.Model):
     def __str__(self):
         return self.name
 
-class MaintenanceRecord(models.Model):
-    tool = models.ForeignKey(Tool, on_delete=models.CASCADE, related_name='maintenance_logs')
-    date = models.DateField()
-    description = models.TextField()
-    performed_by = models.CharField(max_length=200)
-
-    def __str__(self):
-        return f"{self.tool.name} - {self.date}"
-        
 class Property(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
@@ -60,7 +58,7 @@ class Property(models.Model):
         return self.name
 
 class Unit(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units', default=1)  # Provide a default value
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units')
     unit_number = models.CharField(max_length=10)
     tenant_name = models.CharField(max_length=200, null=True, blank=True)
     rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -77,13 +75,15 @@ class Document(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 class MaintenanceRecord(models.Model):
-    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='maintenance_records', default=1)  # Provide a default value
+    tool = models.ForeignKey(Tool, on_delete=models.CASCADE, related_name='maintenance_logs', null=True, blank=True)
+    unit = models.ForeignKey('Unit', on_delete=models.CASCADE, related_name='maintenance_records', null=True, blank=True)
     date = models.DateField()
     description = models.TextField()
     performed_by = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.unit} - {self.date}"
+        return f"{self.tool or self.unit} - {self.date}"
 
 class OpenRepair(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='open_repairs')
@@ -197,11 +197,11 @@ class Task(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)  # Add tags field
+    tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Update location field
 
     def __str__(self):
         return self.title
-
 
 class Attachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')

@@ -14,7 +14,7 @@
 
     {% if property.image_or_video %}
         <div class="media-container">
-            {% if property.image_or_video.url.endswith ".mp4" %}
+            {% if property.image_or_video.url|endswith:".mp4" %}
                 <video controls>
                     <source src="{{ property.image_or_video.url }}" type="video/mp4">
                     Your browser does not support the video tag.
@@ -25,7 +25,7 @@
         </div>
     {% endif %}
 
-    <h2>Units</h2>
+    <h3>Units</h3>
     <div class="list-group">
         {% for unit in units %}
             <a href="{% url 'unit_detail' property.pk unit.pk %}" class="list-group-item list-group-item-action">
