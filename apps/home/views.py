@@ -123,7 +123,6 @@ def vehicle_detail(request, pk):
     }
     return render(request, 'home/vehicle_detail.html', context)
     
-    
 def properties_list(request):
     properties = Property.objects.all()
     for property in properties:
@@ -149,24 +148,28 @@ def property_detail(request, pk):
     return render(request, 'home/property_detail.html', context)
 
 def unit_detail(request, property_pk, unit_pk):
-    property = get_object_or_404(Property, pk=property_pk)
-    unit = get_object_or_404(Unit, pk=unit_pk, property=property)
-    documents = unit.documents.all()
-    maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
-    open_repairs = unit.open_repairs.all()
-    rent_payments = unit.rent_payments.all()
-    open_tickets = Task.objects.filter(location__name=unit.unit_number, status='open')
-    
-    context = {
-        'property': property,
-        'unit': unit,
-        'documents': documents,
-        'maintenance_records': maintenance_records,
-        'open_repairs': open_repairs,
-        'rent_payments': rent_payments,
-        'open_tickets': open_tickets,
-    }
-    return render(request, 'home/unit_detail.html', context)
+       property = get_object_or_404(Property, pk=property_pk)
+       unit = get_object_or_404(Unit, pk=unit_pk, property=property)
+       documents = unit.documents.all()
+       maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
+       open_repairs = unit.open_repairs.all()
+       rent_payments = unit.rent_payments.all()
+       open_tickets = Task.objects.filter(location__name=unit.unit_number, status='open')
+       
+       # Debugging print statement
+       print(f"Open Tickets: {open_tickets}")
+
+       context = {
+           'property': property,
+           'unit': unit,
+           'documents': documents,
+           'maintenance_records': maintenance_records,
+           'open_repairs': open_repairs,
+           'rent_payments': rent_payments,
+           'open_tickets': open_tickets,
+       }
+       return render(request, 'home/unit_detail.html', context)
+
 
 def task_list(request):
     query = request.GET.get('search', '')
@@ -179,7 +182,7 @@ def task_list(request):
     if status_filter:
         tasks = tasks.filter(status=status_filter)
     if location_filter:
-        tasks = tasks.filter(location__name__icontains(location_filter))
+        tasks = tasks.filter(location__name__icontains=location_filter)
     
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)
@@ -194,7 +197,6 @@ def task_list(request):
         'status_filter': status_filter,
         'location_filter': location_filter,
         'locations': locations,
-        'tasks': tasks,  # Ensure tasks are passed to the template
         'assign_task_form': AssignTaskForm(),
     }
     return render(request, 'home/task_list.html', context)

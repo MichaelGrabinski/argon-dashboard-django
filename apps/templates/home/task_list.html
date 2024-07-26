@@ -141,12 +141,14 @@
     $(document).ready(function() {
         var events = [
             {% for task in tasks %}
+			{% if task.due_date %}
             {
                 title: "{{ task.title }}",
                 start: "{{ task.due_date|date:'Y-m-d' }}",  // Ensure date format is correct
                 description: "{{ task.description }}",
                 color: "{% if task.priority == 'high' %}#dc3545{% elif task.priority == 'medium' %}#ffc107{% else %}#28a745{% endif %}"
             },
+            {% endif %}
             {% endfor %}
         ];
 
@@ -176,7 +178,7 @@
         $("#gantt_here").gantt({
             source: demoSource,
             navigate: "scroll",
-            scale: "weeks",
+            scale: "days",
             maxScale: "months",
             minScale: "hours",
             itemsPerPage: 10,
