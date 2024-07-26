@@ -3,21 +3,40 @@
 
 {% block title %} Properties List {% endblock title %}
 
+{% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    #map {
+        height: 500px;
+        width: 100%;
+    }
+</style>
+{% endblock stylesheets %}
+
 {% block content %}
 <div class="container">
     <h1>Properties List</h1>
     <ul class="nav nav-tabs" id="propertyTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="hub-tab" data-toggle="tab" href="#hub" role="tab" aria-controls="hub" aria-selected="true">Hub</a>
+        </li>
         {% for property in properties %}
             <li class="nav-item">
-                <a class="nav-link {% if forloop.first %}active{% endif %}" id="property-{{ property.id }}-tab" data-toggle="tab" href="#property-{{ property.id }}" role="tab" aria-controls="property-{{ property.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                <a class="nav-link" id="property-{{ property.id }}-tab" data-toggle="tab" href="#property-{{ property.id }}" role="tab" aria-controls="property-{{ property.id }}" aria-selected="false">
                     {{ property.name }}
                 </a>
             </li>
         {% endfor %}
     </ul>
     <div class="tab-content" id="propertyTabsContent">
+        <div class="tab-pane fade show active" id="hub" role="tabpanel" aria-labelledby="hub-tab">
+            <h3>Hub of Info</h3>
+            <p><strong>Legal Files:</strong> {% if property_info.legal_files %}<a href="{{ property_info.legal_files.url }}">Download</a>{% else %}No legal files available{% endif %}</p>
+            <p><strong>Extra Notes:</strong> {{ property_info.extra_notes }}</p>
+            <div id="map"></div>
+        </div>
         {% for property in properties %}
-            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="property-{{ property.id }}" role="tabpanel" aria-labelledby="property-{{ property.id }}-tab">
+            <div class="tab-pane fade" id="property-{{ property.id }}" role="tabpanel" aria-labelledby="property-{{ property.id }}-tab">
                 <h2>{{ property.name }}</h2>
                 <p><strong>Location:</strong> {{ property.location }}</p>
                 <p><strong>Owner:</strong> {{ property.owner_name }}</p>
@@ -52,3 +71,30 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block javascripts %}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        //var map = L.map('map').setView([41.800, -73.130], 17);  // Center the map around the provided address
+        var map = L.map('map').setView([41.810640, -73.129390], 17);  // Center the map around the provided address
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        {% for location in property_locations %}
+            L.marker([{{ location.latitude }}, {{ location.longitude }}]).addTo(map)
+                .bindPopup('<b>{{ location.property.name }}</b>');
+        {% endfor %}
+
+        // Add a marker for the provided test address
+        L.marker([41.810640, -73.129390]).addTo(map)
+            .bindPopup('<b>98 Pulaski Street</b>').openPopup();
+			
+		        // Add a marker for the provided test address
+        L.marker([41.810020, -73.127590]).addTo(map)
+            .bindPopup('<b>48 Forest Ct</b>').openPopup();
+    });
+</script>
+{% endblock javascripts %}

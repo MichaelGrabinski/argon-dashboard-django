@@ -6,7 +6,7 @@ from django.template import loader
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect 
 from .forms import ToolSearchForm
-from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location
+from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
@@ -128,17 +128,23 @@ def properties_list(request):
     properties = Property.objects.all()
     for property in properties:
         property.open_tickets_count = Task.objects.filter(tags__name=property.name, status='open').count()
+    property_locations = PropertyLocation.objects.all()
     context = {
         'properties': properties,
+        'property_locations': property_locations,
     }
     return render(request, 'home/properties_list.html', context)
 
 def property_detail(request, pk):
     property = get_object_or_404(Property, pk=pk)
     units = property.units.all()
+    property_info = PropertyInfo.objects.get_or_create(property=property)[0]
+    property_location = PropertyLocation.objects.get_or_create(property=property)[0]
     context = {
         'property': property,
         'units': units,
+        'property_info': property_info,
+        'property_location': property_location,
     }
     return render(request, 'home/property_detail.html', context)
 
@@ -149,7 +155,7 @@ def unit_detail(request, property_pk, unit_pk):
     maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
     open_repairs = unit.open_repairs.all()
     rent_payments = unit.rent_payments.all()
-    open_tickets = Task.objects.filter(location=unit.unit_number, status='open')
+    open_tickets = Task.objects.filter(location__name=unit.unit_number, status='open')
     
     context = {
         'property': property,
@@ -173,7 +179,7 @@ def task_list(request):
     if status_filter:
         tasks = tasks.filter(status=status_filter)
     if location_filter:
-        tasks = tasks.filter(location__name__icontains=location_filter)
+        tasks = tasks.filter(location__name__icontains(location_filter))
     
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)
@@ -188,6 +194,7 @@ def task_list(request):
         'status_filter': status_filter,
         'location_filter': location_filter,
         'locations': locations,
+        'tasks': tasks,  # Ensure tasks are passed to the template
         'assign_task_form': AssignTaskForm(),
     }
     return render(request, 'home/task_list.html', context)

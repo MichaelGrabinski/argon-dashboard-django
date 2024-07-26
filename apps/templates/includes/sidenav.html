@@ -64,7 +64,12 @@
             </a> 		
 		</li>
 
-		
+		<li class="nav-item">
+            <a class="nav-link {% if 'studio' in segment %} active {% endif %}" href="/studio/">
+              <i class="ni ni-controller text-pink"></i>
+              <span class="nav-link-text">Game Studio</span>
+            </a> 		
+		</li>	
 
 
           <li class="nav-item">
@@ -90,19 +95,19 @@
               <span class="nav-link-text">Icons</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% if 'map' in segment %} active {% endif %}" href="/map.html">
-              <i class="ni ni-pin-3 text-primary"></i>
-              <span class="nav-link-text">Google</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
+		            <li class="nav-item">
             <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href="/tables.html">
               <i class="ni ni-bullet-list-67 text-default"></i>
               <span class="nav-link-text">Tables</span>
             </a>
           </li>
+          <li class="nav-item">
+    <!--        <a class="nav-link {% if 'map' in segment %} active {% endif %}" href="/map.html">
+              <i class="ni ni-pin-3 text-primary"></i>
+              <span class="nav-link-text">Google</span>
+            </a>
+          </li>
+
           <li class="nav-item">
             <a class="nav-link" href="/login.html">
               <i class="ni ni-key-25 text-info"></i>
@@ -115,6 +120,9 @@
               <span class="nav-link-text">Register (template)</span>
             </a>
           </li>
+
+
+-->
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">

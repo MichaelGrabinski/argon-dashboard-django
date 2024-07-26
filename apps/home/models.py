@@ -102,6 +102,22 @@ class RentPayment(models.Model):
 
     def __str__(self):
         return f"{self.unit} - {self.date} - {self.status}"
+  
+class PropertyInfo(models.Model):
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='info')
+    legal_files = models.FileField(upload_to='legal_files/', null=True, blank=True)
+    extra_notes = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Info for {self.property.name}"
+    
+class PropertyLocation(models.Model):
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='property_location')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+
+    def __str__(self):
+        return f"Location for {self.property.name}"
         
 class Vehicle(models.Model):
     STATUS_CHOICES = (

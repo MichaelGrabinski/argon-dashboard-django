@@ -13,9 +13,10 @@
     .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
     .priority-high { border-left: 5px solid #dc3545; } /* Red */
 </style>
-<link rel="stylesheet" href="{% static 'dhtmlxgantt.css' %}">
-<link rel="stylesheet" href="{% static 'dhtmlxtree.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
+<link rel="stylesheet" href="{% static 'jquery-gantt/jquery.fn.gantt.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
 <style>
     #gantt_here {
         width: 100%;
@@ -114,7 +115,7 @@
         </div>
         <div class="tab-pane fade" id="gantt" role="tabpanel" aria-labelledby="gantt-tab">
             <h2>Gantt Chart</h2>
-            <div id="gantt_here"></div>
+            <div class="gantt" id="gantt_here"></div>
         </div>
         <div class="tab-pane fade" id="project-management" role="tabpanel" aria-labelledby="project-management-tab">
             <h2>Project Management</h2>
@@ -125,78 +126,91 @@
 {% endblock content %}
 
 {% block javascripts %}
-<script src="{% static 'dhtmlxgantt.js' %}"></script>
-<script src="{% static 'dhtmlxtree.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="{% static 'jquery-gantt/jquery.fn.gantt.js' %}"></script>
+<script src="{% static 'argon.js' %}"></script> <!-- Ensure argon.js is included last -->
+
 <script>
-    // Initialize Gantt Chart
-    gantt.config.columns = [
-        {name:"text", label:"Task name", width:"*", tree:true },
-        {name:"start_date", label:"Start time", align: "center" },
-        {name:"duration", label:"Duration", align: "center" }
-    ];
-
-    gantt.init("gantt_here");
-
-    gantt.parse({
-        data: [
+    // Initialize FullCalendar
+    console.log('Initializing FullCalendar');
+    $(document).ready(function() {
+        var events = [
             {% for task in tasks %}
             {
-                id: {{ task.id }},
-                text: "{{ task.title }}",
-                start_date: "{{ task.created_at|date:'d-m-Y H:i' }}",
-                duration: {{ task.hours }},
-                progress: 0.4,
-                open: true
+                title: "{{ task.title }}",
+                start: "{{ task.due_date|date:'Y-m-d' }}",  // Ensure date format is correct
+                description: "{{ task.description }}",
+                color: "{% if task.priority == 'high' %}#dc3545{% elif task.priority == 'medium' %}#ffc107{% else %}#28a745{% endif %}"
             },
             {% endfor %}
-        ]
-    });
+        ];
 
-    // Initialize Project Management Tree
-var projectTreeData = [
-        { id: 1, text: "Project", open: true, items: [
-            { id: 2, text: "Epic 1", open: true, items: [
-                { id: 3, text: "Sprint 1", open: true, items: [
-                    { id: 4, text: "Task 1" },
-                    { id: 5, text: "Task 2" }
-                ]},
-                { id: 6, text: "Sprint 2", open: true, items: [
-                    { id: 7, text: "Task 3" },
-                    { id: 8, text: "Task 4" }
-                ]}
-            ]},
-            { id: 9, text: "Epic 2", open: true, items: [
-                { id: 10, text: "Sprint 3", open: true, items: [
-                    { id: 11, text: "Task 5" },
-                    { id: 12, text: "Task 6" }
-                ]}
-            ]}
-        ]}
-    ];
+        console.log('Events data: ', events);
 
-    var tree = new dhtmlXTreeObject("project_tree", "100%", "100%", 0);
-    tree.setImagePath("{% static 'dhtmlxtree/imgs/' %}");
-    tree.loadJSONObject({ id: 0, item: projectTreeData });
-
-    // Initialize FullCalendar
-    $(document).ready(function() {
         $('#calendar').fullCalendar({
-            events: [
-                {% for task in tasks %}
-                {
-                    title: "{{ task.title }}",
-                    start: "{{ task.due_date|date:'Y-m-d' }}",
-                    description: "{{ task.description }}",
-                    color: "{% if task.priority == 'high' %}#dc3545{% elif task.priority == 'medium' %}#ffc107{% else %}#28a745{% endif %}"
-                },
-                {% endfor %}
-            ],
-            eventRender: function(event, element) {
-                element.qtip({
-                    content: event.description
-                });
+            events: events
+        });
+
+        // Initialize Gantt Chart
+        console.log('Initializing Gantt Chart');
+        var demoSource = [
+            {% for task in tasks %}
+            {
+                name: "{{ task.title }}",
+                desc: "{{ task.description }}",
+                values: [{
+                    from: {{ task.created_at|date:'U' }}000,
+                    to: {{ task.due_date|date:'U' }}000,
+                    label: "{{ task.title }}",
+                    customClass: "ganttRed"
+                }]
+            },
+            {% endfor %}
+        ];
+
+        $("#gantt_here").gantt({
+            source: demoSource,
+            navigate: "scroll",
+            scale: "weeks",
+            maxScale: "months",
+            minScale: "hours",
+            itemsPerPage: 10,
+            scrollToToday: false,
+            useCookie: true,
+            onItemClick: function(data) {
+                alert("Item clicked - show some details");
+            },
+            onAddClick: function(dt, rowId) {
+                alert("Empty space clicked - add an item!");
+            },
+            onRender: function() {
+                console.log("chart rendered");
+            }
+        });
+
+        // Initialize Project Management Tree
+        console.log('Initializing Project Management Tree');
+        $('#project_tree').jstree({
+            'core' : {
+                'data' : [
+                    { "id" : "1", "parent" : "#", "text" : "Project" },
+                    { "id" : "2", "parent" : "1", "text" : "Epic 1" },
+                    { "id" : "3", "parent" : "2", "text" : "Sprint 1" },
+                    { "id" : "4", "parent" : "3", "text" : "Task 1" },
+                    { "id" : "5", "parent" : "3", "text" : "Task 2" },
+                    { "id" : "6", "parent" : "2", "text" : "Sprint 2" },
+                    { "id" : "7", "parent" : "6", "text" : "Task 3" },
+                    { "id" : "8", "parent" : "6", "text" : "Task 4" },
+                    { "id" : "9", "parent" : "1", "text" : "Epic 2" },
+                    { "id" : "10", "parent" : "9", "text" : "Sprint 3" },
+                    { "id" : "11", "parent" : "10", "text" : "Task 5" },
+                    { "id" : "12", "parent" : "10", "text" : "Task 6" }
+                ]
             }
         });
     });
