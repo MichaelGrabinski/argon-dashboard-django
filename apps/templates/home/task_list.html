@@ -141,7 +141,7 @@
     $(document).ready(function() {
         var events = [
             {% for task in tasks %}
-			{% if task.due_date %}
+            {% if task.due_date %}
             {
                 title: "{{ task.title }}",
                 start: "{{ task.due_date|date:'Y-m-d' }}",  // Ensure date format is correct
@@ -162,6 +162,7 @@
         console.log('Initializing Gantt Chart');
         var demoSource = [
             {% for task in tasks %}
+            {% if task.due_date %}
             {
                 name: "{{ task.title }}",
                 desc: "{{ task.description }}",
@@ -172,8 +173,11 @@
                     customClass: "ganttRed"
                 }]
             },
+            {% endif %}
             {% endfor %}
         ];
+
+        console.log('Gantt source data: ', demoSource);
 
         $("#gantt_here").gantt({
             source: demoSource,

@@ -171,24 +171,25 @@ def unit_detail(request, property_pk, unit_pk):
        return render(request, 'home/unit_detail.html', context)
 
 
+@login_required(login_url="/login/")
 def task_list(request):
     query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     location_filter = request.GET.get('location', '')
     tasks = Task.objects.all()
-    
+
     if query:
         tasks = tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if status_filter:
         tasks = tasks.filter(status=status_filter)
     if location_filter:
         tasks = tasks.filter(location__name__icontains=location_filter)
-    
+
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)
     closed_tasks = tasks.filter(status='closed')
     locations = Location.objects.all()
-    
+
     context = {
         'open_tasks': open_tasks,
         'assigned_tasks': assigned_tasks,
@@ -198,9 +199,9 @@ def task_list(request):
         'location_filter': location_filter,
         'locations': locations,
         'assign_task_form': AssignTaskForm(),
+        'tasks': tasks  # Ensure tasks are passed to the template
     }
     return render(request, 'home/task_list.html', context)
-
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
     comments = task.comments.all()
