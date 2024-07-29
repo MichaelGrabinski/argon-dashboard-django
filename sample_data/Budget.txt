@@ -1,0 +1,83 @@
+from django.contrib.auth.models import User
+from apps.home.models import Project, Budget, Expense, FinancialReport
+
+# Create some users
+manager = User.objects.create_user(username='budget_manager', password='password')
+
+# Create some projects
+project1 = Project.objects.create(
+    title='Construction Project 1',
+    description='Description for Construction Project 1',
+    manager=manager,
+    start_date='2023-01-01',
+    end_date='2023-06-01'
+)
+project2 = Project.objects.create(
+    title='Construction Project 2',
+    description='Description for Construction Project 2',
+    manager=manager,
+    start_date='2023-02-01',
+    end_date='2023-07-01'
+)
+
+# Add team members to projects
+project1.team_members.add(manager)
+project2.team_members.add(manager)
+
+# Create some budgets
+Budget.objects.create(project=project1, category='Materials', amount=50000)
+Budget.objects.create(project=project1, category='Labor', amount=30000)
+Budget.objects.create(project=project2, category='Materials', amount=60000)
+Budget.objects.create(project=project2, category='Labor', amount=35000)
+
+# Create some expenses
+Expense.objects.create(
+    project=project1,
+    category='Materials',
+    description='Purchased wood and steel',
+    amount=20000,
+    date='2023-03-01'
+)
+Expense.objects.create(
+    project=project1,
+    category='Labor',
+    description='Paid workers for the first phase',
+    amount=15000,
+    date='2023-04-01'
+)
+Expense.objects.create(
+    project=project2,
+    category='Materials',
+    description='Purchased concrete and bricks',
+    amount=25000,
+    date='2023-03-15'
+)
+Expense.objects.create(
+    project=project2,
+    category='Labor',
+    description='Paid workers for the initial setup',
+    amount=18000,
+    date='2023-04-10'
+)
+
+# Create some financial reports
+FinancialReport.objects.create(
+    project=project1,
+    report_file='path/to/report1.pdf',
+    created_at='2023-04-15'
+)
+FinancialReport.objects.create(
+    project=project1,
+    report_file='path/to/report2.pdf',
+    created_at='2023-05-15'
+)
+FinancialReport.objects.create(
+    project=project2,
+    report_file='path/to/report3.pdf',
+    created_at='2023-04-20'
+)
+FinancialReport.objects.create(
+    project=project2,
+    report_file='path/to/report4.pdf',
+    created_at='2023-05-20'
+)

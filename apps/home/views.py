@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ToolSearchForm
 from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
-from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial
+from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
 from django.contrib.auth.models import User
 from django import forms
@@ -311,4 +311,33 @@ def project_detail(request, project_id):
         'documents': documents,
         'tasks': tasks,
         'references': references,
+    })
+    
+    
+def game_studio_hub(request):
+    projects = GameProject.objects.all()
+    return render(request, 'home/game_studio.html', {'projects': projects})
+
+def game_project_detail(request, project_id):
+    project = get_object_or_404(GameProject, pk=project_id)
+    tasks = Task.objects.filter(project=project)
+    return render(request, 'home/game_studio_detail.html', {
+        'project': project,
+        'tasks': tasks,
+    })
+
+def budget_accounting_hub(request):
+    projects = Project.objects.all()
+    return render(request, 'home/budget_accounting.html', {'projects': projects})
+
+def budget_project_detail(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    budgets = project.budgets.all()
+    expenses = project.expenses.all()
+    reports = project.financial_reports.all()
+    return render(request, 'home/budget_accounting_detail.html', {
+        'project': project,
+        'budgets': budgets,
+        'expenses': expenses,
+        'reports': reports,
     })

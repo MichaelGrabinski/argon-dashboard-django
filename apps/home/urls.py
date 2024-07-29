@@ -27,6 +27,10 @@ urlpatterns = [
     path('construction/', views.construction_hub, name='construction_hub'),
     path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
     
+    path('game-studio/', views.game_studio_hub, name='game_studio_hub'),
+    path('game-studio/project/<int:project_id>/', views.game_project_detail, name='game_project_detail'),
+    path('budget-accounting/', views.budget_accounting_hub, name='budget_accounting_hub'),
+    path('budget-accounting/project/<int:project_id>/', views.budget_project_detail, name='budget_project_detail'),
     # Matches any HTML file
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]

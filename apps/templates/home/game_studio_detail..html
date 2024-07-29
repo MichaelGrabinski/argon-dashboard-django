@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>{{ project.title }}</h1>
+    <p>{{ project.description }}</p>
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Tasks</h2>
+            <ul class="list-group">
+                {% for task in tasks %}
+                <li class="list-group-item">
+                    <h5>{{ task.title }}</h5>
+                    <p>{{ task.description }}</p>
+                    <small>Status: {{ task.status }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+            <h2>Interactive Board</h2>
+            <div id="interactive-board-{{ project.id }}"></div>
+            <h2>Progress Tracking</h2>
+            <div id="progress-tracking-{{ project.id }}"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+from django.contrib.auth.models import User
+from apps.home.models import GameProject, Task
+
+# Create some users
+manager = User.objects.create_user(username='game_manager', password='password')
+developer = User.objects.create_user(username='developer', password='password')
+
+# Create some game projects
+game_project1 = GameProject.objects.create(
+    title='Game Project 1',
+    description='Description for Game Project 1',
+    manager=manager,
+    start_date='2023-01-01',
+    end_date='2023-12-31'
+)
+game_project2 = GameProject.objects.create(
+    title='Game Project 2',
+    description='Description for Game Project 2',
+    manager=manager,
+    start_date='2023-02-01',
+    end_date='2023-11-30'
+)
+
+# Add team members to game projects
+game_project1.team_members.add(manager, developer)
+game_project2.team_members.add(manager, developer)
+
+# Create some tasks for game projects
+Task.objects.create(
+    project=game_project1,
+    title='Design Initial Characters',
+    description='Create initial character designs for the game.',
+    status='open',
+    due_date='2023-03-01',
+    assigned_to=developer
+)
+Task.objects.create(
+    project=game_project1,
+    title='Develop Game Mechanics',
+    description='Implement the core game mechanics.',
+    status='in_progress',
+    due_date='2023-06-01',
+    assigned_to=developer
+)
+Task.objects.create(
+    project=game_project2,
+    title='Create Game Levels',
+    description='Design and develop game levels.',
+    status='open',
+    due_date='2023-05-01',
+    assigned_to=developer
+)
+Task.objects.create(
+    project=game_project2,
+    title='Develop AI for Enemies',
+    description='Implement AI for enemy characters.',
+    status='open',
+    due_date='2023-07-01',
+    assigned_to=developer
+)

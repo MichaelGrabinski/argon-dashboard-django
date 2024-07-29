@@ -1,0 +1,118 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Budget/Accounting Hub</h1>
+    <ul class="nav nav-tabs" id="budgetAccountingTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="hub-tab" data-toggle="tab" href="#hub" role="tab" aria-controls="hub" aria-selected="true">Hub</a>
+        </li>
+        {% for project in projects %}
+        <li class="nav-item">
+            <a class="nav-link" id="project-{{ project.id }}-tab" data-toggle="tab" href="#project-{{ project.id }}" role="tab" aria-controls="project-{{ project.id }}" aria-selected="false">{{ project.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="budgetAccountingTabsContent">
+        <div class="tab-pane fade show active" id="hub" role="tabpanel" aria-labelledby="hub-tab">
+            <h2>Budget Planning</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <input type="text" class="form-control" id="category" name="category" placeholder="Enter category">
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount</label>
+                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Budget</button>
+            </form>
+            <h2 class="mt-4">Budgets</h2>
+            <ul class="list-group">
+                {% for budget in budgets %}
+                <li class="list-group-item">
+                    <strong>{{ budget.category }}</strong>: ${{ budget.amount }}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <h2 class="mt-4">Expense Tracking</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="expense-category">Category</label>
+                    <input type="text" class="form-control" id="expense-category" name="category" placeholder="Enter category">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" class="form-control" id="description" name="description" placeholder="Enter description">
+                </div>
+                <div class="form-group">
+                    <label for="expense-amount">Amount</label>
+                    <input type="number" class="form-control" id="expense-amount" name="amount" placeholder="Enter amount">
+                </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" class="form-control" id="date" name="date">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Expense</button>
+            </form>
+            <h2 class="mt-4">Expenses</h2>
+            <ul class="list-group">
+                {% for expense in expenses %}
+                <li class="list-group-item">
+                    <strong>{{ expense.category }}</strong>: ${{ expense.amount }} on {{ expense.date }} - {{ expense.description }}
+                </li>
+                {% endfor %}
+            </ul>
+
+            <h2 class="mt-4">Financial Reports</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="report-file">Upload Report</label>
+                    <input type="file" class="form-control" id="report-file" name="report_file">
+                </div>
+                <button type="submit" class="btn btn-primary">Upload Report</button>
+            </form>
+            <ul class="list-group mt-3">
+                {% for report in reports %}
+                <li class="list-group-item">
+                    <a href="{{ report.report_file.url }}" target="_blank">Report - {{ report.created_at }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% for project in projects %}
+        <div class="tab-pane fade" id="project-{{ project.id }}" role="tabpanel" aria-labelledby="project-{{ project.id }}-tab">
+            <h2>{{ project.title }}</h2>
+            <p>{{ project.description }}</p>
+            <h3>Budgets</h3>
+            <ul class="list-group">
+                {% for budget in project.budgets.all %}
+                <li class="list-group-item">
+                    <strong>{{ budget.category }}</strong>: ${{ budget.amount }}
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Expenses</h3>
+            <ul class="list-group">
+                {% for expense in project.expenses.all %}
+                <li class="list-group-item">
+                    <strong>{{ expense.category }}</strong>: ${{ expense.amount }} on {{ expense.date }} - {{ expense.description }}
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>Financial Reports</h3>
+            <ul class="list-group">
+                {% for report in project.financial_reports.all %}
+                <li class="list-group-item">
+                    <a href="{{ report.report_file.url }}" target="_blank">Report - {{ report.created_at }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

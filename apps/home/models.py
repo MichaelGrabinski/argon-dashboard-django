@@ -262,3 +262,29 @@ class ReferenceMaterial(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='references')
     type = models.CharField(max_length=50)  # e.g., 'video', 'schematic', 'note'
     content = models.TextField()  # URL for videos, text for notes, etc.
+    
+class GameProject(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_game_projects')
+    team_members = models.ManyToManyField(User, related_name='game_projects')
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+# Budget/Accounting Models
+class Budget(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='budgets')
+    category = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+class Expense(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='expenses')
+    category = models.CharField(max_length=100)
+    description = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+
+class FinancialReport(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='financial_reports')
+    report_file = models.FileField(upload_to='financial_reports/')
+    created_at = models.DateTimeField(auto_now_add=True)
