@@ -4,9 +4,12 @@ from django.contrib.auth.models import User
 from django.db import models
 import os
 #from .models import Location
+from .custom_storage import StaticFileSystemStorage
+
 
 def get_static_image_path(instance, filename):
-    return os.path.join('tools_images', filename)
+    return os.path.join('static', 'tools_images', filename)
+    
 
 class Location(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -36,8 +39,8 @@ class Tool(models.Model):
     model_number = models.CharField(max_length=200, null=True, blank=True)
     assigned_to = models.CharField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=200)
-    image = models.ImageField(upload_to=get_static_image_path, null=True, blank=True)
-    location_image = models.ImageField(upload_to=get_static_image_path, null=True, blank=True)
+    image = models.ImageField(upload_to='tools_images/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    location_image = models.ImageField(upload_to='tools_images/', storage=StaticFileSystemStorage(), null=True, blank=True)
     location_x = models.FloatField(null=True, blank=True)
     location_y = models.FloatField(null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
@@ -52,27 +55,27 @@ class Property(models.Model):
     owner_contact = models.CharField(max_length=200)
     manager_name = models.CharField(max_length=200, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
-    image_or_video = models.FileField(upload_to='property_media/', null=True, blank=True)
+    image_or_video = models.FileField(upload_to='property_media/', storage=StaticFileSystemStorage(), null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 class Unit(models.Model):
-        property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units')
-        unit_number = models.CharField(max_length=10)
-        tenant_name = models.CharField(max_length=200, null=True, blank=True)
-        rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-        lease_agreement = models.FileField(upload_to='lease_agreements/', null=True, blank=True)
-        image_or_video = models.FileField(upload_to='unit_media/', null=True, blank=True)
-        notes = models.TextField(null=True, blank=True)
-        location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Add this line
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units')
+    unit_number = models.CharField(max_length=10)
+    tenant_name = models.CharField(max_length=200, null=True, blank=True)
+    rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    lease_agreement = models.FileField(upload_to='unit_media/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    image_or_video = models.FileField(upload_to='unit_media/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
 
-        def __str__(self):
-            return f"Unit {self.unit_number} - {self.property}"
+    def __str__(self):
+        return f"Unit {self.unit_number} - {self.property}"
 
 class Document(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='documents')
-    file = models.FileField(upload_to='unit_documents/')
+    file = models.FileField(upload_to='unit_documents/', storage=StaticFileSystemStorage())
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 class MaintenanceRecord(models.Model):
@@ -90,7 +93,7 @@ class OpenRepair(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='open_repairs')
     description = models.TextField()
     reported_date = models.DateField()
-    image = models.ImageField(upload_to='repair_images/', null=True, blank=True)
+    image = models.ImageField(upload_to='repair_images/', storage=StaticFileSystemStorage(), null=True, blank=True)
 
     def __str__(self):
         return f"Repair for {self.unit} - {self.reported_date}"
@@ -106,7 +109,7 @@ class RentPayment(models.Model):
   
 class PropertyInfo(models.Model):
     property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='info')
-    legal_files = models.FileField(upload_to='legal_files/', null=True, blank=True)
+    legal_files = models.FileField(upload_to='legal_files/', storage=StaticFileSystemStorage(), null=True, blank=True)
     extra_notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
@@ -136,8 +139,8 @@ class Vehicle(models.Model):
     purchase_date = models.DateField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
-    image = models.ImageField(upload_to='vehicle_images/', null=True, blank=True)
-    media = models.FileField(upload_to='vehicle_media/', null=True, blank=True)  # Renamed field to accept both video and GIFs
+    image = models.ImageField(upload_to='vehicle_images/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    media = models.FileField(upload_to='vehicle_media/', storage=StaticFileSystemStorage(), null=True, blank=True)  # Renamed field to accept both video and GIFs
 
     def __str__(self):
         return f"{self.make} {self.model} ({self.license_plate})"
@@ -145,7 +148,7 @@ class Vehicle(models.Model):
       
 class VehicleImage(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='vehicle_gallery/')
+    image = models.ImageField(upload_to='vehicle_gallery/', storage=StaticFileSystemStorage())
 
     def __str__(self):
         return f"Image for {self.vehicle}"
@@ -167,7 +170,7 @@ class MaintenanceHistory(models.Model):
     description = models.TextField()
     cost = models.DecimalField(max_digits=10, decimal_places=2)
     service_provider = models.CharField(max_length=200)
-    document = models.FileField(upload_to='maintenance_documents/', null=True, blank=True)
+    document = models.FileField(upload_to='maintenance_documents/', storage=StaticFileSystemStorage(), null=True, blank=True)
 
     def __str__(self):
         return f"Maintenance for {self.vehicle} - {self.date}"
@@ -222,7 +225,7 @@ class Task(models.Model):
 
 class Attachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
-    file = models.FileField(upload_to='attachments/')
+    file = models.FileField(upload_to='attachments/', storage=StaticFileSystemStorage())
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 class Comment(models.Model):
