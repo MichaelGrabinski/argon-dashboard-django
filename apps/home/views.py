@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ToolSearchForm
 from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
-from apps.home.models import Task, Attachment, Comment, ActivityLog
+from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
 from django.contrib.auth.models import User
 from django import forms
@@ -294,3 +294,21 @@ def gantt_chart(request):
         'tasks': tasks,
     }
     return render(request, 'home/gantt_chart.html', context)
+    
+def construction_hub(request):
+    projects = Project.objects.all()
+    return render(request, 'home/hub.html', {'projects': projects})
+
+def project_detail(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    notes = project.notes.all()
+    documents = project.documents.all()
+    tasks = project.tasks.all()
+    references = project.references.all()
+    return render(request, 'home/project_detail.html', {
+        'project': project,
+        'notes': notes,
+        'documents': documents,
+        'tasks': tasks,
+        'references': references,
+    })

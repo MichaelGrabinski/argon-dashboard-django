@@ -24,6 +24,9 @@ urlpatterns = [
     path('tasks/gantt/', views.gantt_chart, name='gantt_chart'),
     path('tasks/quick_create/', views.create_quick_task, name='create_quick_task'),
     
+    path('construction/', views.construction_hub, name='construction_hub'),
+    path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
+    
     # Matches any HTML file
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]

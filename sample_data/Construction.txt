@@ -1,0 +1,94 @@
+from django.contrib.auth.models import User
+from apps.home.models import Project, Note, ProjectDocument, Task, ReferenceMaterial
+
+# Create or get users
+manager, _ = User.objects.get_or_create(username='manager', defaults={'password': 'password'})
+team_member, _ = User.objects.get_or_create(username='team_member', defaults={'password': 'password'})
+
+# Create some projects
+project1, _ = Project.objects.get_or_create(
+    title='Project 1',
+    description='Description for Project 1',
+    manager=manager,
+    start_date='2023-01-01',
+    end_date='2023-06-01'
+)
+project2, _ = Project.objects.get_or_create(
+    title='Project 2',
+    description='Description for Project 2',
+    manager=manager,
+    start_date='2023-02-01',
+    end_date='2023-07-01'
+)
+
+# Add team members to projects
+project1.team_members.add(manager, team_member)
+project2.team_members.add(manager, team_member)
+
+# Create some notes
+Note.objects.get_or_create(project=project1, content='Note 1 for Project 1')
+Note.objects.get_or_create(project=project1, content='Note 2 for Project 1')
+Note.objects.get_or_create(project=project2, content='Note 1 for Project 2')
+
+# Create some documents
+ProjectDocument.objects.get_or_create(project=project1, file='path/to/document1.pdf')
+ProjectDocument.objects.get_or_create(project=project1, file='path/to/document2.pdf')
+ProjectDocument.objects.get_or_create(project=project2, file='path/to/document3.pdf')
+
+# Create some tasks
+Task.objects.get_or_create(
+    project=project1,
+    title='Task 1',
+    description='Description for Task 1',
+    status='open',
+    due_date='2023-03-01',
+    assigned_to=team_member
+)
+Task.objects.get_or_create(
+    project=project1,
+    title='Task 2',
+    description='Description for Task 2',
+    status='in_progress',
+    due_date='2023-04-01',
+    assigned_to=team_member
+)
+Task.objects.get_or_create(
+    project=project2,
+    title='Task 3',
+    description='Description for Task 3',
+    status='open',
+    due_date='2023-05-01',
+    assigned_to=team_member
+)
+
+# Create some reference materials
+ReferenceMaterial.objects.get_or_create(
+    project=project1,
+    type='video',
+    content='https://www.youtube.com/embed/dQw4w9WgXcQ'
+)
+ReferenceMaterial.objects.get_or_create(
+    project=project1,
+    type='schematic',
+    content='path/to/schematic1.pdf'
+)
+ReferenceMaterial.objects.get_or_create(
+    project=project1,
+    type='note',
+    content='Reference note for Project 1'
+)
+ReferenceMaterial.objects.get_or_create(
+    project=project2,
+    type='video',
+    content='https://www.youtube.com/embed/3JZ_D3ELwOQ'
+)
+ReferenceMaterial.objects.get_or_create(
+    project=project2,
+    type='schematic',
+    content='path/to/schematic2.pdf'
+)
+ReferenceMaterial.objects.get_or_create(
+    project=project2,
+    type='note',
+    content='Reference note for Project 2'
+)

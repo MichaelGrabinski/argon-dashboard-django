@@ -47,6 +47,14 @@ class Tool(models.Model):
 
     def __str__(self):
         return self.name
+        
+class Project(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_projects')
+    team_members = models.ManyToManyField(User, related_name='projects')
+    start_date = models.DateField()
+    end_date = models.DateField()
 
 class Property(models.Model):
     name = models.CharField(max_length=200)
@@ -219,6 +227,7 @@ class Task(models.Model):
         updated_at = models.DateTimeField(auto_now=True)
         tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
         location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Ensure this line is present
+        project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)  # Add this line if not already present
 
         def __str__(self):
             return self.title
@@ -239,3 +248,17 @@ class ActivityLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     action = models.CharField(max_length=200)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class Note(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='notes', null=True, blank=True)
+    content = models.TextField()
+
+class ProjectDocument(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
+    file = models.FileField(upload_to='documents/', storage=StaticFileSystemStorage())
+    version = models.IntegerField(default=1)
+
+class ReferenceMaterial(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='references')
+    type = models.CharField(max_length=50)  # e.g., 'video', 'schematic', 'note'
+    content = models.TextField()  # URL for videos, text for notes, etc.
