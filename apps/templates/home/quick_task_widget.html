@@ -1,21 +1,45 @@
+{% extends 'layouts/baseQK.html' %}
 {% block title %} Create Task {% endblock title %}
 
 {% block content %}
-
-<!--
 <style>
     .quick-task-widget {
-        margin-left: 20%; /* Offset to the right by 20% */
+        max-width: 600px;
+        margin: 50px auto; /* Center the form horizontally */
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    .quick-task-widget h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #333;
+    }
+    .quick-task-widget .form-group {
+        margin-bottom: 15px;
+    }
+    .quick-task-widget .form-control {
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .quick-task-widget .btn-primary {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 4px;
     }
 </style>
 
--->
-
-
-<form method="post" action="{% url 'create_quick_task' %}" class="quick-task-widget">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Open Ticket</button>
-</form>
-
+<div class="quick-task-widget">
+    <h2>Create Task</h2>
+    <form method="post" action="{% url 'create_quick_task' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Open Ticket</button>
+    </form>
+</div>
 {% endblock content %}

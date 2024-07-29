@@ -148,28 +148,24 @@ def property_detail(request, pk):
     return render(request, 'home/property_detail.html', context)
 
 def unit_detail(request, property_pk, unit_pk):
-       property = get_object_or_404(Property, pk=property_pk)
-       unit = get_object_or_404(Unit, pk=unit_pk, property=property)
-       documents = unit.documents.all()
-       maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
-       open_repairs = unit.open_repairs.all()
-       rent_payments = unit.rent_payments.all()
-       open_tickets = Task.objects.filter(location__name=unit.unit_number, status='open')
-       
-       # Debugging print statement
-       print(f"Open Tickets: {open_tickets}")
+    property = get_object_or_404(Property, pk=property_pk)
+    unit = get_object_or_404(Unit, pk=unit_pk, property=property)
+    documents = unit.documents.all()
+    maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
+    open_repairs = unit.open_repairs.all()
+    rent_payments = unit.rent_payments.all()
+    open_tickets = Task.objects.filter(location=unit.location, status='open')  # Update this line
 
-       context = {
-           'property': property,
-           'unit': unit,
-           'documents': documents,
-           'maintenance_records': maintenance_records,
-           'open_repairs': open_repairs,
-           'rent_payments': rent_payments,
-           'open_tickets': open_tickets,
-       }
-       return render(request, 'home/unit_detail.html', context)
-
+    context = {
+        'property': property,
+        'unit': unit,
+        'documents': documents,
+        'maintenance_records': maintenance_records,
+        'open_repairs': open_repairs,
+        'rent_payments': rent_payments,
+        'open_tickets': open_tickets,
+    }
+    return render(request, 'home/unit_detail.html', context)
 
 @login_required(login_url="/login/")
 def task_list(request):
@@ -202,6 +198,8 @@ def task_list(request):
         'tasks': tasks  # Ensure tasks are passed to the template
     }
     return render(request, 'home/task_list.html', context)
+    
+    
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
     comments = task.comments.all()
@@ -270,6 +268,7 @@ def create_task(request):
         'form': form,
     }
     return render(request, 'home/create_task.html', context)
+
 
 def create_quick_task(request):
     if request.method == 'POST':

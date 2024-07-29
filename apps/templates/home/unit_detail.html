@@ -1,87 +1,102 @@
 {% extends 'layouts/base.html' %}
-   {% load custom_filters %} <!-- Load the custom filters -->
-   {% load static %}
-   {% block title %} Unit Detail {% endblock title %}
+{% load custom_filters %} <!-- Load the custom filters -->
+{% load static %}
+{% block title %} Unit Detail {% endblock title %}
 
-   {% block stylesheets %}
-   <style>
-       .status-open { border-left: 5px solid #007bff; } /* Blue */
-       .status-closed { border-left: 5px solid #6c757d; } /* Gray */
-       .status-in_progress { border-left: 5px solid #ffc107; } /* Yellow */
-       .status-waiting_for_materials { border-left: 5px solid #17a2b8; } /* Teal */
-       .status-on_hold { border-left: 5px solid #dc3545; } /* Red */
-       .priority-low { border-left: 5px solid #28a745; } /* Green */
-       .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
-       .priority-high { border-left: 5px solid #dc3545; } /* Red */
-   </style>
-   {% endblock stylesheets %}
+{% block stylesheets %}
+<style>
+    .status-open { border-left: 5px solid #007bff; } /* Blue */
+    .status-closed { border-left: 5px solid #6c757d; } /* Gray */
+    .status-in_progress { border-left: 5px solid #ffc107; } /* Yellow */
+    .status-waiting_for_materials { border-left: 5px solid #17a2b8; } /* Teal */
+    .status-on_hold { border-left: 5px solid #dc3545; } /* Red */
+    .priority-low { border-left: 5px solid #28a745; } /* Green */
+    .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
+    .priority-high { border-left: 5px solid #dc3545; } /* Red */
+    .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 1.5em; }
+    .section-content { margin-bottom: 30px; }
+    .list-group-item { margin-bottom: 10px; }
+    .media-container img, .media-container video { max-width: 100%; height: auto; }
+</style>
+{% endblock stylesheets %}
 
-   {% block content %}
-   <div class="container">
-       <h1>{{ property.name }} - Unit {{ unit.unit_number }}</h1>
-       
-       <div class="row">
-           <div class="col-md-8">
-               <h2>General Info</h2>
-               <p><strong>Tenant:</strong> {{ unit.tenant_name }}</p>
-               <p><strong>Rent:</strong> ${{ unit.rent_amount }}</p>
-               <p><strong>Notes:</strong> {{ unit.notes }}</p>
+{% block content %}
+<div class="container">
+    <h1>{{ property.name }} - Unit {{ unit.unit_number }}</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="section-content">
+                <h2 class="section-title">General Info</h2>
+                <p><strong>Tenant:</strong> {{ unit.tenant_name }}</p>
+                <p><strong>Rent:</strong> ${{ unit.rent_amount }}</p>
+                <p><strong>Notes:</strong> {{ unit.notes }}</p>
+            </div>
 
-               <h2>Documents</h2>
-               <ul>
-                   {% for document in documents %}
-                       <li><a href="{{ document.file.url }}">{{ document.file.name }}</a></li>
-                   {% endfor %}
-               </ul>
+            <div class="section-content">
+                <h2 class="section-title">Documents</h2>
+                <ul>
+                    {% for document in documents %}
+                        <li><a href="{{ document.file.url }}">{{ document.file.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-               <h2>Open Tickets</h2>
-               {# Debugging statement #}
-               <p>Open Tickets Count: {{ open_tickets.count }}</p>
-               <div class="list-group">
-                   {% for task in open_tickets %}
-                       <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
-                           <h5 class="mb-1">{{ task.title }}</h5>
-                           <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
-                           <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
-                       </a>
-                   {% endfor %}
-               </div>
+            <div class="section-content">
+                <h2 class="section-title">Open Tickets</h2>
+                <div class="list-group">
+                    {% for task in open_tickets %}
+                        <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
+                            <h5 class="mb-1">{{ task.title }}</h5>
+                            <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
+                            <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
 
-               <h2>Maintenance Records</h2>
-               <ul>
-                   {% for record in maintenance_records %}
-                       <li>{{ record.date }}: {{ record.description }} (Performed by: {{ record.performed_by }})</li>
-                   {% endfor %}
-               </ul>
+            <div class="section-content">
+                <h2 class="section-title">Maintenance Records</h2>
+                <ul>
+                    {% for record in maintenance_records %}
+                        <li>{{ record.date }}: {{ record.description }} (Performed by: {{ record.performed_by }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
 
-               <h2>Open Repairs</h2>
-               <ul>
-                   {% for repair in open_repairs %}
-                       <li>{{ repair.reported_date }}: {{ repair.description }}</li>
-                   {% endfor %}
-               </ul>
-
-               <h2>Rent Payments</h2>
-               <ul>
-                   {% for payment in rent_payments %}
-                       <li>{{ payment.date }}: ${{ payment.amount }} ({{ payment.get_status_display }})</li>
-                   {% endfor %}
-               </ul>
-           </div>
-           <div class="col-md-4">
-               {% if unit.image_or_video %}
-                   <div class="media-container">
-                       {% if unit.image_or_video.url|endswith:".mp4" %}
-                           <video controls>
-                               <source src="{{ unit.image_or_video.url }}" type="video/mp4">
-                               Your browser does not support the video tag.
-                           </video>
-                       {% else %}
-                           <img src="{{ unit.image_or_video.url }}" alt="{{ unit.unit_number }}">
-                       {% endif %}
-                   </div>
-               {% endif %}
-           </div>
-       </div>
-   </div>
-   {% endblock content %}
+            <div class="section-content">
+         <!--
+		 <h2 class="section-title">Open Repairs</h2>
+                <ul>
+                    {% for repair in open_repairs %}
+                        <li>{{ repair.reported_date }}: {{ repair.description }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+-->
+            <div class="section-content">
+                <h2 class="section-title">Rent Payments</h2>
+                <ul>
+                    {% for payment in rent_payments %}
+                        <li>{{ payment.date }}: ${{ payment.amount }} ({{ payment.get_status_display }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            {% if unit.image_or_video %}
+                <div class="media-container">
+                    {% if unit.image_or_video.url|endswith:".mp4" %}
+                        <video controls>
+                            <source src="{{ unit.image_or_video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% else %}
+                        <img src="{{ unit.image_or_video.url }}" alt="{{ unit.unit_number }}">
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,7 +1,7 @@
 from django import forms
 from .models import Tool
 from .models import Tag
-from .models import Task, Comment, Attachment
+from .models import Task, Comment, Attachment, Unit 
 from django.contrib.auth.models import User 
 
 class ToolSearchForm(forms.Form):
@@ -9,10 +9,19 @@ class ToolSearchForm(forms.Form):
     tag = forms.ModelChoiceField(queryset=Tag.objects.all(), required=False, label='Tag')
     
 class TaskForm(forms.ModelForm):
+    unit = forms.ModelChoiceField(queryset=Unit.objects.all(), required=True, label="Unit")
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'status', 'due_date', 'priority', 'category', 'hours', 'assigned_to', 'location']
+        fields = ['title', 'description', 'status', 'due_date', 'priority', 'unit']
 
+    def save(self, commit=True):
+        task = super().save(commit=False)
+        task.location = self.cleaned_data['unit'].location  # Set the location based on the selected unit
+        if commit:
+            task.save()
+        return task
+        
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment

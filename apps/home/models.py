@@ -58,16 +58,17 @@ class Property(models.Model):
         return self.name
 
 class Unit(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units')
-    unit_number = models.CharField(max_length=10)
-    tenant_name = models.CharField(max_length=200, null=True, blank=True)
-    rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    lease_agreement = models.FileField(upload_to='lease_agreements/', null=True, blank=True)
-    image_or_video = models.FileField(upload_to='unit_media/', null=True, blank=True)
-    notes = models.TextField(null=True, blank=True)
+        property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='units')
+        unit_number = models.CharField(max_length=10)
+        tenant_name = models.CharField(max_length=200, null=True, blank=True)
+        rent_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+        lease_agreement = models.FileField(upload_to='lease_agreements/', null=True, blank=True)
+        image_or_video = models.FileField(upload_to='unit_media/', null=True, blank=True)
+        notes = models.TextField(null=True, blank=True)
+        location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Add this line
 
-    def __str__(self):
-        return f"Unit {self.unit_number} - {self.property}"
+        def __str__(self):
+            return f"Unit {self.unit_number} - {self.property}"
 
 class Document(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='documents')
@@ -188,36 +189,36 @@ class TagHouse(models.Model):
         return self.name
 
 class Task(models.Model):
-    STATUS_CHOICES = (
-        ('open', 'Open'),
-        ('closed', 'Closed'),
-        ('in_progress', 'In Progress'),
-        ('waiting_for_materials', 'Waiting for Materials'),
-        ('on_hold', 'On Hold'),
-    )
+        STATUS_CHOICES = (
+            ('open', 'Open'),
+            ('closed', 'Closed'),
+            ('in_progress', 'In Progress'),
+            ('waiting_for_materials', 'Waiting for Materials'),
+            ('on_hold', 'On Hold'),
+        )
 
-    PRIORITY_CHOICES = (
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
-    )
+        PRIORITY_CHOICES = (
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High'),
+        )
 
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='open')
-    due_date = models.DateField(null=True, blank=True)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
-    category = models.CharField(max_length=100, null=True, blank=True)
-    hours = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Update location field
+        title = models.CharField(max_length=200)
+        description = models.TextField()
+        status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='open')
+        due_date = models.DateField(null=True, blank=True)
+        priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+        category = models.CharField(max_length=100, null=True, blank=True)
+        hours = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+        assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+        created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
+        tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
+        location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Ensure this line is present
 
-    def __str__(self):
-        return self.title
+        def __str__(self):
+            return self.title
 
 class Attachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
