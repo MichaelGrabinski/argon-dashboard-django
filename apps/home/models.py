@@ -49,12 +49,17 @@ class Tool(models.Model):
         return self.name
         
 class Project(models.Model):
+    PROJECT_TYPE_CHOICES = (
+        ('construction', 'Construction'),
+        ('game', 'Game'),
+    )
     title = models.CharField(max_length=200)
     description = models.TextField()
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_projects')
     team_members = models.ManyToManyField(User, related_name='projects')
     start_date = models.DateField()
     end_date = models.DateField()
+    project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, default='construction')
 
 class Property(models.Model):
     name = models.CharField(max_length=200)

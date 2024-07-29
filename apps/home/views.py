@@ -17,22 +17,51 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import Task, Tool, MaintenanceRecord
+from .metrics import get_project_progress, get_task_status_distribution, get_budget_vs_actual_spending, get_expense_breakdown
+from django.db.models import Count, Sum, F
 
 @login_required(login_url="/login/")
 def index(request):
-    total_open_tickets = Task.objects.filter(status='open').count()
-    tickets_assigned_to_you = Task.objects.filter(assigned_to=request.user).count()
-    total_tools = Tool.objects.count()
-    total_maintenance_records = MaintenanceRecord.objects.count()
-    total_users = User.objects.count()
+    # Metrics for construction projects
+    construction_projects = Project.objects.filter(project_type='construction')
+    construction_project_metrics = []
+    for project in construction_projects:
+        progress = get_project_progress(project)
+        remaining_progress = 100 - progress
+        task_status_distribution = get_task_status_distribution(project)
+        budget_vs_spending = get_budget_vs_actual_spending(project)
+        expense_breakdown = get_expense_breakdown(project)
+        construction_project_metrics.append({
+            'project': project,
+            'progress': progress,
+            'remaining_progress': remaining_progress,
+            'task_status_distribution': task_status_distribution,
+            'budget_vs_spending': budget_vs_spending,
+            'expense_breakdown': expense_breakdown,
+        })
+
+    # Metrics for game studio projects
+    game_projects = Project.objects.filter(project_type='game')
+    game_project_metrics = []
+    for project in game_projects:
+        progress = get_project_progress(project)
+        remaining_progress = 100 - progress
+        task_status_distribution = get_task_status_distribution(project)
+        game_project_metrics.append({
+            'project': project,
+            'progress': progress,
+            'remaining_progress': remaining_progress,
+            'task_status_distribution': task_status_distribution,
+        })
 
     context = {
-        'segment': 'index',
-        'total_open_tickets': total_open_tickets,
-        'tickets_assigned_to_you': tickets_assigned_to_you,
-        'total_tools': total_tools,
-        'total_maintenance_records': total_maintenance_records,
-        'total_users': total_users,
+        'total_open_tickets': Task.objects.filter(status='open').count(),
+        'tickets_assigned_to_you': Task.objects.filter(assigned_to=request.user).count(),
+        'total_tools': Tool.objects.count(),
+        'total_maintenance_records': MaintenanceRecord.objects.count(),
+        'total_users': User.objects.count(),
+        'construction_project_metrics': construction_project_metrics,
+        'game_project_metrics': game_project_metrics,
     }
 
     return render(request, 'home/index.html', context)
@@ -341,3 +370,35 @@ def budget_project_detail(request, project_id):
         'expenses': expenses,
         'reports': reports,
     })
+    
+def get_project_progress(project, is_game_project=False):
+    if is_game_project:
+        total_tasks = Task.objects.filter(game_project=project).count()
+        completed_tasks = Task.objects.filter(game_project=project, status='completed').count()
+    else:
+        total_tasks = Task.objects.filter(project=project).count()
+        completed_tasks = Task.objects.filter(project=project, status='completed').count()
+    progress = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
+    return progress
+
+def get_task_status_distribution(project, is_game_project=False):
+    if is_game_project:
+        status_distribution = Task.objects.filter(game_project=project).values('status').annotate(count=Count('status'))
+    else:
+        status_distribution = Task.objects.filter(project=project).values('status').annotate(count=Count('status'))
+    return status_distribution
+
+def get_budget_vs_actual_spending(project):
+    budget_data = Budget.objects.filter(project=project).values('category').annotate(budgeted=Sum('amount'))
+    expense_data = Expense.objects.filter(project=project).values('category').annotate(spent=Sum('amount'))
+    data = {item['category']: {'budgeted': item['budgeted'], 'spent': 0} for item in budget_data}
+    for item in expense_data:
+        if item['category'] in data:
+            data[item['category']]['spent'] = item['spent']
+        else:
+            data[item['category']] = {'budgeted': 0, 'spent': item['spent']}
+    return data
+
+def get_expense_breakdown(project):
+    expense_breakdown = Expense.objects.filter(project=project).values('category').annotate(amount=Sum('amount'))
+    return expense_breakdown

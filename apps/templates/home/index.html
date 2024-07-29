@@ -12,16 +12,12 @@
     .card-stats .card-body .icon {
         margin-left: 1rem;
     }
-	
     .center-widget {
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
     }
-
-</style>
-<style>
     .mar {
         margin-left: 10%; /* Offset to the right by 20% */
     }
@@ -29,92 +25,89 @@
 {% endblock stylesheets %}
 
 {% block content %}
-
-            <div class="row align-items-center py-4">
-                <div class="col-lg-6 col-7">
-                    <h6 class="h2 text-white d-inline-block mb-0">Dashboard</h6>
-                    <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
-                        <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                            <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                        </ol>
-                    </nav>
+<div class="row align-items-center py-4">
+    <div class="col-lg-6 col-7">
+        <h6 class="h2 text-white d-inline-block mb-0">Dashboard</h6>
+        <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="col-lg-6 col-5 text-right">
+    </div>
+</div>
+<!-- Card stats -->
+<div style="padding-left: 20px; padding-right: 20px;" class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title text-uppercase text-muted mb-0">Total Open Tickets</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_open_tickets }}</span>
                 </div>
-                <div class="col-lg-6 col-5 text-right">
-                </div>
-            </div>
-            <!-- Card stats -->
-            <div style="padding-left: 20px; padding-right: 20px;" class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-stats">
-                        <div class="card-body">
-                            <div>
-                                <h5 class="card-title text-uppercase text-muted mb-0">Total Open Tickets</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ total_open_tickets }}</span>
-                            </div>
-                            <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
-                                <i class="ni ni-active-40"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-stats">
-                        <div class="card-body">
-                            <div>
-                                <h5 class="card-title text-uppercase text-muted mb-0">Tickets Assigned to You</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ tickets_assigned_to_you }}</span>
-                            </div>
-                            <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
-                                <i class="ni ni-chart-pie-35"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-stats">
-                        <div class="card-body">
-                            <div>
-                                <h5 class="card-title text-uppercase text-muted mb-0">Total Tools</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ total_tools }}</span>
-                            </div>
-                            <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                                <i class="ni ni-settings"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-stats">
-                        <div class="card-body">
-                            <div>
-                                <h5 class="card-title text-uppercase text-muted mb-0">Maintenance Records</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ total_maintenance_records }}</span>
-                            </div>
-                            <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
-                                <i class="ni ni-archive-2"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-stats">
-                        <div class="card-body">
-                            <div>
-                                <h5 class="card-title text-uppercase text-muted mb-0">Total Users</h5>
-                                <span class="h2 font-weight-bold mb-0">{{ total_users }}</span>
-                            </div>
-                            <div class="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
-                                <i class="ni ni-single-02"></i>
-                            </div>
-                        </div>
-                    </div>
+                <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
+                    <i class="ni ni-active-40"></i>
                 </div>
             </div>
-            <!-- Quick Task Creator -->
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title text-uppercase text-muted mb-0">Tickets Assigned to You</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ tickets_assigned_to_you }}</span>
+                </div>
+                <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
+                    <i class="ni ni-chart-pie-35"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title text-uppercase text-muted mb-0">Total Tools</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_tools }}</span>
+                </div>
+                <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                    <i class="ni ni-settings"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title text-uppercase text-muted mb-0">Maintenance Records</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_maintenance_records }}</span>
+                </div>
+                <div class="icon icon-shape bg-gradient-info text-white rounded-circle shadow">
+                    <i class="ni ni-archive-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card card-stats">
+            <div class="card-body">
+                <div>
+                    <h5 class="card-title text-uppercase text-muted mb-0">Total Users</h5>
+                    <span class="h2 font-weight-bold mb-0">{{ total_users }}</span>
+                </div>
+                <div class="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
+                    <i class="ni ni-single-02"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-       
-
+<!-- Quick Task Creator -->
 <div class="row mt-4">
     <div class="col">
         <h2 class="text-center">Create a Quick Task</h2>
@@ -123,9 +116,159 @@
         </div>
     </div>
 </div>
+
+<!-- Construction Dashboard -->
+<div class="row mt-4">
+    <div class="col">
+        <h2 class="text-center">Construction Dashboard</h2>
+        {% for metrics in construction_project_metrics %}
+        <div class="project-metrics">
+            <h3>{{ metrics.project.title }}</h3>
+            <div class="progress-chart">
+                <h4>Project Progress</h4>
+                <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+            <div class="task-status-chart">
+                <h4>Task Status Distribution</h4>
+                <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+            <div class="budget-vs-spending-chart">
+                <h4>Budget vs. Actual Spending</h4>
+                <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Game Studio Dashboard -->
+<div class="row mt-4">
+    <div class="col">
+        <h2 class="text-center">Game Studio Dashboard</h2>
+        {% for metrics in game_project_metrics %}
+        <div class="project-metrics">
+            <h3>{{ metrics.project.title }}</h3>
+            <div class="progress-chart">
+                <h4>Project Progress</h4>
+                <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+            <div class="task-status-chart">
+                <h4>Task Status Distribution</h4>
+                <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Budget/Accounting Dashboard -->
+<div class="row mt-4">
+    <div class="col">
+        <h2 class="text-center">Budget/Accounting Dashboard</h2>
+        {% for metrics in budget_project_metrics %}
+        <div class="project-metrics">
+            <h3>{{ metrics.project.title }}</h3>
+            <div class="budget-vs-spending-chart">
+                <h4>Budget vs. Actual Spending</h4>
+                <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+            <div class="expense-breakdown-chart">
+                <h4>Expense Breakdown</h4>
+                <canvas id="expense-breakdown-chart-{{ metrics.project.id }}"></canvas>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 {% endblock content %}
 
 {% block javascripts %}
 <script src="{% static 'assets/vendor/chart.js/dist/Chart.min.js' %}"></script>
 <script src="{% static 'assets/vendor/chart.js/dist/Chart.extension.js' %}"></script>
+<script>
+    {% for metrics in construction_project_metrics %}
+    var ctxProgress = document.getElementById('progress-chart-{{ metrics.project.id }}').getContext('2d');
+    var progressChart = new Chart(ctxProgress, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Remaining'],
+            datasets: [{
+                data: [{{ metrics.progress }}, {{ metrics.remaining_progress }}],
+                backgroundColor: ['#4caf50', '#f44336']
+            }]
+        }
+    });
+
+    var ctxTaskStatus = document.getElementById('task-status-chart-{{ metrics.project.id }}').getContext('2d');
+    var taskStatusChart = new Chart(ctxTaskStatus, {
+        type: 'pie',
+        data: {
+            labels: [{% for status in metrics.task_status_distribution %}'{{ status.status }}',{% endfor %}],
+            datasets: [{
+                data: [{% for status in metrics.task_status_distribution %}{{ status.count }},{% endfor %}],
+                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
+            }]
+        }
+    });
+
+    var ctxBudgetVsSpending = document.getElementById('budget-vs-spending-chart-{{ metrics.project.id }}').getContext('2d');
+    var budgetVsSpendingChart = new Chart(ctxBudgetVsSpending, {
+        type: 'bar',
+        data: {
+            labels: [{% for category, values in metrics.budget_vs_spending.items %}'{{ category }}',{% endfor %}],
+            datasets: [
+                {
+                    label: 'Budgeted',
+                    data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.budgeted }},{% endfor %}],
+                    backgroundColor: '#4caf50'
+                },
+                {
+                    label: 'Spent',
+                    data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.spent }},{% endfor %}],
+                    backgroundColor: '#f44336'
+                }
+            ]
+        }
+    });
+
+    var ctxExpenseBreakdown = document.getElementById('expense-breakdown-chart-{{ metrics.project.id }}').getContext('2d');
+    var expenseBreakdownChart = new Chart(ctxExpenseBreakdown, {
+        type: 'pie',
+        data: {
+            labels: [{% for expense in metrics.expense_breakdown %}'{{ expense.category }}',{% endfor %}],
+            datasets: [{
+                data: [{% for expense in metrics.expense_breakdown %}{{ expense.amount }},{% endfor %}],
+                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
+            }]
+        }
+    });
+    {% endfor %}
+
+    {% for metrics in game_project_metrics %}
+    var ctxProgressGame = document.getElementById('progress-chart-{{ metrics.project.id }}').getContext('2d');
+    var progressChartGame = new Chart(ctxProgressGame, {
+        type: 'doughnut',
+        data: {
+            labels: ['Completed', 'Remaining'],
+            datasets: [{
+                data: [{{ metrics.progress }}, {{ metrics.remaining_progress }}],
+                backgroundColor: ['#4caf50', '#f44336']
+            }]
+        }
+    });
+
+    var ctxTaskStatusGame = document.getElementById('task-status-chart-{{ metrics.project.id }}').getContext('2d');
+    var taskStatusChartGame = new Chart(ctxTaskStatusGame, {
+        type: 'pie',
+        data: {
+            labels: [{% for status in metrics.task_status_distribution %}'{{ status.status }}',{% endfor %}],
+            datasets: [{
+                data: [{% for status in metrics.task_status_distribution %}{{ status.count }},{% endfor %}],
+                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
+            }]
+        }
+    });
+    {% endfor %}
+</script>
 {% endblock javascripts %}
