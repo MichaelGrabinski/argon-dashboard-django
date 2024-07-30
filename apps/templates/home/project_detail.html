@@ -1,15 +1,11 @@
-{% extends 'layouts/base.html' %}
+{% extends 'base.html' %}
+{% load static %}
 {% block content %}
 <div class="container">
     <h1>{{ project.title }}</h1>
     <p>{{ project.description }}</p>
     <div class="row">
         <div class="col-md-8">
-            <h2>General Info</h2>
-            <p><strong>Manager:</strong> {{ project.manager.username }}</p>
-            <p><strong>Start Date:</strong> {{ project.start_date }}</p>
-            <p><strong>End Date:</strong> {{ project.end_date }}</p>
-
             <h2>Notes</h2>
             <ul class="list-group">
                 {% for note in notes %}
@@ -18,7 +14,19 @@
             </ul>
 
             <h2>Documents</h2>
-            <ul class="list-group">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="document">Upload Document</label>
+                    <input type="file" class="form-control" id="document" name="document">
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="is_model" name="is_model">
+                    <label class="form-check-label" for="is_model">Is 3D Model</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+            <ul class="list-group mt-3">
                 {% for document in documents %}
                 <li class="list-group-item">
                     <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
@@ -26,98 +34,48 @@
                 {% endfor %}
             </ul>
 
-            <h2>Tasks</h2>
-            <ul class="list-group">
-                {% for task in tasks %}
-                <li class="list-group-item">
-                    <h5>{{ task.title }}</h5>
-                    <p>{{ task.description }}</p>
-                    <small>Status: {{ task.status }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}</small>
-                </li>
-                {% endfor %}
-            </ul>
-
-            <h2>Model Interactor</h2>
-            <div id="model-viewer-{{ project.id }}"></div>
-
-            <h2>Gallery</h2>
-            <div class="row">
-                {% for video in references %}
-                {% if video.type == 'video' %}
-                <div class="col-md-4">
-                    <div class="embed-responsive embed-responsive-16by9">
-                        <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
-                    </div>
-                </div>
+            <h2>3D Model Viewer</h2>
+            <div id="model-viewer-container">
+                {% for document in documents %}
+                {% if document.is_model %}
+                <canvas id="model-viewer-{{ document.id }}" class="model-viewer" data-model-url="{{ document.file.url }}"></canvas>
                 {% endif %}
                 {% endfor %}
             </div>
-
-            <h2>Chat</h2>
-            <div id="chat-{{ project.id }}"></div>
-
-            <h2>Reference</h2>
-            <ul class="nav nav-tabs" id="referenceTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="videos-tab" data-toggle="tab" href="#videos" role="tab" aria-controls="videos" aria-selected="true">Videos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="schematics-tab" data-toggle="tab" href="#schematics" role="tab" aria-controls="schematics" aria-selected="false">Schematics</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="referenceTabsContent">
-                <div class="tab-pane fade show active" id="videos" role="tabpanel" aria-labelledby="videos-tab">
-                    <div class="row">
-                        {% for video in references %}
-                        {% if video.type == 'video' %}
-                        <div class="col-md-4">
-                            <div class="embed-responsive embed-responsive-16by9">
-                                <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="schematics" role="tabpanel" aria-labelledby="schematics-tab">
-                    <ul class="list-group">
-                        {% for schematic in references %}
-                        {% if schematic.type == 'schematic' %}
-                        <li class="list-group-item">
-                            <a href="{{ schematic.content }}" target="_blank">{{ schematic.content }}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
-                    <ul class="list-group">
-                        {% for note in references %}
-                        {% if note.type == 'note' %}
-                        <li class="list-group-item">{{ note.content }}</li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            {% if project.image_or_video %}
-                <div class="media-container">
-                    {% if project.image_or_video.url|endswith:".mp4" %}
-                        <video controls>
-                            <source src="{{ project.image_or_video.url }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    {% else %}
-                        <img src="{{ project.image_or_video.url }}" alt="{{ project.title }}">
-                    {% endif %}
-                </div>
-            {% endif %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.model-viewer').forEach(function(canvas) {
+            const modelUrl = canvas.getAttribute('data-model-url');
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 5);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(0, 1, 1).normalize();
+            scene.add(light);
+
+            const loader = new THREE.GLTFLoader();
+            loader.load(modelUrl, function(gltf) {
+                scene.add(gltf.scene);
+                animate();
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+        });
+    });
+</script>
 {% endblock %}

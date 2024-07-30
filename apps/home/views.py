@@ -326,14 +326,33 @@ def gantt_chart(request):
     
 def construction_hub(request):
     projects = Project.objects.all()
+    
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        project = get_object_or_404(Project, pk=project_id)
+        if 'document' in request.FILES:
+            file = request.FILES['document']
+            is_model = request.POST.get('is_model', 'off') == 'on'
+            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
+            return HttpResponseRedirect(reverse('construction_hub'))
+
     return render(request, 'home/hub.html', {'projects': projects})
 
+    
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     notes = project.notes.all()
     documents = project.documents.all()
     tasks = project.tasks.all()
     references = project.references.all()
+
+    if request.method == 'POST':
+        if 'document' in request.FILES:
+            file = request.FILES['document']
+            is_model = request.POST.get('is_model', 'off') == 'on'
+            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
+            return HttpResponseRedirect(reverse('project_detail', args=[project_id]))
+
     return render(request, 'home/project_detail.html', {
         'project': project,
         'notes': notes,

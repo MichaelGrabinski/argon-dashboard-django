@@ -255,13 +255,14 @@ class ActivityLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 class Note(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='notes', null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='notes')
     content = models.TextField()
 
 class ProjectDocument(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='documents')
     file = models.FileField(upload_to='documents/', storage=StaticFileSystemStorage())
     version = models.IntegerField(default=1)
+    is_model = models.BooleanField(default=False)
 
 class ReferenceMaterial(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='references')
