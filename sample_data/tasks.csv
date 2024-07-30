@@ -1,0 +1,17 @@
+title,description,status,due_date,priority,category,hours,created_at,updated_at,assigned_to,created_by,location,project
+Fix faucet,Repair the leaky faucet,open,2023-02-01,high,Plumbing,2.00,2023-01-01 12:00:00,2023-01-01 12:00:00,johndoe,janedoe,Warehouse,Building A
+Replace window,Install new window,closed,2023-02-05,medium,Maintenance,3.00,2023-01-02 12:00:00,2023-01-02 12:00:00,janedoe,johndoe,Warehouse,Building A
+Fix wiring,Repair faulty wiring,in_progress,2023-02-10,high,Electrical,4.00,2023-01-03 12:00:00,2023-01-03 12:00:00,emilyj,johndoe,Workshop,Game Development
+Paint walls,Repaint the office walls,open,2023-03-01,low,Painting,5.00,2023-01-04 12:00:00,2023-01-04 12:00:00,johndoe,janedoe,Office,Building A
+Install lights,Install new ceiling lights,closed,2023-03-05,medium,Electrical,2.50,2023-01-05 12:00:00,2023-01-05 12:00:00,janedoe,johndoe,Office,Building A
+Fix door,Repair the broken door,open,2023-03-10,high,Carpentry,3.50,2023-01-06 12:00:00,2023-01-06 12:00:00,emilyj,johndoe,Workshop,Game Development
+Clean windows,Wash all the windows,open,2023-03-15,low,Maintenance,4.00,2023-01-07 12:00:00,2023-01-07 12:00:00,johndoe,janedoe,Office,Building A
+Fix roof,Repair the roof leaks,in_progress,2023-03-20,high,Roofing,6.00,2023-01-08 12:00:00,2023-01-08 12:00:00,janedoe,johndoe,Warehouse,Building A
+Install AC,Install new air conditioning,closed,2023-03-25,medium,HVAC,7.00,2023-01-09 12:00:00,2023-01-09 12:00:00,emilyj,johndoe,Office,Game Development
+Fix plumbing,Repair the plumbing issues,open,2023-03-30,high,Plumbing,8.00,2023-01-10 12:00:00,2023-01-10 12:00:00,johndoe,janedoe,Warehouse,Building A
+Upgrade network,Install new network cables,open,2023-04-01,medium,IT,5.00,2023-01-11 12:00:00,2023-01-11 12:00:00,johndoe,janedoe,Office,Office Renovation
+Install security system,Set up new security cameras,closed,2023-04-05,high,Security,6.50,2023-01-12 12:00:00,2023-01-12 12:00:00,janedoe,johndoe,Warehouse,Building A
+Repair elevator,Fix the malfunctioning elevator,in_progress,2023-04-10,high,Maintenance,7.50,2023-01-13 12:00:00,2023-01-13 12:00:00,emilyj,johndoe,Workshop,Game Development
+Paint exterior,Repaint the building exterior,open,2023-04-15,low,Painting,8.00,2023-01-14 12:00:00,2023-01-14 12:00:00,johndoe,janedoe,Office,Building A
+Install new flooring,Replace old carpets with new flooring,closed,2023-04-20,medium,Flooring,9.00,2023-01-15 12:00:00,2023-01-15 12:00:00,janedoe,johndoe,Office,Building A
+Fix HVAC system,Repair the heating and cooling system,in_progress,2023-04-25,high,HVAC,10.00,2023-01-16 12:00:00,2023-01-16 12:00:00,emilyj,johndoe,Workshop,Game Development

@@ -1,0 +1,6 @@
+vehicle,description,assigned_personnel,start_date,estimated_completion_date,status
+1HGBH41JXMN109186,Engine repair,John Doe,2023-01-01,2023-01-10,in_progress
+2HGBH41JXMN109187,Brake replacement,Jane Doe,2023-01-05,2023-01-15,pending_parts
+3HGBH41JXMN109188,Transmission fix,Emily Johnson,2023-01-10,2023-01-20,completed
+4HGBH41JXMN109189,Oil change,Michael Brown,2023-01-15,2023-01-25,in_progress
+5HGBH41JXMN109190,Tire rotation,Emma Watson,2023-01-20,2023-01-30,pending_parts

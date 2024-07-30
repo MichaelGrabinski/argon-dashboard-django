@@ -1,0 +1,11 @@
+name,description,status,purchase_date,manufacturer,model_number,assigned_to,location,location_x,location_y
+Hammer,Useful for nails,available,2023-01-01,Acme,1234,,Warehouse,12.34,56.78
+Screwdriver,Flathead type,in_use,2022-05-15,Tools Inc.,5678,,Toolbox,23.45,67.89
+Drill,Electric drill,under_repair,2021-08-10,Drill Masters,91011,,Workshop,34.56,78.90
+Wrench,Adjustable wrench,available,2020-03-05,Tool Co.,1112,,Garage,45.67,89.01
+Pliers,Needle nose pliers,in_use,2019-07-12,Handy Tools,1314,,Toolbox,56.78,90.12
+Saw,Hand saw,available,2018-06-25,Cutting Edge,1516,,Workshop,67.89,12.34
+Level,Spirit level,in_use,2017-04-18,Precision Tools,1718,,Toolbox,78.90,23.45
+Tape Measure,25ft tape measure,available,2016-11-22,Measure It,1920,,Garage,89.01,34.56
+Chisel,Wood chisel,in_use,2015-05-30,Woodcraft,2122,,Workshop,90.12,45.67
+Sander,Electric sander,under_repair,2014-09-14,Smooth Finish,2324,,Workshop,12.34,56.78

@@ -1,0 +1,6 @@
+vehicle,date,description,cost,service_provider,document
+1HGBH41JXMN109186,2023-01-01,Oil change,50.00,Auto Shop,receipt.pdf
+2HGBH41JXMN109187,2023-01-05,Tire rotation,100.00,Auto Shop,receipt.pdf
+3HGBH41JXMN109188,2023-01-10,Battery replacement,150.00,Auto Shop,receipt.pdf
+4HGBH41JXMN109189,2023-01-15,Brake inspection,200.00,Auto Shop,receipt.pdf
+5HGBH41JXMN109190,2023-01-20,Engine tune-up,250.00,Auto Shop,receipt.pdf

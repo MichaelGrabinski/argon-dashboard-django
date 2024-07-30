@@ -1,0 +1,6 @@
+make,model,year,vin,license_plate,owner_name,purchase_date,purchase_price,status
+Toyota,Corolla,2018,1HGBH41JXMN109186,ABC123,John Smith,2018-06-15,15000.00,available
+Honda,Civic,2020,2HGBH41JXMN109187,XYZ789,Jane Doe,2020-07-10,20000.00,in_use
+Ford,F150,2019,3HGBH41JXMN109188,LMN456,Emily Johnson,2019-08-05,25000.00,under_maintenance
+Chevrolet,Impala,2017,4HGBH41JXMN109189,DEF321,Michael Brown,2017-09-12,18000.00,available
+Nissan,Altima,2021,5HGBH41JXMN109190,GHI654,Emma Watson,2021-10-20,22000.00,in_use

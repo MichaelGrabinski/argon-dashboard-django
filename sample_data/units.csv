@@ -1,0 +1,5 @@
+property,unit_number,tenant_name,rent_amount,notes,location
+Sunset Apartments,101,Tom Hanks,1200.00,First floor unit,Warehouse
+Sunset Apartments,102,Emma Watson,1300.00,Second floor unit,Warehouse
+Mountain View,201,Chris Evans,1500.00,Top floor unit,Workshop
+City Center,301,Scarlett Johansson,2000.00,Penthouse suite,Office
