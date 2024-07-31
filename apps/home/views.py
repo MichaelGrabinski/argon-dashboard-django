@@ -324,7 +324,6 @@ def gantt_chart(request):
     }
     return render(request, 'home/gantt_chart.html', context)
     
-
 def construction_hub(request):
     projects = Project.objects.all()
 
@@ -354,6 +353,39 @@ def construction_hub(request):
         })
 
     return render(request, 'home/hub.html', {'project_data': project_data})
+    
+    
+def other_hub(request):
+    # Exclude projects with project_type 'construction' or 'game'
+    projects = Project.objects.exclude(project_type__in=['construction', 'game'])
+
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        project = get_object_or_404(Project, pk=project_id)
+        if 'document' in request.FILES:
+            file = request.FILES['document']
+            is_model = request.POST.get('is_model', 'off') == 'on'
+            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
+            return HttpResponseRedirect(reverse('other_hub'))
+
+    # Prepare data for the template
+    project_data = []
+    for project in projects:
+        phases = project.phases.all()
+        phase_data = []
+        for phase in phases:
+            tasks = phase.tasks.filter(parent_task__isnull=True)
+            phase_data.append({
+                'phase': phase,
+                'tasks': tasks
+            })
+        project_data.append({
+            'project': project,
+            'phases': phase_data
+        })
+
+    return render(request, 'home/OtherProjects.html', {'project_data': project_data})
+    
     
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)

@@ -27,6 +27,9 @@ urlpatterns = [
     path('construction/', views.construction_hub, name='construction_hub'),
     path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
     
+    path('projects/', views.other_hub, name='other_hub'),
+    #path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
+    
     path('game-studio/', views.game_studio_hub, name='game_studio_hub'),
     path('game-studio/project/<int:project_id>/', views.game_project_detail, name='game_project_detail'),
     path('budget-accounting/', views.budget_accounting_hub, name='budget_accounting_hub'),
