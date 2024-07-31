@@ -71,11 +71,78 @@
                 {% endfor %}
             </ul>
  
-<h3>Model Interactor</h3>
-<div id="model-viewer-container" style="position: relative;">
-    <model-viewer src="{% static 'documents/Cottage_FREE_tPIRr3v.glb' %}" alt="A 3D model of a cottage" auto-rotate camera-controls style="width: 100%; height: 100vh;"></model-viewer>
-    <button id="fullscreen-button" style="position: absolute; top: 10px; right: 10px; z-index: 10;">Full Screen</button>
-</div>
+            <h3>Model Interactor</h3>
+            {% for document in project.documents.all %}
+            {% if document.is_model %}
+            <div id="model-viewer-container-{{ document.id }}" style="position: relative; width: 100%; height: 300px; margin-bottom: 20px;">
+                <model-viewer src="{{ document.file.url }}" alt="3D Model" auto-rotate camera-controls style="width: 100%; height: 100%;"></model-viewer>
+                <button class="fullscreen-button" style="position: absolute; top: 10px; right: 10px; z-index: 10;">Full Screen</button>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            <h3>Gallery</h3>
+            <div class="row">
+                {% for video in project.references.all %}
+                {% if video.type == 'video' %}
+                <div class="col-md-4">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <h3>Chat</h3>
+            <div id="chat-{{ project.id }}"></div>
+            <h3>Reference</h3>
+            <ul class="nav nav-tabs" id="referenceTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="videos-tab" data-toggle="tab" href="#videos" role="tab" aria-controls="videos" aria-selected="true">Videos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="schematics-tab" data-toggle="tab" href="#schematics" role="tab" aria-controls="schematics" aria-selected="false">Schematics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="referenceTabsContent">
+                <div class="tab-pane fade show active" id="videos" role="tabpanel" aria-labelledby="videos-tab">
+                    <div class="row">
+                        {% for video in project.references.all %}
+                        {% if video.type == 'video' %}
+                        <div class="col-md-4">
+                            <div class="embed-responsive embed-responsive-16by9">
+                                <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="schematics" role="tabpanel" aria-labelledby="schematics-tab">
+                    <ul class="list-group">
+                        {% for schematic in project.references.all %}
+                        {% if schematic.type == 'schematic' %}
+                        <li class="list-group-item">
+                            <a href="{{ schematic.content }}" target="_blank">{{ schematic.content }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                    <ul class="list-group">
+                        {% for note in project.references.all %}
+                        {% if note.type == 'note' %}
+                        <li class="list-group-item">{{ note.content }}</li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
         </div>
         {% endfor %}
     </div>
@@ -86,19 +153,21 @@
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const modelViewer = document.querySelector('model-viewer');
-        const fullscreenButton = document.getElementById('fullscreen-button');
+        const fullscreenButtons = document.querySelectorAll('.fullscreen-button');
 
-        fullscreenButton.addEventListener('click', () => {
-            if (modelViewer.requestFullscreen) {
-                modelViewer.requestFullscreen();
-            } else if (modelViewer.mozRequestFullScreen) { // Firefox
-                modelViewer.mozRequestFullScreen();
-            } else if (modelViewer.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                modelViewer.webkitRequestFullscreen();
-            } else if (modelViewer.msRequestFullscreen) { // IE/Edge
-                modelViewer.msRequestFullscreen();
-            }
+        fullscreenButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modelViewer = button.previousElementSibling;
+                if (modelViewer.requestFullscreen) {
+                    modelViewer.requestFullscreen();
+                } else if (modelViewer.mozRequestFullScreen) { // Firefox
+                    modelViewer.mozRequestFullScreen();
+                } else if (modelViewer.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                    modelViewer.webkitRequestFullscreen();
+                } else if (modelViewer.msRequestFullscreen) { // IE/Edge
+                    modelViewer.msRequestFullscreen();
+                }
+            });
         });
     });
 </script>
