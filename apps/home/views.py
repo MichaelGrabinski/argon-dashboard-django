@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ToolSearchForm
 from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
-from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport
+from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
 from django.contrib.auth.models import User
 from django import forms
@@ -324,9 +324,10 @@ def gantt_chart(request):
     }
     return render(request, 'home/gantt_chart.html', context)
     
+
 def construction_hub(request):
     projects = Project.objects.all()
-    
+
     if request.method == 'POST':
         project_id = request.POST.get('project_id')
         project = get_object_or_404(Project, pk=project_id)
@@ -336,8 +337,23 @@ def construction_hub(request):
             ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
             return HttpResponseRedirect(reverse('construction_hub'))
 
-    return render(request, 'home/hub.html', {'projects': projects})
+    # Prepare data for the template
+    project_data = []
+    for project in projects:
+        phases = project.phases.all()
+        phase_data = []
+        for phase in phases:
+            tasks = phase.tasks.filter(parent_task__isnull=True)
+            phase_data.append({
+                'phase': phase,
+                'tasks': tasks
+            })
+        project_data.append({
+            'project': project,
+            'phases': phase_data
+        })
 
+    return render(request, 'home/hub.html', {'project_data': project_data})
     
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)

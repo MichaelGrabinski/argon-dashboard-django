@@ -203,7 +203,21 @@ class TagHouse(models.Model):
 
     def __str__(self):
         return self.name
+        
+        
+class ProjectPhase(models.Model):
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='phases')
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    is_critical = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.project.title} - {self.name}" 
+        
+        
+        
 class Task(models.Model):
         STATUS_CHOICES = (
             ('open', 'Open'),
@@ -233,6 +247,8 @@ class Task(models.Model):
         tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
         location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Ensure this line is present
         project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)  # Add this line if not already present
+        phase = models.ForeignKey(ProjectPhase, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+        parent_task = models.ForeignKey('self', on_delete=models.CASCADE, related_name='subtasks', null=True, blank=True)
 
         def __str__(self):
             return self.title
@@ -294,3 +310,4 @@ class FinancialReport(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='financial_reports')
     report_file = models.FileField(upload_to='financial_reports/')
     created_at = models.DateTimeField(auto_now_add=True)
+    
