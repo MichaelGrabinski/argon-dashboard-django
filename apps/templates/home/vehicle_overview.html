@@ -34,7 +34,7 @@
         {% for vehicle in vehicles %}
             <li class="nav-item">
                 <a class="nav-link {% if forloop.first %}active{% endif %}" id="tab-{{ vehicle.pk }}" data-toggle="tab" href="#vehicle-{{ vehicle.pk }}" role="tab" aria-controls="vehicle-{{ vehicle.pk }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
-                    <img src="{% if vehicle.image %}{% static vehicle.image.url %}{% else %}{% static 'default_vehicle.png' %}{% endif %}" alt="{{ vehicle.license_plate }}" class="img-thumbnail" style="width: 50px; height: 50px;">
+                    <img src="{% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %}" alt="{{ vehicle.license_plate }}" class="img-thumbnail" style="width: 50px; height: 50px;">
                     {{ vehicle.license_plate }}
                 </a>
             </li>
@@ -56,6 +56,16 @@
                                 <li>Repair 1</li>
                                 <li>Repair 2</li>
                             </ul>
+                            <h2>Open Tickets</h2>
+                            <div class="list-group">
+                                {% for ticket in vehicle.tickets %}
+                                    <a href="{% url 'task_detail' ticket.pk %}" class="list-group-item list-group-item-action status-{{ ticket.status }} priority-{{ ticket.priority }}">
+                                        <h5 class="mb-1">{{ ticket.title }}</h5>
+                                        <p class="mb-1">{{ ticket.description|truncatewords:20 }}</p>
+                                        <small>Status: {{ ticket.get_status_display }} | Priority: {{ ticket.get_priority_display }} | Location: {{ ticket.location.name }}</small>
+                                    </a>
+                                {% endfor %}
+                            </div>
                             <h2>Image Gallery</h2>
                             <div class="row">
                                 {% for image in vehicle.images.all %}
@@ -78,11 +88,8 @@
                             <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
                         </div>
                     </div>
-					
-					 <div class="col-md-4 right-side" style="background-image: url({% if vehicle.image %}{% static vehicle.image.url %}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
-                   
-                    <!-- <div class="col-md-4 right-side" style="background-image: url({% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
-           -->         </div>
+                    <div class="col-md-4 right-side" style="background-image: url({% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
+                    </div>
                 </div>
             </div>
         {% endfor %}

@@ -1,8 +1,18 @@
 task,file,uploaded_at
-Fix faucet,attachment1.pdf,2023-01-01 12:00:00
-Replace window,attachment2.pdf,2023-01-02 12:00:00
-Fix wiring,attachment3.pdf,2023-01-03 12:00:00
-Paint walls,attachment4.pdf,2023-01-04 12:00:00
-Install lights,attachment5.pdf,2023-01-05 12:00:00
-Fix door,attachment6.pdf,2023-01-06 12:00:00
+Fix faucet,attachment1.pdf,2023-01-01
+Replace window,attachment2.pdf,2023-01-02
+Fix wiring,attachment3.pdf,2023-01-03
+Paint walls,attachment4.pdf,2023-01-04
+Install lights,attachment5.pdf,2023-01-05
+Fix door,attachment6.pdf,2023-01-06
 Clean windows,attachment7.pdf,2023-01-07 12
+Create Initial Design,https://www.example.com/docs/initial_design.pdf,2023-01-01
+Finalize Design,https://www.example.com/docs/final_design.cad,2023-03-01
+Identify Suppliers,https://www.example.com/docs/suppliers_list.xlsx,2023-04-01
+Order Components,https://www.example.com/docs/order_receipts.pdf,2023-06-01
+Assemble Frame,https://www.example.com/docs/frame_assembly_guide.pdf,2023-07-01
+Install Electronics,https://www.example.com/docs/electronics_installation_guide.pdf,2023-08-01
+Initial Testing,https://www.example.com/docs/initial_testing_report.pdf,2023-10-01
+Debugging,https://www.example.com/docs/debugging_log.docx,2023-11-01
+Final Testing,https://www.example.com/docs/final_testing_report.pdf,2023-12-01
+,,

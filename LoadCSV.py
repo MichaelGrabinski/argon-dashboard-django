@@ -1,8 +1,11 @@
+import os
+import django
 
+# Set the environment variable to point to your Django settings module
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
-
-
-
+# Initialize Django
+django.setup()
 
 import csv
 import datetime
@@ -13,32 +16,38 @@ from apps.home.models import (
     OpenRepair, RentPayment, PropertyInfo, PropertyLocation, Vehicle, VehicleImage, 
     Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Task, Attachment, 
     Comment, ActivityLog, Note, ProjectDocument, ReferenceMaterial, GameProject, 
-    Budget, Expense, FinancialReport
+    Budget, Expense, FinancialReport, ProjectPhase
 )
 
-from django.contrib.auth.models import User
-from apps.home.models import Location, Project
+# Helper function to create user if not exists
+def create_user_if_not_exists(username, password):
+    if not User.objects.filter(username=username).exists():
+        User.objects.create_user(username=username, password=password)
 
 # Create users
-User.objects.create_user(username='johndoe', password='password')
-User.objects.create_user(username='janedoe', password='password')
-User.objects.create_user(username='emilyj', password='password')
+create_user_if_not_exists('johndoe', 'password')
+create_user_if_not_exists('janedoe', 'password')
+create_user_if_not_exists('emilyj', 'password')
 
 # Create locations
-Location.objects.create(name='Warehouse')
-Location.objects.create(name='Toolbox')
-Location.objects.create(name='Workshop')
-Location.objects.create(name='Garage')
-Location.objects.create(name='Office')
+Location.objects.get_or_create(name='Warehouse')
+Location.objects.get_or_create(name='Toolbox')
+Location.objects.get_or_create(name='Workshop')
+Location.objects.get_or_create(name='Garage')
+Location.objects.get_or_create(name='Office')
 
 # Create projects
 manager_johndoe = User.objects.get(username='johndoe')
 manager_janedoe = User.objects.get(username='janedoe')
 manager_emilyj = User.objects.get(username='emilyj')
 
-Project.objects.create(title='Building A', description='Construction of Building A', manager=manager_johndoe, start_date='2023-03-01', end_date='2024-03-01', project_type='construction')
-Project.objects.create(title='Game Development', description='Development of a new game', manager=manager_janedoe, start_date='2022-01-15', end_date='2023-01-15', project_type='game')
-Project.objects.create(title='Office Renovation', description='Renovation of office space', manager=manager_emilyj, start_date='2023-04-01', end_date='2023-10-01', project_type='construction')
+Project.objects.get_or_create(title='Building a Spider Robot', defaults={
+    'description': 'Development and construction of an advanced spider robot',
+    'manager': manager_johndoe,
+    'start_date': '2023-01-01',
+    'end_date': '2023-12-31',
+    'project_type': 'construction'
+})
 
 def parse_date(date_str):
     if not date_str:
@@ -107,16 +116,26 @@ def get_task(title):
         print(f"Task {title} does not exist.")
         return None
 
+def get_phase(name, project_title):
+    try:
+        project = get_project(project_title)
+        if project:
+            return ProjectPhase.objects.get(name=name, project=project)
+    except ProjectPhase.DoesNotExist:
+        print(f"Phase {name} for project {project_title} does not exist.")
+        return None
+
 def load_csv(file_path, model, fields, related_fields={}):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             data = {field: row[field] for field in fields if field in row}
             for related_field, related_func in related_fields.items():
-                data[related_field] = related_func(row[related_field])
-                if data[related_field] is None:
-                    print(f"Skipping row due to missing related data: {row}")
-                    break
+                if related_field in row:
+                    data[related_field] = related_func(row[related_field])
+                    if data[related_field] is None:
+                        print(f"Skipping row due to missing related data: {row}")
+                        break
             else:
                 obj, created = model.objects.update_or_create(**data)
                 if created:
@@ -131,6 +150,7 @@ def load_tasks():
         'created_by': get_user,
         'location': get_location,
         'project': get_project,
+        'phase': lambda phase_name: get_phase(phase_name, row['project']) if 'phase' in row else None,
     }
     file_path = 'sample_data/tasks.csv'
     load_csv(file_path, Task, fields, related_fields)
@@ -340,10 +360,19 @@ def load_financial_reports():
     file_path = 'sample_data/financial_reports.csv'
     load_csv(file_path, FinancialReport, fields, related_fields)
 
+def load_project_phases():
+    fields = ['project', 'name', 'description', 'start_date', 'end_date', 'is_critical']
+    related_fields = {
+        'project': get_project,
+    }
+    file_path = 'sample_data/project_phases.csv'
+    load_csv(file_path, ProjectPhase, fields, related_fields)
+
 # Call the functions to load data from CSV files
+load_projects()
+load_project_phases()
 load_tasks()
 load_tools()
-load_projects()
 load_properties()
 load_units()
 load_vehicles()

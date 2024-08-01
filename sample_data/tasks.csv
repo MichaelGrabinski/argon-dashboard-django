@@ -1,17 +1,62 @@
-title,description,status,due_date,priority,category,hours,created_at,updated_at,assigned_to,created_by,location,project
-Fix faucet,Repair the leaky faucet,open,2023-02-01,high,Plumbing,2.00,2023-01-01 12:00:00,2023-01-01 12:00:00,johndoe,janedoe,Warehouse,Building A
-Replace window,Install new window,closed,2023-02-05,medium,Maintenance,3.00,2023-01-02 12:00:00,2023-01-02 12:00:00,janedoe,johndoe,Warehouse,Building A
-Fix wiring,Repair faulty wiring,in_progress,2023-02-10,high,Electrical,4.00,2023-01-03 12:00:00,2023-01-03 12:00:00,emilyj,johndoe,Workshop,Game Development
-Paint walls,Repaint the office walls,open,2023-03-01,low,Painting,5.00,2023-01-04 12:00:00,2023-01-04 12:00:00,johndoe,janedoe,Office,Building A
-Install lights,Install new ceiling lights,closed,2023-03-05,medium,Electrical,2.50,2023-01-05 12:00:00,2023-01-05 12:00:00,janedoe,johndoe,Office,Building A
-Fix door,Repair the broken door,open,2023-03-10,high,Carpentry,3.50,2023-01-06 12:00:00,2023-01-06 12:00:00,emilyj,johndoe,Workshop,Game Development
-Clean windows,Wash all the windows,open,2023-03-15,low,Maintenance,4.00,2023-01-07 12:00:00,2023-01-07 12:00:00,johndoe,janedoe,Office,Building A
-Fix roof,Repair the roof leaks,in_progress,2023-03-20,high,Roofing,6.00,2023-01-08 12:00:00,2023-01-08 12:00:00,janedoe,johndoe,Warehouse,Building A
-Install AC,Install new air conditioning,closed,2023-03-25,medium,HVAC,7.00,2023-01-09 12:00:00,2023-01-09 12:00:00,emilyj,johndoe,Office,Game Development
-Fix plumbing,Repair the plumbing issues,open,2023-03-30,high,Plumbing,8.00,2023-01-10 12:00:00,2023-01-10 12:00:00,johndoe,janedoe,Warehouse,Building A
-Upgrade network,Install new network cables,open,2023-04-01,medium,IT,5.00,2023-01-11 12:00:00,2023-01-11 12:00:00,johndoe,janedoe,Office,Office Renovation
-Install security system,Set up new security cameras,closed,2023-04-05,high,Security,6.50,2023-01-12 12:00:00,2023-01-12 12:00:00,janedoe,johndoe,Warehouse,Building A
-Repair elevator,Fix the malfunctioning elevator,in_progress,2023-04-10,high,Maintenance,7.50,2023-01-13 12:00:00,2023-01-13 12:00:00,emilyj,johndoe,Workshop,Game Development
-Paint exterior,Repaint the building exterior,open,2023-04-15,low,Painting,8.00,2023-01-14 12:00:00,2023-01-14 12:00:00,johndoe,janedoe,Office,Building A
-Install new flooring,Replace old carpets with new flooring,closed,2023-04-20,medium,Flooring,9.00,2023-01-15 12:00:00,2023-01-15 12:00:00,janedoe,johndoe,Office,Building A
-Fix HVAC system,Repair the heating and cooling system,in_progress,2023-04-25,high,HVAC,10.00,2023-01-16 12:00:00,2023-01-16 12:00:00,emilyj,johndoe,Workshop,Game Development
+title,description,status,due_date,priority,category,hours,created_at,updated_at,assigned_to,created_by,location,project,phase,parent_task
+Create Initial Design,Create the initial design sketches and blueprints for the spider robot,open,2023-02-01,high,Design,80,2023-01-01,2023-01-01,johndoe,johndoe,Office,Building a Spider Robot,Design Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2023-03-01,high,Design,120,2023-01-15,2023-01-15,janedoe,johndoe,Office,Building a Spider Robot,Design Phase,Create Initial Design
+Identify Suppliers,Identify and list suppliers for all necessary components,open,2023-04-15,medium,Procurement,40,2023-04-01,2023-04-01,emilyj,janedoe,Office,Building a Spider Robot,Procurement Phase,
+Order Components,Place orders for all required components,open,2023-06-15,medium,Procurement,60,2023-04-15,2023-04-15,janedoe,emilyj,Office,Building a Spider Robot,Procurement Phase,Identify Suppliers
+Assemble Main Frame,Assemble the main frame of the spider robot,open,2023-07-15,high,Assembly,100,2023-07-01,2023-07-01,johndoe,janedoe,Workshop,Building a Spider Robot,Frame Assembly,
+Assemble Leg Joints,Assemble the leg joints of the spider robot,open,2023-08-01,high,Assembly,80,2023-07-15,2023-07-15,emilyj,johndoe,Workshop,Building a Spider Robot,Leg Assembly,
+Install Motors in Legs,Install motors in the legs of the spider robot,open,2023-08-15,high,Assembly,80,2023-08-01,2023-08-01,janedoe,emilyj,Workshop,Building a Spider Robot,Leg Assembly,Assemble Leg Joints
+Wire Leg Motors,Wire the motors in the legs of the spider robot,open,2023-08-31,high,Assembly,60,2023-08-15,2023-08-15,johndoe,janedoe,Workshop,Building a Spider Robot,Leg Assembly,Install Motors in Legs
+Install Main Control Board,Install the main control board in the spider robot,open,2023-09-01,high,Assembly,60,2023-08-31,2023-08-31,emilyj,johndoe,Workshop,Building a Spider Robot,Electronics Installation,
+Connect Sensors to Control Board,Connect sensors to the main control board,open,2023-09-15,high,Assembly,70,2023-09-01,2023-09-01,janedoe,emilyj,Workshop,Building a Spider Robot,Electronics Installation,Install Main Control Board
+Initial Testing,Perform initial tests on the assembled robot,open,2023-11-01,high,Testing,80,2023-10-01,2023-10-01,johndoe,emilyj,Workshop,Building a Spider Robot,Testing Phase,
+Debugging,Debug and fix any issues found during initial testing,open,2023-12-15,high,Testing,100,2023-11-01,2023-11-01,janedoe,johndoe,Workshop,Building a Spider Robot,Testing Phase,Initial Testing
+Final Testing,Perform final tests and quality checks,open,2023-12-31,high,Testing,60,2023-12-01,2023-12-01,emilyj,janedoe,Workshop,Building a Spider Robot,Testing Phase,Debugging
+Create Initial Design,Create the initial design sketches and blueprints for the flying drone,open,2023-02-01,high,Design,80,2023-01-01,2023-01-01,janedoe,janedoe,Office,Building a Flying Drone,Design Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2023-03-01,high,Design,120,2023-01-15,2023-01-15,emilyj,janedoe,Office,Building a Flying Drone,Design Phase,Create Initial Design
+Identify Suppliers,Identify and list suppliers for all necessary components,open,2023-04-15,medium,Procurement,40,2023-04-01,2023-04-01,johndoe,emilyj,Office,Building a Flying Drone,Procurement Phase,
+Order Components,Place orders for all required components,open,2023-06-15,medium,Procurement,60,2023-04-15,2023-04-15,emilyj,johndoe,Office,Building a Flying Drone,Procurement Phase,Identify Suppliers
+Assemble Main Frame,Assemble the main frame of the flying drone,open,2023-07-15,high,Assembly,100,2023-07-01,2023-07-01,janedoe,emilyj,Workshop,Building a Flying Drone,Frame Assembly,
+Install Motors,Install motors on the flying drone,open,2023-08-01,high,Assembly,80,2023-07-15,2023-07-15,emilyj,janedoe,Workshop,Building a Flying Drone,Motor and Propeller Installation,Assemble Main Frame
+Install Propellers,Install propellers on the flying drone,open,2023-08-15,high,Assembly,60,2023-08-01,2023-08-01,johndoe,emilyj,Workshop,Building a Flying Drone,Motor and Propeller Installation,Install Motors
+Wire Motors,Wire the motors on the flying drone,open,2023-08-31,high,Assembly,60,2023-08-15,2023-08-15,janedoe,johndoe,Workshop,Building a Flying Drone,Motor and Propeller Installation,Install Propellers
+Install Main Control Board,Install the main control board in the flying drone,open,2023-09-01,high,Assembly,60,2023-08-31,2023-08-31,emilyj,johndoe,Workshop,Building a Flying Drone,Electronics Installation,
+Connect Sensors to Control Board,Connect sensors to the main control board,open,2023-09-15,high,Assembly,70,2023-09-01,2023-09-01,janedoe,emilyj,Workshop,Building a Flying Drone,Electronics Installation,Install Main Control Board
+Install GPS Module,Install the GPS module on the flying drone,open,2023-09-20,high,Assembly,40,2023-09-15,2023-09-15,johndoe,emilyj,Workshop,Building a Flying Drone,Electronics Installation,Connect Sensors to Control Board
+Initial Testing,Perform initial tests on the assembled drone,open,2023-11-01,high,Testing,80,2023-10-01,2023-10-01,janedoe,emilyj,Workshop,Building a Flying Drone,Testing Phase,
+Debugging,Debug and fix any issues found during initial testing,open,2023-12-15,high,Testing,100,2023-11-01,2023-11-01,emilyj,johndoe,Workshop,Building a Flying Drone,Testing Phase,Initial Testing
+Final Testing,Perform final tests and quality checks,open,2023-12-31,high,Testing,60,2023-12-01,2023-12-01,johndoe,janedoe,Workshop,Building a Flying Drone,Testing Phase,Debugging
+Initial Testing,Perform initial tests on the assembled robot,open,2024-11-01,high,Testing,100,2024-10-01,2024-10-01,johndoe,emilyj,Workshop,Building a Human-Like Robot,Testing Phase,
+Debugging,Debug and fix any issues found during initial testing,open,2024-12-15,high,Testing,120,2024-11-01,2024-11-01,janedoe,johndoe,Workshop,Building a Human-Like Robot,Testing Phase,Initial Testing
+Final Testing,Perform final tests and quality checks,open,2024-12-31,high,Testing,80,2024-12-01,2024-12-01,emilyj,janedoe,Workshop,Building a Human-Like Robot,Testing Phase,Debugging
+Design Leg Mechanisms,Design the leg mechanisms for the human-like robot,open,2023-02-01,high,Design,100,2023-01-01,2023-01-01,johndoe,emilyj,Office,Building a Human-Like Robot,Design Phase,
+Design Arm Mechanisms,Design the arm mechanisms for the human-like robot,open,2023-03-01,high,Design,100,2023-01-15,2023-01-15,janedoe,emilyj,Office,Building a Human-Like Robot,Design Phase,
+Design Body Structure,Design the body structure of the human-like robot,open,2023-04-01,high,Design,120,2023-02-01,2023-02-01,emilyj,janedoe,Office,Building a Human-Like Robot,Design Phase,
+Select Motors,Select appropriate motors for the human-like robot,open,2023-05-01,medium,Procurement,60,2023-04-01,2023-04-01,johndoe,janedoe,Office,Building a Human-Like Robot,Procurement Phase,
+Order Sensors,Order necessary sensors for the human-like robot,open,2023-06-01,medium,Procurement,40,2023-05-01,2023-05-01,janedoe,johndoe,Office,Building a Human-Like Robot,Procurement Phase,
+Assemble Legs,Assemble the legs of the human-like robot,open,2024-01-15,high,Assembly,100,2024-01-01,2024-01-01,johndoe,emilyj,Workshop,Building a Human-Like Robot,Frame Assembly,
+Assemble Arms,Assemble the arms of the human-like robot,open,2024-02-15,high,Assembly,100,2024-01-15,2024-01-15,janedoe,emilyj,Workshop,Building a Human-Like Robot,Frame Assembly,
+Install Leg Motors,Install motors in the legs of the human-like robot,open,2024-03-01,high,Assembly,80,2024-02-01,2024-02-01,emilyj,johndoe,Workshop,Building a Human-Like Robot,Muscle Installation,
+Install Arm Motors,Install motors in the arms of the human-like robot,open,2024-03-15,high,Assembly,80,2024-03-01,2024-03-01,johndoe,janedoe,Workshop,Building a Human-Like Robot,Muscle Installation,
+Wire Leg Motors,Wire the motors in the legs of the human-like robot,open,2024-04-01,high,Assembly,60,2024-03-15,2024-03-15,janedoe,emilyj,Workshop,Building a Human-Like Robot,Muscle Installation,
+Wire Arm Motors,Wire the motors in the arms of the human-like robot,open,2024-04-15,high,Assembly,60,2024-04-01,2024-04-01,johndoe,janedoe,Workshop,Building a Human-Like Robot,Muscle Installation,
+Install Battery Pack,Install the battery pack in the human-like robot,open,2024-05-01,high,Assembly,50,2024-04-15,2024-04-15,emilyj,johndoe,Workshop,Building a Human-Like Robot,Electronics Installation,
+Wire Battery Pack,Wire the battery pack in the human-like robot,open,2024-05-15,high,Assembly,50,2024-05-01,2024-05-01,janedoe,emilyj,Workshop,Building a Human-Like Robot,Electronics Installation,
+Install Sensors,Install sensors on the human-like robot,open,2024-06-01,high,Assembly,70,2024-05-15,2024-05-15,johndoe,janedoe,Workshop,Building a Human-Like Robot,Electronics Installation,
+Test Leg Movement,Test the movement of the human-like robot's legs,open,2024-07-01,high,Testing,80,2024-06-01,2024-06-01,emilyj,johndoe,Workshop,Building a Human-Like Robot,Testing Phase,
+Test Arm Movement,Test the movement of the human-like robot's arms,open,2024-07-15,high,Testing,80,2024-07-01,2024-07-01,janedoe,emilyj,Workshop,Building a Human-Like Robot,Testing Phase,
+Integrate Control System,Integrate the control system with the human-like robot,open,2024-08-01,high,Assembly,90,2024-07-15,2024-07-15,johndoe,janedoe,Workshop,Building a Human-Like Robot,Electronics Installation,
+Test Full Movement,Test the full movement capabilities of the human-like robot,open,2024-09-01,high,Testing,100,2024-08-01,2024-08-01,emilyj,johndoe,Workshop,Building a Human-Like Robot,Testing Phase,
+Install Safety Features,Install safety features on the human-like robot,open,2024-09-15,high,Assembly,60,2024-09-01,2024-09-01,janedoe,emilyj,Workshop,Building a Human-Like Robot,Electronics Installation,
+Final Integration,Perform final integration of all systems,open,2024-10-01,high,Assembly,100,2024-09-15,2024-09-15,johndoe,janedoe,Workshop,Building a Human-Like Robot,Electronics Installation,
+Final Debugging,Perform final debugging and issue resolution,open,2024-11-01,high,Testing,120,2024-10-01,2024-10-01,emilyj,johndoe,Workshop,Building a Human-Like Robot,Testing Phase,
+Final Quality Check,Perform final quality check and sign-off,open,2024-12-01,high,Testing,80,2024-11-01,2024-11-01,janedoe,emilyj,Workshop,Building a Human-Like Robot,Testing Phase,
+Build up chip,Build up chip on the Volkswagen Tiguan,completed,1/15/2023,high,Volkswagen Tiguan 4Motion SE,5,2023-01-10,2023-01-15,johndoe,janedoe,,,,
+Tap new hole,Tap new hole on the Volkswagen Tiguan,completed,2023-01-25,high,Volkswagen Tiguan 4Motion SE,5,2023-01-20,2023-01-25,johndoe,janedoe,,,,
+Replace gasket,Replace gasket on the Volkswagen Tiguan,completed,2023-02-05,high,Volkswagen Tiguan 4Motion SE,5,2023-02-01,2023-02-05,janedoe,johndoe,,,,
+New oil,Change oil on the Volkswagen Tiguan,completed,2023-02-12,high,Volkswagen Tiguan 4Motion SE,2,2023-02-10,2023-02-12,janedoe,johndoe,,,,
+New engine thermostat,Install new engine thermostat on the Volkswagen Tiguan,completed,2023-03-05,high,Volkswagen Tiguan 4Motion SE,5,2023-03-01,2023-03-05,johndoe,janedoe,,,,
+Head gasket replacement,Replace head gasket on the Volkswagen Tiguan,completed,2023-03-15,high,Volkswagen Tiguan 4Motion SE,10,2023-03-10,2023-03-15,janedoe,johndoe,,,,
+Alternator replacement,Replace alternator on the Mini Cooper,completed,2023-04-05,high,Mini Cooper Countryman,5,2023-04-01,2023-04-05,johndoe,janedoe,,,,
+Valve Cover/Oil Leak,Fix valve cover/oil leak on the Mini Cooper,completed,2023-04-15,high,Mini Cooper Countryman,5,2023-04-10,2023-04-15,janedoe,johndoe,,,,
+,,,,,,,,,,,,,,

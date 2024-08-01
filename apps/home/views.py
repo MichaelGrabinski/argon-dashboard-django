@@ -132,10 +132,14 @@ def tool_detail(request, pk):
     
 def vehicle_overview(request):
     vehicles = Vehicle.objects.all()
+    for vehicle in vehicles:
+        vehicle.tickets = Task.objects.filter(category=vehicle.model, status='open')  # Using the model as the category identifier
+
     context = {
         'vehicles': vehicles,
     }
     return render(request, 'home/vehicle_overview.html', context)
+    
 
 def vehicle_detail(request, pk):
     vehicle = get_object_or_404(Vehicle, pk=pk)
@@ -338,7 +342,7 @@ def construction_hub(request):
             is_model = request.POST.get('is_model', 'off') == 'on'
             ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
             return HttpResponseRedirect(reverse('construction_hub'))
-        else:
+        elif 'file' in request.FILES:
             form = ReferenceMaterialForm(request.POST, request.FILES)
             if form.is_valid():
                 reference_material = form.save(commit=False)
@@ -346,6 +350,8 @@ def construction_hub(request):
                 reference_material.project = get_object_or_404(Project, pk=project_id)
                 reference_material.save()
                 return HttpResponseRedirect(reverse('construction_hub'))
+            else:
+                return render(request, 'home/hub.html', {'error': 'Invalid form submission', 'projects': projects})
 
     reference_form = ReferenceMaterialForm()
     project_data = []
@@ -384,8 +390,7 @@ def construction_hub(request):
         'project_data': project_data,
         'reference_form': reference_form
     })
-    
-    
+
 def other_hub(request):
     # Exclude projects with project_type 'construction' or 'game'
     projects = Project.objects.exclude(project_type__in=['construction', 'game'])

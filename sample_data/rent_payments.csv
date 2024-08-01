@@ -1,5 +1,16 @@
 unit,date,amount,status
-101,2023-01-01,1200.00,paid
-102,2023-01-01,1300.00,paid
-201,2023-01-01,1500.00,due
-301,2023-01-01,2000.00,paid
+Unit 1 - Floor 1,1/1/2023,1550,paid
+Unit 1 - Floor 1,2/1/2023,1550,paid
+Unit 1 - Floor 1,3/1/2023,1550,paid
+Unit 2 - Floor 2,1/1/2023,300,paid
+Unit 2 - Floor 2,2/1/2023,300,paid
+Unit 2 - Floor 2,3/1/2023,300,paid
+Unit 3 - Floor 3,1/1/2023,550,paid
+Unit 3 - Floor 3,2/1/2023,550,paid
+Unit 3 - Floor 3,3/1/2023,550,paid
+Unit 1 - Floor 1,1/1/2023,1075,paid
+Unit 1 - Floor 1,2/1/2023,1075,paid
+Unit 1 - Floor 1,3/1/2023,1075,paid
+Unit 2 - Floor 2,1/1/2023,1075,paid
+Unit 2 - Floor 2,2/1/2023,1075,paid
+Unit 2 - Floor 2,3/1/2023,1075,paid
