@@ -8,11 +8,11 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ToolSearchForm
 from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
-from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase
+from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
 from django.contrib.auth.models import User
 from django import forms
-
+from .forms import ReferenceMaterialForm
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -329,31 +329,62 @@ def construction_hub(request):
     projects = Project.objects.all()
 
     if request.method == 'POST':
-        project_id = request.POST.get('project_id')
-        project = get_object_or_404(Project, pk=project_id)
         if 'document' in request.FILES:
+            project_id = request.POST.get('project_id')
+            try:
+                project = get_object_or_404(Project, pk=project_id)
+            except Project.DoesNotExist:
+                return render(request, 'home/hub.html', {'error': 'Project not found', 'projects': projects})
             file = request.FILES['document']
             is_model = request.POST.get('is_model', 'off') == 'on'
             ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
             return HttpResponseRedirect(reverse('construction_hub'))
+        else:
+            form = ReferenceMaterialForm(request.POST, request.FILES)
+            if form.is_valid():
+                reference_material = form.save(commit=False)
+                project_id = form.cleaned_data['project'].id
+                reference_material.project = get_object_or_404(Project, pk=project_id)
+                reference_material.save()
+                return HttpResponseRedirect(reverse('construction_hub'))
 
-    # Prepare data for the template
+    reference_form = ReferenceMaterialForm()
     project_data = []
     for project in projects:
         phases = project.phases.all()
         phase_data = []
+        total_hours = 0
+        completed_hours = 0
         for phase in phases:
             tasks = phase.tasks.filter(parent_task__isnull=True)
+            total_phase_tasks = phase.tasks.count()
+            completed_phase_tasks = phase.tasks.filter(status='closed').count()
+            phase_completion_percentage = (completed_phase_tasks / total_phase_tasks) * 100 if total_phase_tasks > 0 else 0
             phase_data.append({
                 'phase': phase,
-                'tasks': tasks
+                'tasks': tasks,
+                'completion_percentage': phase_completion_percentage
             })
+            for task in phase.tasks.all():
+                if task.hours:
+                    total_hours += task.hours
+                    if task.status == 'closed':
+                        completed_hours += task.hours
+        remaining_hours = total_hours - completed_hours
+        completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
         project_data.append({
             'project': project,
-            'phases': phase_data
+            'phases': phase_data,
+            'total_hours': total_hours,
+            'completed_hours': completed_hours,
+            'remaining_hours': remaining_hours,
+            'completion_percentage': completion_percentage
         })
 
-    return render(request, 'home/hub.html', {'project_data': project_data})
+    return render(request, 'home/hub.html', {
+        'project_data': project_data,
+        'reference_form': reference_form
+    })
     
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)

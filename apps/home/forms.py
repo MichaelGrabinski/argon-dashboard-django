@@ -3,6 +3,7 @@ from .models import Tool
 from .models import Tag
 from .models import Task, Comment, Attachment, Unit 
 from django.contrib.auth.models import User 
+from .models import ReferenceMaterial
 
 class ToolSearchForm(forms.Form):
     search = forms.CharField(required=False, label='Search')
@@ -47,4 +48,11 @@ class QuickTaskForm(forms.ModelForm):
             'hours': forms.NumberInput(attrs={'value': 1}),
             'assigned_to': forms.Select(attrs={'value': None}),
             'location': forms.Select(),  # Use a dropdown for location
+        }
+class ReferenceMaterialForm(forms.ModelForm):
+    class Meta:
+        model = ReferenceMaterial
+        fields = ['project', 'type', 'content']
+        widgets = {
+            'type': forms.Select(choices=ReferenceMaterial.PROJECT_REFERENCE_TYPE_CHOICES),
         }
