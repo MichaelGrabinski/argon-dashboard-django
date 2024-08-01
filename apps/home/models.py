@@ -281,9 +281,18 @@ class ProjectDocument(models.Model):
     is_model = models.BooleanField(default=False)
 
 class ReferenceMaterial(models.Model):
+    PROJECT_REFERENCE_TYPE_CHOICES = [
+        ('video', 'Video'),
+        ('schematic', 'Schematic'),
+        ('note', 'Note'),
+        ('image', 'Image'),
+        ('model', '3D Model'),
+    ]
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='references')
-    type = models.CharField(max_length=50)  # e.g., 'video', 'schematic', 'note'
+    type = models.CharField(max_length=50, choices=PROJECT_REFERENCE_TYPE_CHOICES)
     content = models.TextField()  # URL for videos, text for notes, etc.
+    
     
 class GameProject(models.Model):
     title = models.CharField(max_length=200)

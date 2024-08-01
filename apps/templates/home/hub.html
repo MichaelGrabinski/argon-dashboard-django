@@ -3,6 +3,9 @@
 {% block content %}
 <div class="container">
     <h1>Construction Hub</h1>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
     <ul class="nav nav-tabs" id="constructionTabs" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" id="hub-tab" data-toggle="tab" href="#hub" role="tab" aria-controls="hub" aria-selected="true">Hub</a>
@@ -38,6 +41,37 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Upload</button>
             </form>
+            <h2>Reference Materials</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="project">Project</label>
+                    <select class="form-control" id="project" name="project">
+                        {% for project_info in project_data %}
+                        <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select class="form-control" id="type" name="type">
+                        <option value="video">Video</option>
+                        <option value="schematic">Schematic</option>
+                        <option value="note">Note</option>
+                        <option value="image">Image</option>
+                        <option value="model">3D Model</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="content">Content</label>
+                    <input type="text" class="form-control" id="content" name="content" placeholder="Enter URL or text">
+                </div>
+                <div class="form-group">
+                    <label for="file">Upload File</label>
+                    <input type="file" class="form-control" id="file" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Reference</button>
+            </form>
             <ul class="list-group mt-3">
                 {% for project_info in project_data %}
                 {% for document in project_info.project.documents.all %}
@@ -52,6 +86,13 @@
         <div class="tab-pane fade" id="project-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="project-{{ project_info.project.id }}-tab">
             <h2>{{ project_info.project.title }}</h2>
             <p>{{ project_info.project.description }}</p>
+
+            <div class="progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: {{ project_info.completion_percentage }}%;" aria-valuenow="{{ project_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ project_info.completion_percentage }}%</div>
+            </div>
+            <p>Total Hours: {{ project_info.total_hours }}</p>
+            <p>Completed Hours: {{ project_info.completed_hours }}</p>
+            <p>Remaining Hours: {{ project_info.remaining_hours }}</p>
 
             <h2>Phases</h2>
             <div class="accordion" id="phasesAccordion-{{ project_info.project.id }}">
@@ -73,20 +114,51 @@
                             {% if phase_info.phase.is_critical %}
                             <p><strong>Critical Path</strong></p>
                             {% endif %}
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: {{ phase_info.completion_percentage }}%;" aria-valuenow="{{ phase_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ phase_info.completion_percentage }}%</div>
+                            </div>
                             <h3>Tasks</h3>
                             <ul class="list-group">
                                 {% for task in phase_info.tasks %}
                                 <li class="list-group-item">
                                     <h5>{{ task.title }}</h5>
                                     <p>{{ task.description }}</p>
-                                    <small>Status: {{ task.status }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}</small>
+                                    <small>
+                                        Status: 
+                                        {% if task.status == 'closed' %}
+                                        <span class="badge badge-success">Closed</span>
+                                        {% elif task.status == 'in_progress' %}
+                                        <span class="badge badge-warning">In Progress</span>
+                                        {% elif task.status == 'waiting_for_materials' %}
+                                        <span class="badge badge-info">Waiting for Materials</span>
+                                        {% elif task.status == 'on_hold' %}
+                                        <span class="badge badge-secondary">On Hold</span>
+                                        {% else %}
+                                        <span class="badge badge-primary">Open</span>
+                                        {% endif %}
+                                        | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
+                                    </small>
                                     {% if task.subtasks.all %}
                                     <ul class="list-group mt-2">
                                         {% for subtask in task.subtasks.all %}
                                         <li class="list-group-item">
                                             <h6>{{ subtask.title }}</h6>
                                             <p>{{ subtask.description }}</p>
-                                            <small>Status: {{ subtask.status }} | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}</small>
+                                            <small>
+                                                Status: 
+                                                {% if subtask.status == 'closed' %}
+                                                <span class="badge badge-success">Closed</span>
+                                                {% elif subtask.status == 'in_progress' %}
+                                                <span class="badge badge-warning">In Progress</span>
+                                                {% elif subtask.status == 'waiting_for_materials' %}
+                                                <span class="badge badge-info">Waiting for Materials</span>
+                                                {% elif subtask.status == 'on_hold' %}
+                                                <span class="badge badge-secondary">On Hold</span>
+                                                {% else %}
+                                                <span class="badge badge-primary">Open</span>
+                                                {% endif %}
+                                                | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
+                                            </small>
                                         </li>
                                         {% endfor %}
                                     </ul>
@@ -157,12 +229,16 @@
                 </div>
                 <div class="tab-pane fade" id="gallery-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gallery-tab-{{ project_info.project.id }}">
                     <div class="row">
-                        {% for video in project_info.project.references.all %}
-                        {% if video.type == 'video' %}
+                        {% for media in project_info.project.references.all %}
+                        {% if media.type == 'image' or media.type == 'video' %}
                         <div class="col-md-4">
+                            {% if media.type == 'image' %}
+                            <img src="{{ media.content }}" class="img-fluid" alt="Gallery Image">
+                            {% elif media.type == 'video' %}
                             <div class="embed-responsive embed-responsive-16by9">
-                                <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
+                                <iframe class="embed-responsive-item" src="{{ media.content }}" allowfullscreen></iframe>
                             </div>
+                            {% endif %}
                         </div>
                         {% endif %}
                         {% endfor %}
@@ -184,7 +260,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
         {% endfor %}
     </div>
