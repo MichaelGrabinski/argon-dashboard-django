@@ -1,6 +1,6 @@
-property,unit_number,tenant_name,rent_amount,notes,location
-98 Pulaski St,Unit 1 - Floor 1,Sam and Remy,1550,,
-98 Pulaski St,Unit 2 - Floor 2,Michael and Juliet,300,The homeowner lives here,
-98 Pulaski St,Unit 3 - Floor 3,Kevin Coombs,550,,
-48 Forest Ct,Unit 1 - Floor 1,Anthony,1075,,
-48 Forest Ct,Unit 2 - Floor 2,Anna and Kevin,1075,,
+"property,unit_number,tenant_name,rent_amount,notes"
+"98 Pulaski St,Unit 1 - Floor 1,Sam and Remy,1550,"
+"98 Pulaski St,Unit 2 - Floor 2,Michael and Juliet,300,The homeowner lives here"
+"98 Pulaski St,Unit 3 - Floor 3,Kevin Coombs,550,"
+"48 Forest Ct,Unit 1 - Floor 1,Anthony,1075,"
+"48 Forest Ct,Unit 2 - Floor 2,Anna and Kevin,1075,"

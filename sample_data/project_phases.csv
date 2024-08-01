@@ -1,21 +1,21 @@
 project,name,description,start_date,end_date,is_critical
-Building a Spider Robot,Design Phase,Designing the spider robot components,2023-01-01,3/31/2023,True
-Building a Spider Robot,Procurement Phase,Procuring necessary materials and components,2023-04-01,6/30/2023,True
-Building a Spider Robot,Frame Assembly,Assembling the main frame of the spider robot,2023-07-01,7/31/2023,True
-Building a Spider Robot,Leg Assembly,Assembling the legs of the spider robot,2023-08-01,8/31/2023,True
-Building a Spider Robot,Electronics Installation,Installing electronic components and wiring,2023-09-01,9/30/2023,True
-Building a Spider Robot,Testing Phase,Testing and debugging the spider robot,2023-10-01,12/31/2023,True
+Building a Spider Robot,Design Phase,Designing the spider robot components,2023-01-01,2023-03-31,True
+Building a Spider Robot,Procurement Phase,Procuring necessary materials and components,2023-04-01,2023-06-30,True
+Building a Spider Robot,Frame Assembly,Assembling the main frame of the spider robot,2023-07-01,2023-07-31,True
+Building a Spider Robot,Leg Assembly,Assembling the legs of the spider robot,2023-08-01,2023-08-31,True
+Building a Spider Robot,Electronics Installation,Installing electronic components and wiring,2023-09-01,2023-09-30,True
+Building a Spider Robot,Testing Phase,Testing and debugging the spider robot,2023-10-01,2023-12-31,True
 ,,,,,
-Building a Flying Drone,Design Phase,Designing the flying drone components,2023-01-01,3/31/2023,True
-Building a Flying Drone,Procurement Phase,Procuring necessary materials and components,2023-04-01,6/30/2023,True
-Building a Flying Drone,Frame Assembly,Assembling the main frame of the flying drone,2023-07-01,7/31/2023,True
-Building a Flying Drone,Motor and Propeller Installation,Installing motors and propellers,2023-08-01,8/31/2023,True
-Building a Flying Drone,Electronics Installation,Installing electronic components and wiring,2023-09-01,9/30/2023,True
-Building a Flying Drone,Testing Phase,Testing and debugging the flying drone,2023-10-01,12/31/2023,True
+Building a Flying Drone,Design Phase,Designing the flying drone components,2023-01-01,2023-03-31,True
+Building a Flying Drone,Procurement Phase,Procuring necessary materials and components,2023-04-01,2023-06-30,True
+Building a Flying Drone,Frame Assembly,Assembling the main frame of the flying drone,2023-07-01,2023-07-31,True
+Building a Flying Drone,Motor and Propeller Installation,Installing motors and propellers,2023-08-01,2023-08-31,True
+Building a Flying Drone,Electronics Installation,Installing electronic components and wiring,2023-09-01,2023-09-30,True
+Building a Flying Drone,Testing Phase,Testing and debugging the flying drone,2023-10-01,2023-12-31,True
 ,,,,,
-Building a Human-Like Robot,Design Phase,Designing the human-like robot components,2023-01-01,6/30/2023,True
-Building a Human-Like Robot,Procurement Phase,Procuring necessary materials and components,2023-07-01,12/31/2023,True
-Building a Human-Like Robot,Frame Assembly,Assembling the main frame of the human-like robot,2024-01-01,3/31/2024,True
-Building a Human-Like Robot,Muscle Installation,Installing McKibben muscles,2024-04-01,6/30/2024,True
-Building a Human-Like Robot,Electronics Installation,Installing electronic components and wiring,2024-07-01,9/30/2024,True
-Building a Human-Like Robot,Testing Phase,Testing and debugging the human-like robot,2024-10-01,12/31/2024,True
+Building a Human-Like Robot,Design Phase,Designing the human-like robot components,2023-01-01,2023-06-30,True
+Building a Human-Like Robot,Procurement Phase,Procuring necessary materials and components,2023-07-01,2023-12-31,True
+Building a Human-Like Robot,Frame Assembly,Assembling the main frame of the human-like robot,2024-01-01,2024-03-31,True
+Building a Human-Like Robot,Muscle Installation,Installing McKibben muscles,2024-04-01,2024-06-30,True
+Building a Human-Like Robot,Electronics Installation,Installing electronic components and wiring,2024-07-01,2024-09-30,True
+Building a Human-Like Robot,Testing Phase,Testing and debugging the human-like robot,2024-10-01,2024-12-31,True

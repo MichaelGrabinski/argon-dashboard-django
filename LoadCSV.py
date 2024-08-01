@@ -30,11 +30,10 @@ create_user_if_not_exists('janedoe', 'password')
 create_user_if_not_exists('emilyj', 'password')
 
 # Create locations
-Location.objects.get_or_create(name='Warehouse')
-Location.objects.get_or_create(name='Toolbox')
-Location.objects.get_or_create(name='Workshop')
-Location.objects.get_or_create(name='Garage')
-Location.objects.get_or_create(name='Office')
+locations = ['Warehouse', 'Toolbox', 'Workshop', 'Garage', 'Office', 'Electrical Toolbox', 'Spare Room', 
+             'Bin Number Two Yellow Cap', 'Bin Number 1/I Grey Bin Left of Rack', 'Bin Number 1 Yellow Cap', 'Bin Number 4 Yellow Cap']
+for location in locations:
+    Location.objects.get_or_create(name=location)
 
 # Create projects
 manager_johndoe = User.objects.get(username='johndoe')
@@ -129,14 +128,24 @@ def load_csv(file_path, model, fields, related_fields={}):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            data = {field: row[field] for field in fields if field in row}
+            data = {field: row[field] if row[field] != '' else None for field in fields if field in row}
             for related_field, related_func in related_fields.items():
                 if related_field in row:
-                    data[related_field] = related_func(row[related_field])
+                    if callable(related_func):
+                        try:
+                            data[related_field] = related_func(row[related_field], row)
+                        except TypeError:
+                            data[related_field] = related_func(row[related_field])
+                    else:
+                        data[related_field] = related_func[row[related_field]]
                     if data[related_field] is None:
                         print(f"Skipping row due to missing related data: {row}")
                         break
             else:
+                # Convert is_critical field to boolean if it exists
+                if 'is_critical' in data:
+                    data['is_critical'] = data['is_critical'].lower() in ('true', '1', 't')
+                
                 obj, created = model.objects.update_or_create(**data)
                 if created:
                     print(f"Created {model.__name__}: {obj}")
@@ -150,7 +159,7 @@ def load_tasks():
         'created_by': get_user,
         'location': get_location,
         'project': get_project,
-        'phase': lambda phase_name: get_phase(phase_name, row['project']) if 'phase' in row else None,
+        'phase': lambda phase_name, row: get_phase(phase_name, row['project']) if 'phase' in row else None,
     }
     file_path = 'sample_data/tasks.csv'
     load_csv(file_path, Task, fields, related_fields)

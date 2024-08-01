@@ -1,4 +1,4 @@
 make,model,year,vin,license_plate,owner_name,purchase_date,purchase_price,status
-Mitsubishi,Mirage G4,2019,JM1BJ228X20123456,ABC123,,1/1/2019,15000,available
-Volkswagen,Tiguan 4Motion SE,2010,WVGAV7AX2AW123456,DEF456,,5/15/2010,12000,in_use
-Mini,Cooper Countryman,2011,WMWZB3C59BWM12345,GHI789,,3/22/2011,18000,in_use
+Mitsubishi,Mirage G4,2019,JM1BJ228X20123456,ABC123,,2019-01-01,15000,available
+Volkswagen,Tiguan 4Motion SE,2010,WVGAV7AX2AW123456,DEF456,,2010-05-15,12000,in_use
+Mini,Cooper Countryman,2011,WMWZB3C59BWM12345,GHI789,,2011-03-22,18000,in_use
