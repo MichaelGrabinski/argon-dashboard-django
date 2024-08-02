@@ -18,7 +18,92 @@ from apps.home.models import (
     Comment, ActivityLog, Note, ProjectDocument, ReferenceMaterial, GameProject, 
     Budget, Expense, FinancialReport, ProjectPhase
 )
+'''
+def parse_date(date_str):
+    if not date_str:
+        return None
+    try:
+        return datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        return datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
 
+def parse_decimal(decimal_str):
+    return Decimal(decimal_str) if decimal_str else None
+
+def get_user(username):
+    try:
+        return User.objects.get(username=username)
+    except User.DoesNotExist:
+        print(f"User {username} does not exist.")
+        return None
+
+def get_location(name):
+    try:
+        return Location.objects.get(name=name)
+    except Location.DoesNotExist:
+        print(f"Location {name} does not exist.")
+        return None
+
+def get_property(name):
+    try:
+        return Property.objects.get(name=name)
+    except Property.DoesNotExist:
+        print(f"Property {name} does not exist.")
+        return None
+
+def load_units():
+    fields = ['unit_number', 'tenant_name', 'rent_amount', 'notes']
+    related_fields = {
+        'property': get_property,
+        'location': get_location,
+    }
+    file_path = 'sample_data/units.csv'
+    load_csv(file_path, Unit, fields, related_fields)
+
+def load_csv(file_path, model, fields, related_fields={}):
+    with open(file_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Replace '\n' with actual newlines in all string fields
+            for key in row:
+                if isinstance(row[key], str):
+                    row[key] = row[key].replace('\\n', '\n')
+            
+            # Only include specified fields in the data
+            data = {field: row[field] if row[field] != '' else None for field in fields if field in row}
+            for related_field, related_func in related_fields.items():
+                if related_field in row:
+                    if callable(related_func):
+                        try:
+                            data[related_field] = related_func(row[related_field], row)
+                        except TypeError:
+                            data[related_field] = related_func(row[related_field])
+                    else:
+                        data[related_field] = related_func[row[related_field]]
+                    if data[related_field] is None:
+                        print(f"Skipping row due to missing related data: {row}")
+                        break
+            else:
+                # Debugging: Print the data being processed
+                print(f"Processing data for {model.__name__}: {data}")
+
+                # Ensure no unexpected fields are included
+                data = {key: value for key, value in data.items() if key in fields or key in related_fields}
+
+                # Provide default values for required fields if they are missing
+                if 'property' not in data or data['property'] is None:
+                    print(f"Skipping row due to missing property: {row}")
+                    continue
+                
+                obj, created = model.objects.update_or_create(**data)
+                if created:
+                    print(f"Created {model.__name__}: {obj}")
+                else:
+                    print(f"Updated {model.__name__}: {obj}")
+
+# Call the function to load data from CSV files
+load_units()
+'''
 # Helper function to create user if not exists
 def create_user_if_not_exists(username, password):
     if not User.objects.filter(username=username).exists():
@@ -128,6 +213,12 @@ def load_csv(file_path, model, fields, related_fields={}):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            # Replace '\n' with actual newlines in all string fields
+            for key in row:
+                if isinstance(row[key], str):
+                    row[key] = row[key].replace('\\n', '\n')
+            
+            # Only include specified fields in the data
             data = {field: row[field] if row[field] != '' else None for field in fields if field in row}
             for related_field, related_func in related_fields.items():
                 if related_field in row:
@@ -142,6 +233,16 @@ def load_csv(file_path, model, fields, related_fields={}):
                         print(f"Skipping row due to missing related data: {row}")
                         break
             else:
+                # Debugging: Print the data being processed
+                print(f"Processing data for {model.__name__}: {data}")
+
+                # Ensure no unexpected fields are included
+                data = {key: value for key, value in data.items() if key in fields or key in related_fields}
+
+                # Provide default values for required fields if they are missing
+                if 'owner_name' in data and data['owner_name'] is None:
+                    data['owner_name'] = 'Unknown Owner'
+                
                 # Convert is_critical field to boolean if it exists
                 if 'is_critical' in data:
                     data['is_critical'] = data['is_critical'].lower() in ('true', '1', 't')
@@ -389,13 +490,13 @@ load_documents()
 load_maintenance_records()
 load_open_repairs()
 load_rent_payments()
-load_property_infos()
-load_property_locations()
-load_vehicle_images()
-load_repairs()
-load_maintenance_histories()
-load_scheduled_maintenance()
-load_tag_houses()
+#load_property_infos()
+#load_property_locations()
+#load_vehicle_images()
+#load_repairs()
+#load_maintenance_histories()
+#load_scheduled_maintenance()
+#load_tag_houses()
 load_attachments()
 load_comments()
 load_activity_logs()
@@ -403,6 +504,6 @@ load_notes()
 load_project_documents()
 load_reference_materials()
 load_game_projects()
-load_budgets()
-load_expenses()
-load_financial_reports()
+#load_budgets()
+#load_expenses()
+#load_financial_reports()

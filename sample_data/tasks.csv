@@ -51,7 +51,7 @@ Install Safety Features,Install safety features on the human-like robot,open,202
 Final Integration,Perform final integration of all systems,open,2024-10-01,high,Assembly,100,2024-09-15,2024-09-15,johndoe,janedoe,Workshop,Building a Human-Like Robot,Electronics Installation,
 Final Debugging,Perform final debugging and issue resolution,open,2024-11-01,high,Testing,120,2024-10-01,2024-10-01,emilyj,johndoe,Workshop,Building a Human-Like Robot,Testing Phase,
 Final Quality Check,Perform final quality check and sign-off,open,2024-12-01,high,Testing,80,2024-11-01,2024-11-01,janedoe,emilyj,Workshop,Building a Human-Like Robot,Testing Phase,
-Build up chip,Build up chip on the Volkswagen Tiguan,completed,1/15/2023,high,Volkswagen Tiguan 4Motion SE,5,2023-01-10,2023-01-15,johndoe,janedoe,,,,
+Build up chip,Build up chip on the Volkswagen Tiguan,completed,2023-01-15,high,Volkswagen Tiguan 4Motion SE,5,2023-01-10,2023-01-15,johndoe,janedoe,,,,
 Tap new hole,Tap new hole on the Volkswagen Tiguan,completed,2023-01-25,high,Volkswagen Tiguan 4Motion SE,5,2023-01-20,2023-01-25,johndoe,janedoe,,,,
 Replace gasket,Replace gasket on the Volkswagen Tiguan,completed,2023-02-05,high,Volkswagen Tiguan 4Motion SE,5,2023-02-01,2023-02-05,janedoe,johndoe,,,,
 New oil,Change oil on the Volkswagen Tiguan,completed,2023-02-12,high,Volkswagen Tiguan 4Motion SE,2,2023-02-10,2023-02-12,janedoe,johndoe,,,,
@@ -59,4 +59,59 @@ New engine thermostat,Install new engine thermostat on the Volkswagen Tiguan,com
 Head gasket replacement,Replace head gasket on the Volkswagen Tiguan,completed,2023-03-15,high,Volkswagen Tiguan 4Motion SE,10,2023-03-10,2023-03-15,janedoe,johndoe,,,,
 Alternator replacement,Replace alternator on the Mini Cooper,completed,2023-04-05,high,Mini Cooper Countryman,5,2023-04-01,2023-04-05,johndoe,janedoe,,,,
 Valve Cover/Oil Leak,Fix valve cover/oil leak on the Mini Cooper,completed,2023-04-15,high,Mini Cooper Countryman,5,2023-04-10,2023-04-15,janedoe,johndoe,,,,
-,,,,,,,,,,,,,,
+Create Initial Design,Create the initial design sketches and blueprints for the single family house,open,2023-02-01,high,Design,80,2023-01-01,2023-01-01,johndoe,johndoe,Office,Building a Single Family House,Planning Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2023-02-28,high,Design,120,2023-01-15,2023-01-15,janedoe,johndoe,Office,Building a Single Family House,Planning Phase,Create Initial Design
+Obtain Permits,Obtain necessary permits for construction,open,2023-02-28,high,Legal,40,2023-01-01,2023-01-01,emilyj,janedoe,Office,Building a Single Family House,Planning Phase,
+Excavate Site,Excavate the site for the foundation,open,2023-03-15,high,Construction,60,2023-03-01,2023-03-01,johndoe,janedoe,Construction Site,Building a Single Family House,Foundation Phase,
+Pour Foundation,Pour the concrete foundation,open,2023-04-30,high,Construction,100,2023-03-15,2023-03-15,janedoe,johndoe,Construction Site,Building a Single Family House,Foundation Phase,Excavate Site
+Frame Walls,Frame the walls of the house,open,2023-06-30,high,Construction,120,2023-05-01,2023-05-01,johndoe,janedoe,Construction Site,Building a Single Family House,Framing Phase,
+Install Roof,Install the roof on the house,open,2023-08-31,high,Construction,80,2023-07-01,2023-07-01,emilyj,johndoe,Construction Site,Building a Single Family House,Roofing Phase,
+Install Electrical,Install electrical wiring and fixtures,open,2023-10-31,high,Construction,100,2023-09-01,2023-09-01,johndoe,janedoe,Construction Site,Building a Single Family House,Interior Phase,
+Install Plumbing,Install plumbing systems,open,2023-10-31,high,Construction,100,2023-09-01,2023-09-01,janedoe,johndoe,Construction Site,Building a Single Family House,Interior Phase,Install Electrical
+Paint Interior,Paint the interior walls,open,2023-12-31,medium,Finishing,60,2023-11-01,2023-11-01,emilyj,johndoe,Construction Site,Building a Single Family House,Finishing Phase,
+Final Inspection,Conduct final inspection and obtain occupancy permit,open,2023-12-31,high,Legal,40,2023-11-01,2023-11-01,johndoe,janedoe,Construction Site,Building a Single Family House,Finishing Phase,
+Create Initial Design,Create the initial design sketches and blueprints for the garage/business building,open,2023-02-01,high,Design,80,2023-01-01,2023-01-01,johndoe,johndoe,Office,Building a Garage/Business Building,Planning Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2023-02-28,high,Design,120,2023-01-15,2023-01-15,janedoe,johndoe,Office,Building a Garage/Business Building,Planning Phase,Create Initial Design
+Obtain Permits,Obtain necessary permits for construction,open,2023-02-28,high,Legal,40,2023-01-01,2023-01-01,emilyj,janedoe,Office,Building a Garage/Business Building,Planning Phase,
+Excavate Site,Excavate the site for the foundation,open,2023-03-15,high,Construction,60,2023-03-01,2023-03-01,johndoe,janedoe,Construction Site,Building a Garage/Business Building,Foundation Phase,
+Pour Foundation,Pour the concrete foundation,open,2023-04-30,high,Construction,100,2023-03-15,2023-03-15,janedoe,johndoe,Construction Site,Building a Garage/Business Building,Foundation Phase,Excavate Site
+Frame Walls,Frame the walls of the building,open,2023-06-30,high,Construction,120,2023-05-01,2023-05-01,johndoe,janedoe,Construction Site,Building a Garage/Business Building,Framing Phase,
+Install Roof,Install the roof on the building,open,2023-08-31,high,Construction,80,2023-07-01,2023-07-01,emilyj,johndoe,Construction Site,Building a Garage/Business Building,Roofing Phase,
+Install Electrical,Install electrical wiring and fixtures,open,2023-10-31,high,Construction,100,2023-09-01,2023-09-01,johndoe,janedoe,Construction Site,Building a Garage/Business Building,Interior Phase,
+Install Plumbing,Install plumbing systems,open,2023-10-31,high,Construction,100,2023-09-01,2023-09-01,janedoe,johndoe,Construction Site,Building a Garage/Business Building,Interior Phase,Install Electrical
+Paint Interior,Paint the interior walls,open,2023-12-31,medium,Finishing,60,2023-11-01,2023-11-01,emilyj,johndoe,Construction Site,Building a Garage/Business Building,Finishing Phase,
+Final Inspection,Conduct final inspection and obtain occupancy permit,open,2023-12-31,high,Legal,40,2023-11-01,2023-11-01,johndoe,janedoe,Construction Site,Building a Garage/Business Building,Finishing Phase,
+Concept Art,Create concept art for the game's characters and environments,open,2023-02-01,high,Design,80,2023-01-01,2023-01-01,emilyj,emilyj,Office,Building a Tower Defense Mobile Game,Concept Phase,
+Game Design Document,Develop a comprehensive game design document,open,2023-02-28,high,Design,120,2023-01-15,2023-01-15,janedoe,emilyj,Office,Building a Tower Defense Mobile Game,Concept Phase,Concept Art
+Prototype Development,Develop a prototype of the game's core mechanics,open,2023-04-01,high,Development,120,2023-03-01,2023-03-01,johndoe,janedoe,Office,Building a Tower Defense Mobile Game,Development Phase,
+Level Design,Design the levels for the game,open,2023-06-30,high,Development,100,2023-04-01,2023-04-01,emilyj,janedoe,Office,Building a Tower Defense Mobile Game,Development Phase,Prototype Development
+Character Animation,Create animations for the game's characters,open,2023-06-30,high,Development,100,2023-04-01,2023-04-01,janedoe,emilyj,Office,Building a Tower Defense Mobile Game,Development Phase,Level Design
+Beta Testing,Conduct beta testing with selected users,open,2023-09-30,high,Testing,80,2023-07-01,2023-07-01,johndoe,emilyj,Office,Building a Tower Defense Mobile Game,Testing Phase,
+Bug Fixing,Identify and fix bugs reported during beta testing,open,2023-09-30,high,Testing,100,2023-07-01,2023-07-01,janedoe,johndoe,Office,Building a Tower Defense Mobile Game,Testing Phase,Beta Testing
+Marketing Campaign,Plan and execute a marketing campaign for the game,open,2023-12-31,high,Marketing,60,2023-10-01,2023-10-01,emilyj,janedoe,Office,Building a Tower Defense Mobile Game,Release Phase,
+App Store Submission,Submit the game to app stores for review,open,2023-12-31,high,Release,40,2023-11-01,2023-11-01,johndoe,emilyj,Office,Building a Tower Defense Mobile Game,Release Phase,
+Launch Event,Organize a launch event for the game's release,open,2023-12-31,high,Release,60,2023-11-01,2023-11-01,janedoe,johndoe,Office,Building a Tower Defense Mobile Game,Release Phase,
+Create Initial Design,Create the initial design sketches and blueprints for the shed,open,2023-01-15,high,Design,40,2023-01-01,2023-01-01,johndoe,johndoe,Office,Building a 12 by 16 Shed,Planning Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2023-01-31,high,Design,60,2023-01-15,2023-01-15,janedoe,johndoe,Office,Building a 12 by 16 Shed,Planning Phase,Create Initial Design
+Obtain Permits,Obtain necessary permits for construction,open,2023-01-31,high,Legal,20,2023-01-01,2023-01-01,emilyj,janedoe,Office,Building a 12 by 16 Shed,Planning Phase,
+Excavate Site,Excavate the site for the foundation,open,2023-02-15,high,Construction,30,2023-02-01,2023-02-01,johndoe,janedoe,Construction Site,Building a 12 by 16 Shed,Foundation Phase,
+Pour Foundation,Pour the concrete foundation,open,2023-02-28,high,Construction,50,2023-02-15,2023-02-15,janedoe,johndoe,Construction Site,Building a 12 by 16 Shed,Foundation Phase,Excavate Site
+Frame Walls,Frame the walls of the shed,open,2023-03-31,high,Construction,60,2023-03-01,2023-03-01,johndoe,janedoe,Construction Site,Building a 12 by 16 Shed,Framing Phase,
+Install Roof,Install the roof on the shed,open,2023-04-30,high,Construction,40,2023-04-01,2023-04-01,emilyj,johndoe,Construction Site,Building a 12 by 16 Shed,Roofing Phase,
+Paint Exterior,Paint the exterior of the shed,open,2023-06-30,medium,Finishing,30,2023-05-01,2023-05-01,janedoe,johndoe,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Install Doors and Windows,Install doors and windows on the shed,open,2023-06-30,medium,Finishing,40,2023-05-01,2023-05-01,johndoe,janedoe,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Final Inspection,Conduct final inspection and obtain approval,open,2023-06-30,high,Legal,20,2023-05-01,2023-05-01,emilyj,janedoe,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Create Initial Plan,Create the initial plan for replacing the garage roof,open,2023-01-05,high,Planning,20,2023-01-01,2023-01-01,johndoe,johndoe,Office,Replacing Garage Roof,Planning Phase,
+Order Materials,Order the necessary materials for the new roof,open,2023-01-10,high,Planning,10,2023-01-05,2023-01-05,janedoe,johndoe,Office,Replacing Garage Roof,Planning Phase,Create Initial Plan
+Remove Old Roof,Remove the existing garage roof,open,2023-01-31,high,Construction,40,2023-01-16,2023-01-16,johndoe,janedoe,Construction Site,Replacing Garage Roof,Roof Removal Phase,
+Install New Roof,Install the new garage roof,open,2023-03-31,high,Construction,80,2023-02-01,2023-02-01,emilyj,johndoe,Construction Site,Replacing Garage Roof,Roof Installation Phase,
+Create Initial Plan,Create the initial plan for replacing the second floor windows,open,2023-04-05,high,Planning,20,2023-04-01,2023-04-01,johndoe,johndoe,Office,Replacing Second Floor Windows,Planning Phase,
+Order Windows,Order the new windows for the second floor,open,2023-04-10,high,Planning,10,2023-04-05,2023-04-05,janedoe,johndoe,Office,Replacing Second Floor Windows,Planning Phase,Create Initial Plan
+Remove Old Windows,Remove the existing second floor windows,open,2023-04-30,high,Construction,40,2023-04-16,2023-04-16,johndoe,janedoe,Construction Site,Replacing Second Floor Windows,Window Removal Phase,
+Install New Windows,Install the new second floor windows,open,2023-06-30,high,Construction,80,2023-05-01,2023-05-01,emilyj,johndoe,Construction Site,Replacing Second Floor Windows,Window Installation Phase,
+Create Initial Plan,Create the initial plan for installing solar panels,open,2023-07-05,high,Planning,20,2023-07-01,2023-07-01,johndoe,johndoe,Office,Installing Solar Panels,Planning Phase,
+Order Solar Panels,Order the solar panels and necessary equipment,open,2023-07-10,high,Planning,10,2023-07-05,2023-07-05,janedoe,johndoe,Office,Installing Solar Panels,Planning Phase,Create Initial Plan
+Prepare Roof,Prepare the garage and house roofs for solar panel installation,open,2023-07-31,high,Construction,40,2023-07-16,2023-07-16,johndoe,janedoe,Construction Site,Installing Solar Panels,Roof Preparation Phase,
+Install Solar Panels,Install the solar panels on the garage and house roofs,open,2023-09-30,high,Construction,80,2023-08-01,2023-08-01,emilyj,johndoe,Construction Site,Installing Solar Panels,Installation Phase,
+Connect to Grid,Connect the solar panels to the electrical grid,open,2023-09-30,high,Electrical,40,2023-08-15,2023-08-15,janedoe,emilyj,Construction Site,Installing Solar Panels,Installation Phase,
+Final Inspection,Conduct final inspection and obtain approval,open,2023-09-30,high,Legal,20,2023-09-15,2023-09-15,johndoe,janedoe,Construction Site,Installing Solar Panels,Installation Phase,

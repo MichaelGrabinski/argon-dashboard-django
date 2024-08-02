@@ -19,3 +19,40 @@ Building a Human-Like Robot,Frame Assembly,Assembling the main frame of the huma
 Building a Human-Like Robot,Muscle Installation,Installing McKibben muscles,2024-04-01,2024-06-30,True
 Building a Human-Like Robot,Electronics Installation,Installing electronic components and wiring,2024-07-01,2024-09-30,True
 Building a Human-Like Robot,Testing Phase,Testing and debugging the human-like robot,2024-10-01,2024-12-31,True
+,,,,,
+Building a Single Family House,Planning Phase,Planning and design of the single family house,2023-01-01,2023-02-28,True
+Building a Single Family House,Foundation Phase,Construction of the foundation,2023-03-01,2023-04-30,True
+Building a Single Family House,Framing Phase,Framing the structure of the house,2023-05-01,2023-06-30,True
+Building a Single Family House,Roofing Phase,Installing the roof,2023-07-01,2023-08-31,True
+Building a Single Family House,Interior Phase,Interior work including electrical and plumbing,2023-09-01,2023-10-31,True
+Building a Single Family House,Finishing Phase,Finishing touches and inspections,2023-11-01,2023-12-31,True
+,,,,,
+Building a Garage/Business Building,Planning Phase,Planning and design of the garage/business building,2023-01-01,2023-02-28,True
+Building a Garage/Business Building,Foundation Phase,Construction of the foundation,2023-03-01,2023-04-30,True
+Building a Garage/Business Building,Framing Phase,Framing the structure of the building,2023-05-01,2023-06-30,True
+Building a Garage/Business Building,Roofing Phase,Installing the roof,2023-07-01,2023-08-31,True
+Building a Garage/Business Building,Interior Phase,Interior work including electrical and plumbing,2023-09-01,2023-10-31,True
+Building a Garage/Business Building,Finishing Phase,Finishing touches and inspections,2023-11-01,2023-12-31,True
+,,,,,
+Building a Tower Defense Mobile Game,Concept Phase,Conceptualizing the game and creating initial designs,2023-01-01,2023-02-28,True
+Building a Tower Defense Mobile Game,Development Phase,Developing the core mechanics and features,2023-03-01,2023-06-30,True
+Building a Tower Defense Mobile Game,Testing Phase,Testing the game and fixing bugs,2023-07-01,2023-09-30,True
+Building a Tower Defense Mobile Game,Release Phase,Preparing for release and marketing,2023-10-01,2023-12-31,True
+,,,,,
+Building a 12 by 16 Shed,Planning Phase,Planning and design of the shed,2023-01-01,2023-01-31,True
+Building a 12 by 16 Shed,Foundation Phase,Construction of the foundation,2023-02-01,2023-02-28,True
+Building a 12 by 16 Shed,Framing Phase,Framing the structure of the shed,2023-03-01,2023-03-31,True
+Building a 12 by 16 Shed,Roofing Phase,Installing the roof,2023-04-01,2023-04-30,True
+Building a 12 by 16 Shed,Finishing Phase,Finishing touches and inspections,2023-05-01,2023-06-30,True
+,,,,,
+Replacing Garage Roof,Planning Phase,Planning and preparation for replacing the garage roof,2023-01-01,2023-01-15,True
+Replacing Garage Roof,Roof Removal Phase,Removing the existing garage roof,2023-01-16,2023-01-31,True
+Replacing Garage Roof,Roof Installation Phase,Installing the new garage roof,2023-02-01,2023-03-31,True
+,,,,,
+Replacing Second Floor Windows,Planning Phase,Planning and preparation for replacing the second floor windows,2023-04-01,2023-04-15,True
+Replacing Second Floor Windows,Window Removal Phase,Removing the existing windows,2023-04-16,2023-04-30,True
+Replacing Second Floor Windows,Window Installation Phase,Installing the new windows,2023-05-01,2023-06-30,True
+,,,,,
+Installing Solar Panels,Planning Phase,Planning and preparation for installing solar panels,2023-07-01,2023-07-15,True
+Installing Solar Panels,Roof Preparation Phase,Preparing the roof for solar panel installation,2023-07-16,2023-07-31,True
+Installing Solar Panels,Installation Phase,Installing the solar panels,2023-08-01,2023-09-30,True
