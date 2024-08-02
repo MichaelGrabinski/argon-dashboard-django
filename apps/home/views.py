@@ -134,6 +134,8 @@ def vehicle_overview(request):
     vehicles = Vehicle.objects.all()
     for vehicle in vehicles:
         vehicle.tickets = Task.objects.filter(category=vehicle.model, status='open')  # Using the model as the category identifier
+       # vehicle.tickets = Task.objects.filter(category=vehicle.model, status='open')  # Using the model as the category identifier
+       #open_tickets = Task.objects.filter(location=unit.location, status='open')  # Update this line
 
     context = {
         'vehicles': vehicles,
@@ -329,7 +331,11 @@ def gantt_chart(request):
     return render(request, 'home/gantt_chart.html', context)
     
 def construction_hub(request):
-    projects = Project.objects.all()
+    # Set default project_type to 'construction'
+    project_type = request.GET.get('project_type', 'construction')
+    
+    # Filter projects by the specified or default project type
+    projects = Project.objects.filter(project_type=project_type)
 
     if request.method == 'POST':
         if 'document' in request.FILES:
@@ -341,7 +347,7 @@ def construction_hub(request):
             file = request.FILES['document']
             is_model = request.POST.get('is_model', 'off') == 'on'
             ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
-            return HttpResponseRedirect(reverse('construction_hub'))
+            return HttpResponseRedirect(reverse('construction_hub') + f'?project_type={project_type}')
         elif 'file' in request.FILES:
             form = ReferenceMaterialForm(request.POST, request.FILES)
             if form.is_valid():
@@ -349,7 +355,7 @@ def construction_hub(request):
                 project_id = form.cleaned_data['project'].id
                 reference_material.project = get_object_or_404(Project, pk=project_id)
                 reference_material.save()
-                return HttpResponseRedirect(reverse('construction_hub'))
+                return HttpResponseRedirect(reverse('construction_hub') + f'?project_type={project_type}')
             else:
                 return render(request, 'home/hub.html', {'error': 'Invalid form submission', 'projects': projects})
 
@@ -388,7 +394,8 @@ def construction_hub(request):
 
     return render(request, 'home/hub.html', {
         'project_data': project_data,
-        'reference_form': reference_form
+        'reference_form': reference_form,
+        'project_type': project_type  # Pass the project_type to the template
     })
 
 def other_hub(request):

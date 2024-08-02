@@ -25,6 +25,20 @@
         height: 100vh;
     }
 </style>
+<style>
+    .status-open { border-left: 5px solid #007bff; } /* Blue */
+    .status-closed { border-left: 5px solid #6c757d; } /* Gray */
+    .status-in_progress { border-left: 5px solid #ffc107; } /* Yellow */
+    .status-waiting_for_materials { border-left: 5px solid #17a2b8; } /* Teal */
+    .status-on_hold { border-left: 5px solid #dc3545; } /* Red */
+    .priority-low { border-left: 5px solid #28a745; } /* Green */
+    .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
+    .priority-high { border-left: 5px solid #dc3545; } /* Red */
+    .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 1.5em; }
+    .section-content { margin-bottom: 30px; }
+    .list-group-item { margin-bottom: 10px; }
+    .media-container img, .media-container video { max-width: 100%; height: auto; }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -51,10 +65,7 @@
                                 <li>Note 1</li>
                                 <li>Note 2</li>
                             </ul>
-                            <h2>Repairs Needed</h2>
-                            <ul>
-                                <li>Repair 1</li>
-                                <li>Repair 2</li>
+
                             </ul>
                             <h2>Open Tickets</h2>
                             <div class="list-group">
@@ -66,6 +77,8 @@
                                     </a>
                                 {% endfor %}
                             </div>
+							
+							
                             <h2>Image Gallery</h2>
                             <div class="row">
                                 {% for image in vehicle.images.all %}
