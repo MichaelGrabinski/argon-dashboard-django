@@ -21,6 +21,27 @@
     .mar {
         margin-left: 10%; /* Offset to the right by 20% */
     }
+    .project-metrics {
+        margin-bottom: 20px;
+    }
+    .project-metrics h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    .project-metrics .chart-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+    .project-metrics .chart-container > div {
+        flex: 1 0 45%; /* Flex grow, flex shrink, flex basis */
+        max-width: 45%;
+        margin-bottom: 20px;
+    }
+    .project-metrics canvas {
+        max-width: 100%;
+        height: auto;
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -124,17 +145,22 @@
         {% for metrics in construction_project_metrics %}
         <div class="project-metrics">
             <h3>{{ metrics.project.title }}</h3>
-            <div class="progress-chart">
-                <h4>Project Progress</h4>
-                <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
-            </div>
-            <div class="task-status-chart">
-                <h4>Task Status Distribution</h4>
-                <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
-            </div>
-            <div class="budget-vs-spending-chart">
-                <h4>Budget vs. Actual Spending</h4>
-                <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
+            <div class="chart-container">
+                <div class="progress-chart">
+                    <h4>Project Progress</h4>
+                    <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
+                </div>
+                <div class="task-status-chart">
+                    <h4>Task Status Distribution</h4>
+                    <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
+                </div>
+                <!-- Commented out Budget vs. Actual Spending -->
+                <!--
+                <div class="budget-vs-spending-chart">
+                    <h4>Budget vs. Actual Spending</h4>
+                    <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
+                </div>
+                -->
             </div>
         </div>
         {% endfor %}
@@ -148,38 +174,44 @@
         {% for metrics in game_project_metrics %}
         <div class="project-metrics">
             <h3>{{ metrics.project.title }}</h3>
-            <div class="progress-chart">
-                <h4>Project Progress</h4>
-                <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
-            </div>
-            <div class="task-status-chart">
-                <h4>Task Status Distribution</h4>
-                <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
+            <div class="chart-container">
+                <div class="progress-chart">
+                    <h4>Project Progress</h4>
+                    <canvas id="progress-chart-{{ metrics.project.id }}"></canvas>
+                </div>
+                <div class="task-status-chart">
+                    <h4>Task Status Distribution</h4>
+                    <canvas id="task-status-chart-{{ metrics.project.id }}"></canvas>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Budget/Accounting Dashboard -->
+<!-- Commented out Budget/Accounting Dashboard -->
+<!--
 <div class="row mt-4">
     <div class="col">
         <h2 class="text-center">Budget/Accounting Dashboard</h2>
         {% for metrics in budget_project_metrics %}
         <div class="project-metrics">
             <h3>{{ metrics.project.title }}</h3>
-            <div class="budget-vs-spending-chart">
-                <h4>Budget vs. Actual Spending</h4>
-                <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
-            </div>
-            <div class="expense-breakdown-chart">
-                <h4>Expense Breakdown</h4>
-                <canvas id="expense-breakdown-chart-{{ metrics.project.id }}"></canvas>
+            <div class="chart-container">
+                <div class="budget-vs-spending-chart">
+                    <h4>Budget vs. Actual Spending</h4>
+                    <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
+                </div>
+                <div class="expense-breakdown-chart">
+                    <h4>Expense Breakdown</h4>
+                    <canvas id="expense-breakdown-chart-{{ metrics.project.id }}"></canvas>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+-->
 
 {% endblock content %}
 
@@ -187,6 +219,8 @@
 <script src="{% static 'assets/vendor/chart.js/dist/Chart.min.js' %}"></script>
 <script src="{% static 'assets/vendor/chart.js/dist/Chart.extension.js' %}"></script>
 <script>
+    const colorPalette = ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0'];
+
     {% for metrics in construction_project_metrics %}
     var ctxProgress = document.getElementById('progress-chart-{{ metrics.project.id }}').getContext('2d');
     var progressChart = new Chart(ctxProgress, {
@@ -195,7 +229,7 @@
             labels: ['Completed', 'Remaining'],
             datasets: [{
                 data: [{{ metrics.progress }}, {{ metrics.remaining_progress }}],
-                backgroundColor: ['#4caf50', '#f44336']
+                backgroundColor: [colorPalette[0], colorPalette[1]]
             }]
         }
     });
@@ -207,11 +241,12 @@
             labels: [{% for status in metrics.task_status_distribution %}'{{ status.status }}',{% endfor %}],
             datasets: [{
                 data: [{% for status in metrics.task_status_distribution %}{{ status.count }},{% endfor %}],
-                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
+                backgroundColor: colorPalette.slice(0, {% for status in metrics.task_status_distribution %}{{ forloop.counter }},{% endfor %})
             }]
         }
     });
 
+    /*
     var ctxBudgetVsSpending = document.getElementById('budget-vs-spending-chart-{{ metrics.project.id }}').getContext('2d');
     var budgetVsSpendingChart = new Chart(ctxBudgetVsSpending, {
         type: 'bar',
@@ -221,28 +256,17 @@
                 {
                     label: 'Budgeted',
                     data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.budgeted }},{% endfor %}],
-                    backgroundColor: '#4caf50'
+                    backgroundColor: colorPalette[0]
                 },
                 {
                     label: 'Spent',
                     data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.spent }},{% endfor %}],
-                    backgroundColor: '#f44336'
+                    backgroundColor: colorPalette[1]
                 }
             ]
         }
     });
-
-    var ctxExpenseBreakdown = document.getElementById('expense-breakdown-chart-{{ metrics.project.id }}').getContext('2d');
-    var expenseBreakdownChart = new Chart(ctxExpenseBreakdown, {
-        type: 'pie',
-        data: {
-            labels: [{% for expense in metrics.expense_breakdown %}'{{ expense.category }}',{% endfor %}],
-            datasets: [{
-                data: [{% for expense in metrics.expense_breakdown %}{{ expense.amount }},{% endfor %}],
-                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
-            }]
-        }
-    });
+    */
     {% endfor %}
 
     {% for metrics in game_project_metrics %}
@@ -253,7 +277,7 @@
             labels: ['Completed', 'Remaining'],
             datasets: [{
                 data: [{{ metrics.progress }}, {{ metrics.remaining_progress }}],
-                backgroundColor: ['#4caf50', '#f44336']
+                backgroundColor: [colorPalette[0], colorPalette[1]]
             }]
         }
     });
@@ -265,10 +289,46 @@
             labels: [{% for status in metrics.task_status_distribution %}'{{ status.status }}',{% endfor %}],
             datasets: [{
                 data: [{% for status in metrics.task_status_distribution %}{{ status.count }},{% endfor %}],
-                backgroundColor: ['#4caf50', '#f44336', '#ffeb3b', '#03a9f4', '#9c27b0']
+                backgroundColor: colorPalette.slice(0, {% for status in metrics.task_status_distribution %}{{ forloop.counter }},{% endfor %})
             }]
         }
     });
     {% endfor %}
+
+    /*
+    {% for metrics in budget_project_metrics %}
+    var ctxBudgetVsSpendingBudget = document.getElementById('budget-vs-spending-chart-{{ metrics.project.id }}').getContext('2d');
+    var budgetVsSpendingChartBudget = new Chart(ctxBudgetVsSpendingBudget, {
+        type: 'bar',
+        data: {
+            labels: [{% for category, values in metrics.budget_vs_spending.items %}'{{ category }}',{% endfor %}],
+            datasets: [
+                {
+                    label: 'Budgeted',
+                    data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.budgeted }},{% endfor %}],
+                    backgroundColor: colorPalette[0]
+                },
+                {
+                    label: 'Spent',
+                    data: [{% for category, values in metrics.budget_vs_spending.items %}{{ values.spent }},{% endfor %}],
+                    backgroundColor: colorPalette[1]
+                }
+            ]
+        }
+    });
+
+    var ctxExpenseBreakdownBudget = document.getElementById('expense-breakdown-chart-{{ metrics.project.id }}').getContext('2d');
+    var expenseBreakdownChartBudget = new Chart(ctxExpenseBreakdownBudget, {
+        type: 'pie',
+        data: {
+            labels: [{% for expense in metrics.expense_breakdown %}'{{ expense.category }}',{% endfor %}],
+            datasets: [{
+                data: [{% for expense in metrics.expense_breakdown %}{{ expense.amount }},{% endfor %}],
+                backgroundColor: colorPalette.slice(0, {% for expense in metrics.expense_breakdown %}{{ forloop.counter }},{% endfor %})
+            }]
+        }
+    });
+    {% endfor %}
+    */
 </script>
 {% endblock javascripts %}

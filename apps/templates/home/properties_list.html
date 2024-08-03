@@ -10,6 +10,13 @@
         height: 500px;
         width: 100%;
     }
+    .preformatted-notes {
+        white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+        font-family: monospace; /* Use a monospace font for better readability */
+        background-color: #f8f9fa; /* Light background color */
+        padding: 10px; /* Padding for better spacing */
+        border-radius: 5px; /* Rounded corners */
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -32,7 +39,7 @@
         <div class="tab-pane fade show active" id="hub" role="tabpanel" aria-labelledby="hub-tab">
             <h3>Hub of Info</h3>
             <p><strong>Legal Files:</strong> {% if property_info.legal_files %}<a href="{{ property_info.legal_files.url }}">Download</a>{% else %}No legal files available{% endif %}</p>
-            <p><strong>Extra Notes:</strong> {{ property_info.extra_notes }}</p>
+            <p><strong>Extra Notes:</strong> <div class="preformatted-notes">{{ property_info.extra_notes }}</div></p>
             <div id="map"></div>
         </div>
         {% for property in properties %}
@@ -42,7 +49,7 @@
                 <p><strong>Owner:</strong> {{ property.owner_name }}</p>
                 <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
                 <p><strong>Manager:</strong> {{ property.manager_name }}</p>
-                <p><strong>Notes:</strong> {{ property.notes }}</p>
+              
                 <p><strong>Open Tickets:</strong> {{ property.open_tickets_count }}</p>
 
                 {% if property.image_or_video %}
@@ -66,6 +73,8 @@
                         </a>
                     {% endfor %}
                 </div>
+                <p></p>
+                <p><strong>Notes:</strong> <div class="preformatted-notes">{{ property.notes }}</div></p>
             </div>
         {% endfor %}
     </div>
@@ -76,7 +85,6 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        //var map = L.map('map').setView([41.800, -73.130], 17);  // Center the map around the provided address
         var map = L.map('map').setView([41.810640, -73.129390], 17);  // Center the map around the provided address
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -92,7 +100,7 @@
         L.marker([41.810640, -73.129390]).addTo(map)
             .bindPopup('<b>98 Pulaski Street</b>').openPopup();
 			
-		        // Add a marker for the provided test address
+        // Add a marker for the provided test address
         L.marker([41.810020, -73.127590]).addTo(map)
             .bindPopup('<b>48 Forest Ct</b>').openPopup();
     });

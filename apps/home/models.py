@@ -52,6 +52,7 @@ class Project(models.Model):
     PROJECT_TYPE_CHOICES = (
         ('construction', 'Construction'),
         ('game', 'Game'),
+        ('other', 'Other'),
     )
     title = models.CharField(max_length=200)
     description = models.TextField()

@@ -399,36 +399,73 @@ def construction_hub(request):
     })
 
 def other_hub(request):
-    # Exclude projects with project_type 'construction' or 'game'
-    projects = Project.objects.exclude(project_type__in=['construction', 'game'])
+    # Set default project_type to 'construction'
+    project_type = request.GET.get('project_type', 'other')
+    
+    # Filter projects by the specified or default project type
+    projects = Project.objects.filter(project_type=project_type)
 
     if request.method == 'POST':
-        project_id = request.POST.get('project_id')
-        project = get_object_or_404(Project, pk=project_id)
         if 'document' in request.FILES:
+            project_id = request.POST.get('project_id')
+            try:
+                project = get_object_or_404(Project, pk=project_id)
+            except Project.DoesNotExist:
+                return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
             file = request.FILES['document']
             is_model = request.POST.get('is_model', 'off') == 'on'
             ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
-            return HttpResponseRedirect(reverse('other_hub'))
+            return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+        elif 'file' in request.FILES:
+            form = ReferenceMaterialForm(request.POST, request.FILES)
+            if form.is_valid():
+                reference_material = form.save(commit=False)
+                project_id = form.cleaned_data['project'].id
+                reference_material.project = get_object_or_404(Project, pk=project_id)
+                reference_material.save()
+                return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+            else:
+                return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
 
-    # Prepare data for the template
+    reference_form = ReferenceMaterialForm()
     project_data = []
     for project in projects:
         phases = project.phases.all()
         phase_data = []
+        total_hours = 0
+        completed_hours = 0
         for phase in phases:
             tasks = phase.tasks.filter(parent_task__isnull=True)
+            total_phase_tasks = phase.tasks.count()
+            completed_phase_tasks = phase.tasks.filter(status='closed').count()
+            phase_completion_percentage = (completed_phase_tasks / total_phase_tasks) * 100 if total_phase_tasks > 0 else 0
             phase_data.append({
                 'phase': phase,
-                'tasks': tasks
+                'tasks': tasks,
+                'completion_percentage': phase_completion_percentage
             })
+            for task in phase.tasks.all():
+                if task.hours:
+                    total_hours += task.hours
+                    if task.status == 'closed':
+                        completed_hours += task.hours
+        remaining_hours = total_hours - completed_hours
+        completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
         project_data.append({
             'project': project,
-            'phases': phase_data
+            'phases': phase_data,
+            'total_hours': total_hours,
+            'completed_hours': completed_hours,
+            'remaining_hours': remaining_hours,
+            'completion_percentage': completion_percentage
         })
 
-    return render(request, 'home/OtherProjects.html', {'project_data': project_data})
-    
+    return render(request, 'home/OtherProjects.html', {
+        'project_data': project_data,
+        'reference_form': reference_form,
+        'project_type': project_type  # Pass the project_type to the template
+    })
+
     
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -454,8 +491,72 @@ def project_detail(request, project_id):
     
     
 def game_studio_hub(request):
-    projects = GameProject.objects.all()
-    return render(request, 'home/game_studio.html', {'projects': projects})
+        # Set default project_type to 'construction'
+    project_type = request.GET.get('project_type', 'game')
+    
+    # Filter projects by the specified or default project type
+    projects = Project.objects.filter(project_type=project_type)
+
+    if request.method == 'POST':
+        if 'document' in request.FILES:
+            project_id = request.POST.get('project_id')
+            try:
+                project = get_object_or_404(Project, pk=project_id)
+            except Project.DoesNotExist:
+                return render(request, 'game_studio.html', {'error': 'Project not found', 'projects': projects})
+            file = request.FILES['document']
+            is_model = request.POST.get('is_model', 'off') == 'on'
+            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
+            return HttpResponseRedirect(reverse('game_hub') + f'?project_type={project_type}')
+        elif 'file' in request.FILES:
+            form = ReferenceMaterialForm(request.POST, request.FILES)
+            if form.is_valid():
+                reference_material = form.save(commit=False)
+                project_id = form.cleaned_data['project'].id
+                reference_material.project = get_object_or_404(Project, pk=project_id)
+                reference_material.save()
+                return HttpResponseRedirect(reverse('game_hub') + f'?project_type={project_type}')
+            else:
+                return render(request, 'home/game_studio.html', {'error': 'Invalid form submission', 'projects': projects})
+
+    reference_form = ReferenceMaterialForm()
+    project_data = []
+    for project in projects:
+        phases = project.phases.all()
+        phase_data = []
+        total_hours = 0
+        completed_hours = 0
+        for phase in phases:
+            tasks = phase.tasks.filter(parent_task__isnull=True)
+            total_phase_tasks = phase.tasks.count()
+            completed_phase_tasks = phase.tasks.filter(status='closed').count()
+            phase_completion_percentage = (completed_phase_tasks / total_phase_tasks) * 100 if total_phase_tasks > 0 else 0
+            phase_data.append({
+                'phase': phase,
+                'tasks': tasks,
+                'completion_percentage': phase_completion_percentage
+            })
+            for task in phase.tasks.all():
+                if task.hours:
+                    total_hours += task.hours
+                    if task.status == 'closed':
+                        completed_hours += task.hours
+        remaining_hours = total_hours - completed_hours
+        completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
+        project_data.append({
+            'project': project,
+            'phases': phase_data,
+            'total_hours': total_hours,
+            'completed_hours': completed_hours,
+            'remaining_hours': remaining_hours,
+            'completion_percentage': completion_percentage
+        })
+
+    return render(request, 'home/game_studio.html', {
+        'project_data': project_data,
+        'reference_form': reference_form,
+        'project_type': project_type  # Pass the project_type to the template
+    })
 
 def game_project_detail(request, project_id):
     project = get_object_or_404(GameProject, pk=project_id)
