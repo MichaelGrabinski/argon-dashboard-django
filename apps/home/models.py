@@ -321,3 +321,11 @@ class FinancialReport(models.Model):
     report_file = models.FileField(upload_to='financial_reports/')
     created_at = models.DateTimeField(auto_now_add=True)
     
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    cover_photo = models.ImageField(upload_to='cover_photos/', storage=StaticFileSystemStorage(), null=True, blank=True)
+    about_me = models.TextField(max_length=500, blank=True)
+
+    def __str__(self):
+        return self.user.username

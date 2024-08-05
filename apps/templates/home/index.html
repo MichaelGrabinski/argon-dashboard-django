@@ -17,6 +17,17 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
+        width: 100%; /* Ensure it takes full width */
+
+    }
+    .quick-task-container {
+        width: 100%; /* Default width */
+        margin: 0 auto; /* Center the container */
+    }
+    @media (min-width: 992px) {
+        .center-widget  {
+            width: 85%; /* Adjust width when sidebar is visible on larger screens */
+        }
     }
     .mar {
         margin-left: 10%; /* Offset to the right by 20% */
@@ -132,13 +143,15 @@
 <div class="row mt-4">
     <div class="col">
         <h2 class="text-center">Create a Quick Task</h2>
-        <div class="center-widget">
-            {% include 'home/quick_task_widget.html' %}
+        <div class="quick-task-container">
+            <div class="center-widget">
+                {% include 'home/quick_task_widget.html' %}
+            </div>
         </div>
     </div>
 </div>
-
 <!-- Construction Dashboard -->
+<!--
 <div class="row mt-4">
     <div class="col">
         <h2 class="text-center">Construction Dashboard</h2>
@@ -160,14 +173,15 @@
                     <h4>Budget vs. Actual Spending</h4>
                     <canvas id="budget-vs-spending-chart-{{ metrics.project.id }}"></canvas>
                 </div>
-                -->
+               
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
-
+-->
 <!-- Game Studio Dashboard -->
+<!--
 <div class="row mt-4">
     <div class="col">
         <h2 class="text-center">Game Studio Dashboard</h2>
@@ -188,6 +202,9 @@
         {% endfor %}
     </div>
 </div>
+
+-->
+
 
 <!-- Commented out Budget/Accounting Dashboard -->
 <!--
@@ -212,7 +229,6 @@
     </div>
 </div>
 -->
-
 {% endblock content %}
 
 {% block javascripts %}

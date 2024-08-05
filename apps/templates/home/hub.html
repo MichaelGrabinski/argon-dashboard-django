@@ -1,5 +1,30 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+
+{% block stylesheets %}
+<style>
+.status-open {
+    border-left: 5px solid #007bff; /* Blue */
+}
+
+.status-closed {
+    border-left: 5px solid #28a745; /* Green */
+}
+
+.status-in_progress {
+    border-left: 5px solid #ffc107; /* Yellow */
+}
+
+.status-waiting_for_materials {
+    border-left: 5px solid #17a2b8; /* Teal */
+}
+
+.status-on_hold {
+    border-left: 5px solid #6c757d; /* Gray */
+}
+</style>
+{% endblock stylesheets %}
+
 {% block content %}
 <div class="container">
     <h1>Construction Hub</h1>
@@ -22,56 +47,56 @@
             <textarea class="form-control" rows="5" placeholder="Enter notes here..."></textarea>
             <h2>Documents</h2>
             <form id="documentUploadForm" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="project_id">Project</label>
-        <select class="form-control" id="project_id" name="project_id">
-            {% for project_info in project_data %}
-            <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="document">Upload Document</label>
-        <input type="file" class="form-control" id="document" name="document">
-    </div>
-    <div class="form-group form-check">
-        <input type="checkbox" class="form-check-input" id="is_model" name="is_model">
-        <label class="form-check-label" for="is_model">Is 3D Model</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Upload</button>
-</form>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="project_id">Project</label>
+                    <select class="form-control" id="project_id" name="project_id">
+                        {% for project_info in project_data %}
+                        <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="document">Upload Document</label>
+                    <input type="file" class="form-control" id="document" name="document">
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="is_model" name="is_model">
+                    <label class="form-check-label" for="is_model">Is 3D Model</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
 
-<form id="referenceMaterialForm" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="project">Project</label>
-        <select class="form-control" id="project" name="project">
-            {% for project_info in project_data %}
-            <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="type">Type</label>
-        <select class="form-control" id="type" name="type">
-            <option value="video">Video</option>
-            <option value="schematic">Schematic</option>
-            <option value="note">Note</option>
-            <option value="image">Image</option>
-            <option value="model">3D Model</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="content">Content</label>
-        <input type="text" class="form-control" id="content" name="content" placeholder="Enter URL or text">
-    </div>
-    <div class="form-group">
-        <label for="file">Upload File</label>
-        <input type="file" class="form-control" id="file" name="file">
-    </div>
-    <button type="submit" class="btn btn-primary">Add Reference</button>
-</form>
+            <form id="referenceMaterialForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="project">Project</label>
+                    <select class="form-control" id="project" name="project">
+                        {% for project_info in project_data %}
+                        <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Type</label>
+                    <select class="form-control" id="type" name="type">
+                        <option value="video">Video</option>
+                        <option value="schematic">Schematic</option>
+                        <option value="note">Note</option>
+                        <option value="image">Image</option>
+                        <option value="model">3D Model</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="content">Content</label>
+                    <input type="text" class="form-control" id="content" name="content" placeholder="Enter URL or text">
+                </div>
+                <div class="form-group">
+                    <label for="file">Upload File</label>
+                    <input type="file" class="form-control" id="file" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Reference</button>
+            </form>
             <ul class="list-group mt-3">
                 {% for project_info in project_data %}
                 {% for document in project_info.project.documents.all %}
@@ -87,9 +112,9 @@
             <h2>{{ project_info.project.title }}</h2>
             <p>{{ project_info.project.description }}</p>
 
-            <div class="progress mb-3">
-                <div class="progress-bar" role="progressbar" style="width: {{ project_info.completion_percentage }}%;" aria-valuenow="{{ project_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ project_info.completion_percentage }}%</div>
-            </div>
+<div class="progress mb-3" style="height: 30px;">
+    <div class="progress-bar" role="progressbar" style="width: {{ project_info.completion_percentage|floatformat:1 }}%;" aria-valuenow="{{ project_info.completion_percentage|floatformat:1 }}" aria-valuemin="0" aria-valuemax="100">{{ project_info.completion_percentage|floatformat:1 }}%</div>
+</div>
             <p>Total Hours: {{ project_info.total_hours }}</p>
             <p>Completed Hours: {{ project_info.completed_hours }}</p>
             <p>Remaining Hours: {{ project_info.remaining_hours }}</p>
@@ -114,58 +139,62 @@
                             {% if phase_info.phase.is_critical %}
                             <p><strong>Critical Path</strong></p>
                             {% endif %}
-                            <div class="progress mb-3">
+                            <div class="progress mb-3" style="height: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: {{ phase_info.completion_percentage }}%;" aria-valuenow="{{ phase_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ phase_info.completion_percentage }}%</div>
                             </div>
-                            <h3>Tasks</h3>
-                            <ul class="list-group">
-                                {% for task in phase_info.tasks %}
-                                <li class="list-group-item">
-                                    <h5>{{ task.title }}</h5>
-                                    <p>{{ task.description }}</p>
-                                    <small>
-                                        Status: 
-                                        {% if task.status == 'closed' %}
-                                        <span class="badge badge-success">Closed</span>
-                                        {% elif task.status == 'in_progress' %}
-                                        <span class="badge badge-warning">In Progress</span>
-                                        {% elif task.status == 'waiting_for_materials' %}
-                                        <span class="badge badge-info">Waiting for Materials</span>
-                                        {% elif task.status == 'on_hold' %}
-                                        <span class="badge badge-secondary">On Hold</span>
-                                        {% else %}
-                                        <span class="badge badge-primary">Open</span>
-                                        {% endif %}
-                                        | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
-                                    </small>
-                                    {% if task.subtasks.all %}
-                                    <ul class="list-group mt-2">
-                                        {% for subtask in task.subtasks.all %}
-                                        <li class="list-group-item">
-                                            <h6>{{ subtask.title }}</h6>
-                                            <p>{{ subtask.description }}</p>
-                                            <small>
-                                                Status: 
-                                                {% if subtask.status == 'closed' %}
-                                                <span class="badge badge-success">Closed</span>
-                                                {% elif subtask.status == 'in_progress' %}
-                                                <span class="badge badge-warning">In Progress</span>
-                                                {% elif subtask.status == 'waiting_for_materials' %}
-                                                <span class="badge badge-info">Waiting for Materials</span>
-                                                {% elif subtask.status == 'on_hold' %}
-                                                <span class="badge badge-secondary">On Hold</span>
-                                                {% else %}
-                                                <span class="badge badge-primary">Open</span>
-                                                {% endif %}
-                                                | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
-                                            </small>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                    {% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
+<h3>Tasks</h3>
+<ul class="list-group">
+    {% for task in phase_info.tasks %}
+    <li class="list-group-item status-{{ task.status }}">
+        <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action">
+            <h5>{{ task.title }}</h5>
+            <p>{{ task.description|truncatewords:20 }}</p>
+            <small>
+                Status: 
+                {% if task.status == 'closed' %}
+                <span class="badge badge-success">Closed</span>
+                {% elif task.status == 'in_progress' %}
+                <span class="badge badge-warning">In Progress</span>
+                {% elif task.status == 'waiting_for_materials' %}
+                <span class="badge badge-info">Waiting for Materials</span>
+                {% elif task.status == 'on_hold' %}
+                <span class="badge badge-secondary">On Hold</span>
+                {% else %}
+                <span class="badge badge-primary">Open</span>
+                {% endif %}
+                | Priority: {{ task.get_priority_display }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
+            </small>
+        </a>
+        {% if task.subtasks.all %}
+        <ul class="list-group mt-2">
+            {% for subtask in task.subtasks.all %}
+            <li class="list-group-item status-{{ subtask.status }}">
+                <a href="{% url 'task_detail' subtask.pk %}" class="list-group-item list-group-item-action">
+                    <h6>{{ subtask.title }}</h6>
+                    <p>{{ subtask.description|truncatewords:20 }}</p>
+                    <small>
+                        Status: 
+                        {% if subtask.status == 'closed' %}
+                        <span class="badge badge-success">Closed</span>
+                        {% elif subtask.status == 'in_progress' %}
+                        <span class="badge badge-warning">In Progress</span>
+                        {% elif subtask.status == 'waiting_for_materials' %}
+                        <span class="badge badge-info">Waiting for Materials</span>
+                        {% elif subtask.status == 'on_hold' %}
+                        <span class="badge badge-secondary">On Hold</span>
+                        {% else %}
+                        <span class="badge badge-primary">Open</span>
+                        {% endif %}
+                        | Priority: {{ subtask.get_priority_display }} | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
+                    </small>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
                         </div>
                     </div>
                 </div>

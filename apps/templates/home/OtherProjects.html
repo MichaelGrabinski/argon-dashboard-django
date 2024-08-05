@@ -121,44 +121,20 @@
                             <ul class="list-group">
                                 {% for task in phase_info.tasks %}
                                 <li class="list-group-item">
-                                    <h5>{{ task.title }}</h5>
-                                    <p>{{ task.description }}</p>
-                                    <small>
-                                        Status: 
-                                        {% if task.status == 'closed' %}
-                                        <span class="badge badge-success">Closed</span>
-                                        {% elif task.status == 'in_progress' %}
-                                        <span class="badge badge-warning">In Progress</span>
-                                        {% elif task.status == 'waiting_for_materials' %}
-                                        <span class="badge badge-info">Waiting for Materials</span>
-                                        {% elif task.status == 'on_hold' %}
-                                        <span class="badge badge-secondary">On Hold</span>
-                                        {% else %}
-                                        <span class="badge badge-primary">Open</span>
-                                        {% endif %}
-                                        | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
-                                    </small>
+                                    <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
+                                        <h5>{{ task.title }}</h5>
+                                        <p>{{ task.description|truncatewords:20 }}</p>
+                                        <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}</small>
+                                    </a>
                                     {% if task.subtasks.all %}
                                     <ul class="list-group mt-2">
                                         {% for subtask in task.subtasks.all %}
                                         <li class="list-group-item">
-                                            <h6>{{ subtask.title }}</h6>
-                                            <p>{{ subtask.description }}</p>
-                                            <small>
-                                                Status: 
-                                                {% if subtask.status == 'closed' %}
-                                                <span class="badge badge-success">Closed</span>
-                                                {% elif subtask.status == 'in_progress' %}
-                                                <span class="badge badge-warning">In Progress</span>
-                                                {% elif subtask.status == 'waiting_for_materials' %}
-                                                <span class="badge badge-info">Waiting for Materials</span>
-                                                {% elif subtask.status == 'on_hold' %}
-                                                <span class="badge badge-secondary">On Hold</span>
-                                                {% else %}
-                                                <span class="badge badge-primary">Open</span>
-                                                {% endif %}
-                                                | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
-                                            </small>
+                                            <a href="{% url 'task_detail' subtask.pk %}" class="list-group-item list-group-item-action status-{{ subtask.status }} priority-{{ subtask.priority }}">
+                                                <h6>{{ subtask.title }}</h6>
+                                                <p>{{ subtask.description|truncatewords:20 }}</p>
+                                                <small>Status: {{ subtask.get_status_display }} | Priority: {{ subtask.get_priority_display }} | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}</small>
+                                            </a>
                                         </li>
                                         {% endfor %}
                                     </ul>
