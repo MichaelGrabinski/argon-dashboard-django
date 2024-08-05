@@ -171,6 +171,9 @@ def get_project(title):
     except Project.DoesNotExist:
         print(f"Project {title} does not exist.")
         return None
+    except Project.MultipleObjectsReturned:
+        print(f"Multiple projects found with the title {title}. Please ensure unique project titles.")
+        return None
 
 def get_unit(unit_number):
     try:
@@ -252,6 +255,7 @@ def load_csv(file_path, model, fields, related_fields={}):
                     print(f"Created {model.__name__}: {obj}")
                 else:
                     print(f"Updated {model.__name__}: {obj}")
+
 
 def load_tasks():
     fields = ['title', 'description', 'status', 'due_date', 'priority', 'category', 'hours', 'created_at', 'updated_at']
@@ -473,7 +477,7 @@ def load_financial_reports():
 def load_project_phases():
     fields = ['project', 'name', 'description', 'start_date', 'end_date', 'is_critical']
     related_fields = {
-        'project': get_project,
+        'project': lambda title: get_project(title),
     }
     file_path = 'sample_data/project_phases.csv'
     load_csv(file_path, ProjectPhase, fields, related_fields)
@@ -499,7 +503,7 @@ load_rent_payments()
 #load_tag_houses()
 load_attachments()
 load_comments()
-load_activity_logs()
+#load_activity_logs()
 load_notes()
 load_project_documents()
 load_reference_materials()

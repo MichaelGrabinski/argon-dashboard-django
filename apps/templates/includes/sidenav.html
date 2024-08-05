@@ -3,7 +3,7 @@
     <!-- Brand -->
     <div class="sidenav-header  align-items-center">
       <a class="navbar-brand" href="/">
-        <img src="/static/assets/img/brand/blue.png" class="navbar-brand-img" alt="Argon Design - Jinja Template Logo.">
+        <img src="/static/assets/img/brand/blue.png" class="navbar-brand-img" alt="Argon Design">
       </a>
     </div>
     <div class="navbar-inner">
@@ -40,7 +40,12 @@
               <span class="nav-link-text">Rentals</span>
             </a>           
 </li>
-
+	<li class="nav-item">
+            <a class="nav-link {% if 'vehicles' in segment %} active {% endif %}" href="/vehicles/">
+              <i class="ni ni-bus-front-12 text-blue"></i>
+              <span class="nav-link-text">Cars</span>
+            </a> 		
+		</li>
 
 <li class="nav-item">
             <a class="nav-link {% if 'construction' in segment %} active {% endif %}" href="/construction/">
@@ -50,19 +55,7 @@
 		</li>
 		
 		
-	<li class="nav-item">
-            <a class="nav-link {% if 'vehicles' in segment %} active {% endif %}" href="/vehicles/">
-              <i class="ni ni-bus-front-12 text-blue"></i>
-              <span class="nav-link-text">Cars</span>
-            </a> 		
-		</li>
 
-	<li class="nav-item">
-            <a class="nav-link {% if 'budget-accounting' in segment %} active {% endif %}" href="/budget-accounting/">
-              <i class="ni ni-books text-green"></i>
-              <span class="nav-link-text">Budget</span>
-            </a> 		
-		</li>
 
 		<li class="nav-item">
             <a class="nav-link {% if 'game-studio' in segment %} active {% endif %}" href="/game-studio/">
@@ -73,11 +66,18 @@
 
 		<li class="nav-item">
             <a class="nav-link {% if 'otherprojects' in segment %} active {% endif %}" href="/projects/">
-              <i class="ni ni-controller text-pink"></i>
+              <i class="ni ni-archive-2 text-black"></i>
               <span class="nav-link-text">Other Projects</span>
             </a> 		
 		</li>	
 		
+	<li class="nav-item">
+            <a class="nav-link {% if 'budget-accounting' in segment %} active {% endif %}" href="/budget-accounting/">
+              <i class="ni ni-books text-green"></i>
+              <span class="nav-link-text">Budget</span>
+            </a> 		
+		</li>
+
           <li class="nav-item">
             <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="/profile.html">
               <i class="ni ni-single-02 text-yellow"></i>

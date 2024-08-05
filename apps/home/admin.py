@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Tool
-from apps.home.models import Tool, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo, Location
+from apps.home.models import Tool, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo, Location
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, Tag, OpenRepair, RentPayment, ProjectDocument
 
 
@@ -19,6 +19,7 @@ admin.site.register(Repair)
 admin.site.register(MaintenanceHistory)
 admin.site.register(ScheduledMaintenance)
 admin.site.register(Location)
+admin.site.register(Profile)
 
 admin.site.register(TagHouse)
 admin.site.register(PropertyLocation)
