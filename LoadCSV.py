@@ -105,33 +105,56 @@ def load_csv(file_path, model, fields, related_fields={}):
 load_units()
 '''
 # Helper function to create user if not exists
-def create_user_if_not_exists(username, password):
+# Helper function to create user if not exists
+def create_user_if_not_exists(username, password, is_superuser=False):
     if not User.objects.filter(username=username).exists():
-        User.objects.create_user(username=username, password=password)
+        if is_superuser:
+            User.objects.create_superuser(username=username, password=password)
+        else:
+            User.objects.create_user(username=username, password=password)
 
 # Create users
 create_user_if_not_exists('johndoe', 'password')
 create_user_if_not_exists('janedoe', 'password')
 create_user_if_not_exists('emilyj', 'password')
+create_user_if_not_exists('Nick', 'Dominos07!')
+create_user_if_not_exists('Nicholas', 'Gordneer0121')
+
+# Create superuser
+create_user_if_not_exists('Michael', 'D3lt@', is_superuser=True)
 
 # Create locations
-locations = ['Warehouse', 'Toolbox', 'Workshop', 'Garage', 'Office', 'Electrical Toolbox', 'Spare Room', 
-             'Bin Number Two Yellow Cap', 'Bin Number 1/I Grey Bin Left of Rack', 'Bin Number 1 Yellow Cap', 'Bin Number 4 Yellow Cap']
+locations = [
+    'Warehouse', 'Toolbox', 'Workshop', 'Garage', 'Office', 'Electrical Toolbox', 
+    'Spare Room', 'Bin Number Two Yellow Cap', 'Bin Number 1/I Grey Bin Left of Rack', 
+    'Bin Number 1 Yellow Cap', 'Bin Number 4 Yellow Cap', 'Office - Pulaski',
+    'Construction Site', 'Unit 3 - Fl. 3 - 98 Pulaski St', '98 Pulaski St'
+]
 for location in locations:
     Location.objects.get_or_create(name=location)
+    
+# Create units
+units = [
+    {'unit_number': 'Unit 1 - Floor 1', 'property_name': '98 Pulaski St'},
+    {'unit_number': 'Unit 2 - Floor 2', 'property_name': '98 Pulaski St'},
+    {'unit_number': 'Unit 3 - Floor 3', 'property_name': '98 Pulaski St'},
+]
+for unit in units:
+    property_obj, created = Property.objects.get_or_create(name=unit['property_name'])
+    Unit.objects.get_or_create(unit_number=unit['unit_number'], property=property_obj)
 
 # Create projects
 manager_johndoe = User.objects.get(username='johndoe')
 manager_janedoe = User.objects.get(username='janedoe')
 manager_emilyj = User.objects.get(username='emilyj')
 
-Project.objects.get_or_create(title='Building a Spider Robot', defaults={
-    'description': 'Development and construction of an advanced spider robot',
-    'manager': manager_johndoe,
-    'start_date': '2023-01-01',
-    'end_date': '2023-12-31',
-    'project_type': 'construction'
-})
+#Project.objects.get_or_create(title='Building a Spider Robot', defaults={
+#    'description': 'Development and construction of an advanced spider robot',
+#    'manager': manager_johndoe,
+#    'start_date': '2023-01-01',
+#    'end_date': '2023-12-31',
+#    'project_type': 'construction'
+#})
 
 def parse_date(date_str):
     if not date_str:
@@ -504,10 +527,10 @@ load_rent_payments()
 load_attachments()
 load_comments()
 #load_activity_logs()
-load_notes()
-load_project_documents()
-load_reference_materials()
-load_game_projects()
+#load_notes()
+#load_project_documents()
+#load_reference_materials()
+#load_game_projects()
 #load_budgets()
 #load_expenses()
 #load_financial_reports()
