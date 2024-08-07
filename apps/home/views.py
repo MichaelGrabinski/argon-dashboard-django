@@ -199,6 +199,9 @@ def unit_detail(request, property_pk, unit_pk):
     rent_payments = unit.rent_payments.all()
     open_tickets = Task.objects.filter(location=unit.location, status='open')  # Update this line
 
+    # Debugging
+    print(documents)
+
     context = {
         'property': property,
         'unit': unit,
