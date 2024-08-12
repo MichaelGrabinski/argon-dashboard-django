@@ -10,6 +10,7 @@
         background-size: cover;
         background-position: center;
         height: 100vh;
+		width: 150%;
     }
     .vehicle-info {
         background-color: rgba(255, 255, 255, 0.8);
@@ -58,7 +59,7 @@
         {% for vehicle in vehicles %}
             <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="vehicle-{{ vehicle.pk }}" role="tabpanel" aria-labelledby="tab-{{ vehicle.pk }}">
                 <div class="row">
-                    <div class="col-md-8 left-side">
+                    <div class="col-md-5 left-side">
                         <div class="vehicle-info">
                             <h2>Notes</h2>
                             <ul>
@@ -101,7 +102,7 @@
                             <p><strong>Status:</strong> {{ vehicle.get_status_display }}</p>
                         </div>
                     </div>
-                    <div class="col-md-4 right-side" style="background-image: url({% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
+                    <div class="col-md-7 right-side" style="background-image: url({% if vehicle.image %}{{ vehicle.image.url }}{% else %}{% static 'default_vehicle.png' %}{% endif %});">
                     </div>
                 </div>
             </div>

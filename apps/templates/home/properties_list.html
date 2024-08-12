@@ -17,6 +17,13 @@
         padding: 10px; /* Padding for better spacing */
         border-radius: 5px; /* Rounded corners */
     }
+    .media-container {
+        width: 100%;
+    }
+    .media-container img {
+        width: 100%;
+        height: auto; /* Maintain aspect ratio */
+    }
 </style>
 {% endblock stylesheets %}
 
@@ -50,7 +57,7 @@
                 <p><strong>Contact:</strong> {{ property.owner_contact }}</p>
                 <p><strong>Manager:</strong> {{ property.manager_name }}</p>
               
-                <p><strong>Open Tickets:</strong> {{ property.open_tickets_count }}</p>
+             <!--   <p><strong>Open Tickets:</strong> {{ property.open_tickets_count }}</p>  -->
 
                 {% if property.image_or_video %}
                     <div class="media-container">
