@@ -92,13 +92,41 @@ def pages(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+
+
+
+
+
+
+
+
+
+
+
 @login_required(login_url="/login/")
 def profile_view(request):
-    profile = Profile.objects.get(user=request.user)
+    user = request.user
+    if not user.is_authenticated:
+        print("User is not authenticated")
+        return redirect('/login/')
+    
+    print(f"Logged in user: {user.username}")  # Debugging line
+
+    try:
+        profile = get_object_or_404(Profile, user=user)
+        print(f"Profile: {profile}")  # Debugging line
+        print(f"About Me: {profile.about_me}")  # Debugging line
+        print(f"Profile Picture URL: {profile.profile_picture.url if profile.profile_picture else 'No profile picture'}")  # Debugging line
+    except Profile.DoesNotExist:
+        print("Profile does not exist for the user")
+        profile = None
+
     context = {
-        'profile': profile
+        'profile': profile,
+        'user': user
     }
     return render(request, 'home/profile.html', context)
+       
 
 
 def tool_list(request):
@@ -405,10 +433,10 @@ def construction_hub(request):
         'reference_form': reference_form,
         'project_type': project_type  # Pass the project_type to the template
     })
-
+    
 def other_hub(request):
     # Set default project_type to 'construction'
-    project_type = request.GET.get('project_type', 'other')
+    project_type = request.GET.get('project_type', 'construction')
     
     # Filter projects by the specified or default project type
     projects = Project.objects.filter(project_type=project_type)
@@ -473,7 +501,6 @@ def other_hub(request):
         'reference_form': reference_form,
         'project_type': project_type  # Pass the project_type to the template
     })
-
     
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)

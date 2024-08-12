@@ -32,7 +32,14 @@
           <div class="col-lg-3 order-lg-2">
             <div class="card-profile-image">
               <a href="#">
-                <img src='{% static profile.profile_picture.url %}' class="rounded-circle">
+                
+				
+	
+
+
+				
+				<img src="{{ profile.profile_picture.url }}" class="rounded-circle">
+				<img src='{% static profile.profile_picture.url %}' class="rounded-circle">
               </a>
             </div>
           </div>
@@ -46,6 +53,8 @@
         <div class="card-body pt-0">
           <div class="row">
             <div class="col">
+			
+
 			<!--
               <div class="card-profile-stats d-flex justify-content-center">
                 <div>
@@ -80,6 +89,13 @@
             <div>
               <i class="ni education_hat mr-2"></i>Placeholder
             </div>
+						<div>
+<div>
+    <p>Username: {{ request.user.username }}</p>
+    <p>Email: {{ request.user.email }}</p>
+    <p>About Me: {{ profile.about_me }}</p>
+    <p>Profile Picture URL: {{ profile.profile_picture.url }}</p>
+</div>
           </div>
         </div>
       </div>

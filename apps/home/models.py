@@ -5,7 +5,11 @@ from django.db import models
 import os
 #from .models import Location
 from .custom_storage import StaticFileSystemStorage
-
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 def get_static_image_path(instance, filename):
     return os.path.join('static', 'tools_images', filename)
@@ -220,39 +224,42 @@ class ProjectPhase(models.Model):
         
         
 class Task(models.Model):
-        STATUS_CHOICES = (
-            ('open', 'Open'),
-            ('closed', 'Closed'),
-            ('in_progress', 'In Progress'),
-            ('waiting_for_materials', 'Waiting for Materials'),
-            ('on_hold', 'On Hold'),
-        )
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('in_progress', 'In Progress'),
+        ('waiting_for_materials', 'Waiting for Materials'),
+        ('on_hold', 'On Hold'),
+    )
 
-        PRIORITY_CHOICES = (
-            ('low', 'Low'),
-            ('medium', 'Medium'),
-            ('high', 'High'),
-        )
+    PRIORITY_CHOICES = (
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    )
 
-        title = models.CharField(max_length=200)
-        description = models.TextField()
-        status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='open')
-        due_date = models.DateField(null=True, blank=True)
-        priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
-        category = models.CharField(max_length=100, null=True, blank=True)
-        hours = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-        assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
-        created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
-        created_at = models.DateTimeField(auto_now_add=True)
-        updated_at = models.DateTimeField(auto_now=True)
-        tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
-        location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)  # Ensure this line is present
-        project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)  # Add this line if not already present
-        phase = models.ForeignKey(ProjectPhase, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
-        parent_task = models.ForeignKey('self', on_delete=models.CASCADE, related_name='subtasks', null=True, blank=True)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='open')
+    due_date = models.DateField(null=True, blank=True)
+    start_date = models.DateTimeField(default=timezone.now)  # Add this line
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    progress = models.FloatField(default=0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    completed_date = models.DateTimeField(null=True, blank=True)
+    category = models.CharField(max_length=100, null=True, blank=True)
+    hours = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tasks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    tags = models.ManyToManyField(TagHouse, related_name='tasks', blank=True)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    phase = models.ForeignKey(ProjectPhase, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    parent_task = models.ForeignKey('self', on_delete=models.CASCADE, related_name='subtasks', null=True, blank=True)
 
-        def __str__(self):
-            return self.title
+    def __str__(self):
+        return self.title
 
 class Attachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
@@ -329,3 +336,13 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+        
+        
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
