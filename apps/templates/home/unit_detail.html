@@ -36,11 +36,12 @@
             <div class="section-content">
                 <h2 class="section-title">Documents</h2>
                 <ul>
+				
+				
+				
                     {% for document in documents %}
                         <li>
                             <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
-                            <!-- Debugging -->
-                            <p>{{ document.file.url }}</p>
                         </li>
                     {% endfor %}
                 </ul>
@@ -58,7 +59,7 @@
                     {% endfor %}
                 </div>
             </div>
-
+<!--
             <div class="section-content">
                 <h2 class="section-title">Maintenance Records</h2>
                 <ul>
@@ -69,7 +70,7 @@
             </div>
 
             <div class="section-content">
-         <!--
+         
          <h2 class="section-title">Open Repairs</h2>
                 <ul>
                     {% for repair in open_repairs %}
@@ -77,7 +78,6 @@
                     {% endfor %}
                 </ul>
             </div>
--->
             <div class="section-content">
                 <h2 class="section-title">Rent Payments</h2>
                 <ul>
@@ -86,6 +86,8 @@
                     {% endfor %}
                 </ul>
             </div>
+			
+			-->
         </div>
         <div class="col-md-4">
             {% if unit.image_or_video %}

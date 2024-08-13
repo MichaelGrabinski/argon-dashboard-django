@@ -32,14 +32,7 @@
           <div class="col-lg-3 order-lg-2">
             <div class="card-profile-image">
               <a href="#">
-                
-				
-	
-
-
-				
-				<img src="{{ profile.profile_picture.url }}" class="rounded-circle">
-				<img src='{% static profile.profile_picture.url %}' class="rounded-circle">
+				<img src="{% static 'Darth_Vader.webp' %}" class="rounded-circle">
               </a>
             </div>
           </div>
@@ -89,14 +82,26 @@
             <div>
               <i class="ni education_hat mr-2"></i>Placeholder
             </div>
+			
+			<!--
 						<div>
 <div>
     <p>Username: {{ request.user.username }}</p>
-    <p>Email: {{ request.user.email }}</p>
+	<p>UsernameP: {{ profile.user }}</p>
+    <p>Email: {{ profile.user }}</p>
     <p>About Me: {{ profile.about_me }}</p>
-    <p>Profile Picture URL: {{ profile.profile_picture.url }}</p>
+    <p>Profile Picture URL: {{ profile.profile_picture }}</p>
+</div>
+
+<div>
+
+    <p>About Me: {{ profile.about_me }}</p>
+    <p>Profile Picture URL: {% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}No profile picture{% endif %}</p>
 </div>
           </div>
+		  
+		  
+		  -->
         </div>
       </div>
     </div>

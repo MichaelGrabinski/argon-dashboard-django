@@ -103,30 +103,34 @@ def pages(request):
 
 
 
+from django.contrib.auth.models import User
+
 @login_required(login_url="/login/")
 def profile_view(request):
-    user = request.user
-    if not user.is_authenticated:
-        print("User is not authenticated")
-        return redirect('/login/')
-    
-    print(f"Logged in user: {user.username}")  # Debugging line
-
     try:
+        user = User.objects.get(username='mikey')
         profile = get_object_or_404(Profile, user=user)
         print(f"Profile: {profile}")  # Debugging line
         print(f"About Me: {profile.about_me}")  # Debugging line
         print(f"Profile Picture URL: {profile.profile_picture.url if profile.profile_picture else 'No profile picture'}")  # Debugging line
+    except User.DoesNotExist:
+        print("User 'mikey' does not exist")
+        return HttpResponse("User 'mikey' does not exist.", status=404)
     except Profile.DoesNotExist:
-        print("Profile does not exist for the user")
-        profile = None
+        print("Profile does not exist for the user 'mikey'")
+        return HttpResponse("Profile does not exist for the user 'mikey'.", status=404)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return HttpResponse("An unexpected error occurred.", status=500)
 
     context = {
         'profile': profile,
         'user': user
     }
+    print(f"Context: {context}")  # Debugging line
     return render(request, 'home/profile.html', context)
-       
+    
+    
 
 
 def tool_list(request):

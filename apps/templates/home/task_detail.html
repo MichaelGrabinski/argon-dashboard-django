@@ -37,7 +37,7 @@
     <h2>Attachments</h2>
     <ul>
         {% for attachment in attachments %}
-            <li><a href="{{ attachment.file.url }}">{{ attachment.file.name }}</a></li>
+            <li><a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a></li>
         {% endfor %}
     </ul>
     <form method="post" enctype="multipart/form-data">

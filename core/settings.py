@@ -28,7 +28,9 @@ INSTALLED_APPS = [
     'apps.home'  # Enable the inner home (home)
 ]
 
+
 MIDDLEWARE = [
+    'apps.home.middleware.ContextLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
