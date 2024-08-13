@@ -19,6 +19,11 @@ from django.contrib.auth.models import User
 from .models import Task, Tool, MaintenanceRecord
 from .metrics import get_project_progress, get_task_status_distribution, get_budget_vs_actual_spending, get_expense_breakdown
 from django.db.models import Count, Sum, F
+from .serializers import TaskSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
 
 @login_required(login_url="/login/")
 def index(request):
@@ -655,3 +660,13 @@ def get_budget_vs_actual_spending(project):
 def get_expense_breakdown(project):
     expense_breakdown = Expense.objects.filter(project=project).values('category').annotate(amount=Sum('amount'))
     return expense_breakdown
+    
+
+@api_view(['GET'])
+def data_list(request, offset):
+    if request.method == 'GET':
+        tasks = Task.objects.all()
+        taskData = TaskSerializer(tasks, many=True)
+        return Response({
+            "data": taskData.data
+        })

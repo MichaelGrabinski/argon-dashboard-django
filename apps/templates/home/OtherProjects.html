@@ -1,398 +1,389 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
-{% block stylesheets %}
-<style>
-.status-open {
-    border-left: 5px solid #007bff; /* Blue */
-}
+   {% load static %}
+   {% block stylesheets %}
+   <style>
+   .status-open {
+       border-left: 5px solid #007bff; /* Blue */
+   }
 
-.status-closed {
-    border-left: 5px solid #28a745; /* Green */
-}
+   .status-closed {
+       border-left: 5px solid #28a745; /* Green */
+   }
 
-.status-in_progress {
-    border-left: 5px solid #ffc107; /* Yellow */
-}
+   .status-in_progress {
+       border-left: 5px solid #ffc107; /* Yellow */
+   }
 
-.status-waiting_for_materials {
-    border-left: 5px solid #17a2b8; /* Teal */
-}
+   .status-waiting_for_materials {
+       border-left: 5px solid #17a2b8; /* Teal */
+   }
 
-.status-on_hold {
-    border-left: 5px solid #6c757d; /* Gray */
-}
-</style>
-<script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
-<link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
-{% endblock stylesheets %}
-{% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Projects Hub</h1>
-    {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    <div class="dropdown mb-3" style="position: absolute; top: 100px; left: 10px;">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="projectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Select Project
-        </button>
-        <div class="dropdown-menu" aria-labelledby="projectDropdown">
-            <a class="dropdown-item" href="#hub" data-toggle="tab">Hub</a>
-            {% for project_info in project_data %}
-            <a class="dropdown-item" href="#project-{{ project_info.project.id }}" data-toggle="tab">{{ project_info.project.title }}</a>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="tab-content mt-5" id="projectTabsContent">
-        <div class="tab-pane fade show active" id="hub" role="tabpanel">
-            <ul class="nav nav-tabs" id="hubDetailTabs" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="hub-main-tab" data-toggle="tab" href="#hub-main" role="tab" aria-controls="hub-main" aria-selected="true">Main</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="hub-schedule-tab" data-toggle="tab" href="#hub-schedule" role="tab" aria-controls="hub-schedule" aria-selected="false">Schedule</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="hubDetailTabsContent">
-                <div class="tab-pane fade show active" id="hub-main" role="tabpanel" aria-labelledby="hub-main-tab">
-                    <h2>Notes</h2>
-                    <textarea class="form-control" rows="5" placeholder="Enter notes here..."></textarea>
-                    <h2>Documents</h2>
-                    <form id="documentUploadForm" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="project_id">Project</label>
-                            <select class="form-control" id="project_id" name="project_id">
-                                {% for project_info in project_data %}
-                                <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="document">Upload Document</label>
-                            <input type="file" class="form-control" id="document" name="document">
-                        </div>
-                        <div class="form-group form-check">
-                            <input type="checkbox" class="form-check-input" id="is_model" name="is_model">
-                            <label class="form-check-label" for="is_model">Is 3D Model</label>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </form>
+   .status-on_hold {
+       border-left: 5px solid #6c757d; /* Gray */
+   }
+   </style>
+   <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+   <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
+   {% endblock stylesheets %}
+   {% block content %}
+   <div class="container mt-4">
+       <h1 class="mb-4">Projects Hub</h1>
+       {% if error %}
+       <div class="alert alert-danger">{{ error }}</div>
+       {% endif %}
+       <div class="dropdown mb-3" style="position: absolute; top: 100px; left: 10px;">
+           <button class="btn btn-secondary dropdown-toggle" type="button" id="projectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+               Select Project
+           </button>
+           <div class="dropdown-menu" aria-labelledby="projectDropdown">
+               <a class="dropdown-item" href="#hub" data-toggle="tab">Hub</a>
+               {% for project_info in project_data %}
+               <a class="dropdown-item" href="#project-{{ project_info.project.id }}" data-toggle="tab">{{ project_info.project.title }}</a>
+               {% endfor %}
+           </div>
+       </div>
+       <div class="tab-content mt-5" id="projectTabsContent">
+           <div class="tab-pane fade show active" id="hub" role="tabpanel">
+               <ul class="nav nav-tabs" id="hubDetailTabs" role="tablist">
+                   <li class="nav-item">
+                       <a class="nav-link active" id="hub-main-tab" data-toggle="tab" href="#hub-main" role="tab" aria-controls="hub-main" aria-selected="true">Main</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link" id="hub-schedule-tab" data-toggle="tab" href="#hub-schedule" role="tab" aria-controls="hub-schedule" aria-selected="false">Schedule</a>
+                   </li>
+               </ul>
+               <div class="tab-content" id="hubDetailTabsContent">
+                   <div class="tab-pane fade show active" id="hub-main" role="tabpanel" aria-labelledby="hub-main-tab">
+                       <h2>Notes</h2>
+                       <textarea class="form-control" rows="5" placeholder="Enter notes here..."></textarea>
+                       <h2>Documents</h2>
+                       <form id="documentUploadForm" method="post" enctype="multipart/form-data">
+                           {% csrf_token %}
+                           <div class="form-group">
+                               <label for="project_id">Project</label>
+                               <select class="form-control" id="project_id" name="project_id">
+                                   {% for project_info in project_data %}
+                                   <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
+                                   {% endfor %}
+                               </select>
+                           </div>
+                           <div class="form-group">
+                               <label for="document">Upload Document</label>
+                               <input type="file" class="form-control" id="document" name="document">
+                           </div>
+                           <div class="form-group form-check">
+                               <input type="checkbox" class="form-check-input" id="is_model" name="is_model">
+                               <label class="form-check-label" for="is_model">Is 3D Model</label>
+                           </div>
+                           <button type="submit" class="btn btn-primary">Upload</button>
+                       </form>
 
-                    <form id="referenceMaterialForm" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="project">Project</label>
-                            <select class="form-control" id="project" name="project">
-                                {% for project_info in project_data %}
-                                <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="type">Type</label>
-                            <select class="form-control" id="type" name="type">
-                                <option value="video">Video</option>
-                                <option value="schematic">Schematic</option>
-                                <option value="note">Note</option>
-                                <option value="image">Image</option>
-                                <option value="model">3D Model</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="content">Content</label>
-                            <input type="text" class="form-control" id="content" name="content" placeholder="Enter URL or text">
-                        </div>
-                        <div class="form-group">
-                            <label for="file">Upload File</label>
-                            <input type="file" class="form-control" id="file" name="file">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Reference</button>
-                    </form>
-                    <ul class="list-group mt-3">
-                        {% for project_info in project_data %}
-                        {% for document in project_info.project.documents.all %}
-                        <li class="list-group-item">
-                            <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
-                        </li>
-                        {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="tab-pane fade" id="hub-schedule" role="tabpanel" aria-labelledby="hub-schedule-tab">
-                    <div id="schedule-container"></div>
-                </div>
-            </div>
-        </div>
-        {% for project_info in project_data %}
-        <div class="tab-pane fade" id="project-{{ project_info.project.id }}" role="tabpanel">
-            <ul class="nav nav-tabs" id="projectDetailTabs-{{ project_info.project.id }}" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}" aria-selected="true">Main</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="breakdown-tab-{{ project_info.project.id }}" data-toggle="tab" href="#breakdown-{{ project_info.project.id }}" role="tab" aria-controls="breakdown-{{ project_info.project.id }}" aria-selected="false">Breakdown Chart</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="reference-tab-{{ project_info.project.id }}" data-toggle="tab" href="#reference-{{ project_info.project.id }}" role="tab" aria-controls="reference-{{ project_info.project.id }}" aria-selected="false">Reference</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="schedule-tab-{{ project_info.project.id }}" data-toggle="tab" href="#schedule-{{ project_info.project.id }}" role="tab" aria-controls="schedule-{{ project_info.project.id }}" aria-selected="false">Schedule</a>
-                </li>
-            </ul>
-            <div class="tab-content" id="projectDetailTabsContent-{{ project_info.project.id }}">
-                <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
-                    <h2 class="mt-4">{{ project_info.project.title }}</h2>
-                    <p>{{ project_info.project.description }}</p>
+                       <form id="referenceMaterialForm" method="post" enctype="multipart/form-data">
+                           {% csrf_token %}
+                           <div class="form-group">
+                               <label for="project">Project</label>
+                               <select class="form-control" id="project" name="project">
+                                   {% for project_info in project_data %}
+                                   <option value="{{ project_info.project.id }}">{{ project_info.project.title }}</option>
+                                   {% endfor %}
+                               </select>
+                           </div>
+                           <div class="form-group">
+                               <label for="type">Type</label>
+                               <select class="form-control" id="type" name="type">
+                                   <option value="video">Video</option>
+                                   <option value="schematic">Schematic</option>
+                                   <option value="note">Note</option>
+                                   <option value="image">Image</option>
+                                   <option value="model">3D Model</option>
+                               </select>
+                           </div>
+                           <div class="form-group">
+                               <label for="content">Content</label>
+                               <input type="text" class="form-control" id="content" name="content" placeholder="Enter URL or text">
+                           </div>
+                           <div class="form-group">
+                               <label for="file">Upload File</label>
+                               <input type="file" class="form-control" id="file" name="file">
+                           </div>
+                           <button type="submit" class="btn btn-primary">Add Reference</button>
+                       </form>
+                       <ul class="list-group mt-3">
+                           {% for project_info in project_data %}
+                           {% for document in project_info.project.documents.all %}
+                           <li class="list-group-item">
+                               <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
+                           </li>
+                           {% endfor %}
+                           {% endfor %}
+                       </ul>
+                   </div>
+                   <div class="tab-pane fade" id="hub-schedule" role="tabpanel" aria-labelledby="hub-schedule-tab">
+                       <div id="schedule-container"></div>
+                   </div>
+               </div>
+           </div>
+           {% for project_info in project_data %}
+           <div class="tab-pane fade" id="project-{{ project_info.project.id }}" role="tabpanel">
+               <ul class="nav nav-tabs" id="projectDetailTabs-{{ project_info.project.id }}" role="tablist">
+                   <li class="nav-item">
+                       <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}" aria-selected="true">Main</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link" id="breakdown-tab-{{ project_info.project.id }}" data-toggle="tab" href="#breakdown-{{ project_info.project.id }}" role="tab" aria-controls="breakdown-{{ project_info.project.id }}" aria-selected="false">Breakdown Chart</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link" id="reference-tab-{{ project_info.project.id }}" data-toggle="tab" href="#reference-{{ project_info.project.id }}" role="tab" aria-controls="reference-{{ project_info.project.id }}" aria-selected="false">Reference</a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link" id="schedule-tab-{{ project_info.project.id }}" data-toggle="tab" href="#schedule-{{ project_info.project.id }}" role="tab" aria-controls="schedule-{{ project_info.project.id }}" aria-selected="false">Schedule</a>
+                   </li>
+               </ul>
+               <div class="tab-content" id="projectDetailTabsContent-{{ project_info.project.id }}">
+                   <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
+                       <h2 class="mt-4">{{ project_info.project.title }}</h2>
+                       <p>{{ project_info.project.description }}</p>
 
-                    <div class="progress mb-3">
-                        <div class="progress-bar" role="progressbar" style="width: {{ project_info.completion_percentage }}%;" aria-valuenow="{{ project_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ project_info.completion_percentage }}%</div>
-                    </div>
-                    <p>Total Hours: {{ project_info.total_hours }}</p>
-                    <p>Completed Hours: {{ project_info.completed_hours }}</p>
-                    <p>Remaining Hours: {{ project_info.remaining_hours }}</p>
+                       <div class="progress mb-3">
+                           <div class="progress-bar" role="progressbar" style="width: {{ project_info.completion_percentage }}%;" aria-valuenow="{{ project_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ project_info.completion_percentage }}%</div>
+                       </div>
+                       <p>Total Hours: {{ project_info.total_hours }}</p>
+                       <p>Completed Hours: {{ project_info.completed_hours }}</p>
+                       <p>Remaining Hours: {{ project_info.remaining_hours }}</p>
 
-                    <h2>Phases</h2>
-                    <div class="accordion" id="phasesAccordion-{{ project_info.project.id }}">
-                        {% for phase_info in project_info.phases %}
-                        <div class="card">
-                            <div class="card-header" id="heading-{{ phase_info.phase.id }}">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link w-100 text-left" type="button" data-toggle="collapse" data-target="#collapse-{{ phase_info.phase.id }}" aria-expanded="true" aria-controls="collapse-{{ phase_info.phase.id }}">
-                                        {{ phase_info.phase.name }}
-                                    </button>
-                                </h2>
-                            </div>
+                       <h2>Phases</h2>
+                       <div class="accordion" id="phasesAccordion-{{ project_info.project.id }}">
+                           {% for phase_info in project_info.phases %}
+                           <div class="card">
+                               <div class="card-header" id="heading-{{ phase_info.phase.id }}">
+                                   <h2 class="mb-0">
+                                       <button class="btn btn-link w-100 text-left" type="button" data-toggle="collapse" data-target="#collapse-{{ phase_info.phase.id }}" aria-expanded="true" aria-controls="collapse-{{ phase_info.phase.id }}">
+                                           {{ phase_info.phase.name }}
+                                       </button>
+                                   </h2>
+                               </div>
 
-                            <div id="collapse-{{ phase_info.phase.id }}" class="collapse" aria-labelledby="heading-{{ phase_info.phase.id }}" data-parent="#phasesAccordion-{{ project_info.project.id }}">
-                                <div class="card-body">
-                                    <p>{{ phase_info.phase.description }}</p>
-                                    <p>Start Date: {{ phase_info.phase.start_date }}</p>
-                                    <p>End Date: {{ phase_info.phase.end_date }}</p>
-                                    {% if phase_info.phase.is_critical %}
-                                    <p><strong>Critical Path</strong></p>
-                                    {% endif %}
-                                    <div class="progress mb-3">
-                                        <div class="progress-bar" role="progressbar" style="width: {{ phase_info.completion_percentage }}%;" aria-valuenow="{{ phase_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ phase_info.completion_percentage }}%</div>
-                                    </div>
+                               <div id="collapse-{{ phase_info.phase.id }}" class="collapse" aria-labelledby="heading-{{ phase_info.phase.id }}" data-parent="#phasesAccordion-{{ project_info.project.id }}">
+                                   <div class="card-body">
+                                       <p>{{ phase_info.phase.description }}</p>
+                                       <p>Start Date: {{ phase_info.phase.start_date }}</p>
+                                       <p>End Date: {{ phase_info.phase.end_date }}</p>
+                                       {% if phase_info.phase.is_critical %}
+                                       <p><strong>Critical Path</strong></p>
+                                       {% endif %}
+                                       <div class="progress mb-3">
+                                           <div class="progress-bar" role="progressbar" style="width: {{ phase_info.completion_percentage }}%;" aria-valuenow="{{ phase_info.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ phase_info.completion_percentage }}%</div>
+                                       </div>
 
-                                    <h3>Tasks</h3>
-                                    <ul class="list-group">
-                                        {% for task in phase_info.tasks %}
-                                        <li class="list-group-item status-{{ task.status }}">
-                                            <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action">
-                                                <h5>{{ task.title }}</h5>
-                                                <p>{{ task.description|truncatewords:20 }}</p>
-                                                <small>
-                                                    Status: 
-                                                    {% if task.status == 'closed' %}
-                                                    <span class="badge badge-success">Closed</span>
-                                                    {% elif task.status == 'in_progress' %}
-                                                    <span class="badge badge-warning">In Progress</span>
-                                                    {% elif task.status == 'waiting_for_materials' %}
-                                                    <span class="badge badge-info">Waiting for Materials</span>
-                                                    {% elif task.status == 'on_hold' %}
-                                                    <span class="badge badge-secondary">On Hold</span>
-                                                    {% else %}
-                                                    <span class="badge badge-primary">Open</span>
-                                                    {% endif %}
-                                                    | Priority: {{ task.get_priority_display }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
-                                                </small>
-                                            </a>
-                                            {% if task.subtasks.all %}
-                                            <ul class="list-group mt-2">
-                                                {% for subtask in task.subtasks.all %}
-                                                <li class="list-group-item status-{{ subtask.status }}">
-                                                    <a href="{% url 'task_detail' subtask.pk %}" class="list-group-item list-group-item-action">
-                                                        <h6>{{ subtask.title }}</h6>
-                                                        <p>{{ subtask.description|truncatewords:20 }}</p>
-                                                        <small>
-                                                            Status: 
-                                                            {% if subtask.status == 'closed' %}
-                                                            <span class="badge badge-success">Closed</span>
-                                                            {% elif subtask.status == 'in_progress' %}
-                                                            <span class="badge badge-warning">In Progress</span>
-                                                            {% elif subtask.status == 'waiting_for_materials' %}
-                                                            <span class="badge badge-info">Waiting for Materials</span>
-                                                            {% elif subtask.status == 'on_hold' %}
-                                                            <span class="badge badge-secondary">On Hold</span>
-                                                            {% else %}
-                                                            <span class="badge badge-primary">Open</span>
-                                                            {% endif %}
-                                                            | Priority: {{ subtask.get_priority_display }} | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
-                                                        </small>
-                                                    </a>
-                                                </li>
-                                                {% endfor %}
-                                            </ul>
-                                            {% endif %}
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+                                       <h3>Tasks</h3>
+                                       <ul class="list-group">
+                                           {% for task in phase_info.tasks %}
+                                           <li class="list-group-item status-{{ task.status }}">
+                                               <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action">
+                                                   <h5>{{ task.title }}</h5>
+                                                   <p>{{ task.description|truncatewords:20 }}</p>
+                                                   <small>
+                                                       Status: 
+                                                       {% if task.status == 'closed' %}
+                                                       <span class="badge badge-success">Closed</span>
+                                                       {% elif task.status == 'in_progress' %}
+                                                       <span class="badge badge-warning">In Progress</span>
+                                                       {% elif task.status == 'waiting_for_materials' %}
+                                                       <span class="badge badge-info">Waiting for Materials</span>
+                                                       {% elif task.status == 'on_hold' %}
+                                                       <span class="badge badge-secondary">On Hold</span>
+                                                       {% else %}
+                                                       <span class="badge badge-primary">Open</span>
+                                                       {% endif %}
+                                                       | Priority: {{ task.get_priority_display }} | Due: {{ task.due_date }} | Assigned to: {{ task.assigned_to.username }}
+                                                   </small>
+                                               </a>
+                                               {% if task.subtasks.all %}
+                                               <ul class="list-group mt-2">
+                                                   {% for subtask in task.subtasks.all %}
+                                                   <li class="list-group-item status-{{ subtask.status }}">
+                                                       <a href="{% url 'task_detail' subtask.pk %}" class="list-group-item list-group-item-action">
+                                                           <h6>{{ subtask.title }}</h6>
+                                                           <p>{{ subtask.description|truncatewords:20 }}</p>
+                                                           <small>
+                                                               Status: 
+                                                               {% if subtask.status == 'closed' %}
+                                                               <span class="badge badge-success">Closed</span>
+                                                               {% elif subtask.status == 'in_progress' %}
+                                                               <span class="badge badge-warning">In Progress</span>
+                                                               {% elif subtask.status == 'waiting_for_materials' %}
+                                                               <span class="badge badge-info">Waiting for Materials</span>
+                                                               {% elif subtask.status == 'on_hold' %}
+                                                               <span class="badge badge-secondary">On Hold</span>
+                                                               {% else %}
+                                                               <span class="badge badge-primary">Open</span>
+                                                               {% endif %}
+                                                               | Priority: {{ subtask.get_priority_display }} | Due: {{ subtask.due_date }} | Assigned to: {{ subtask.assigned_to.username }}
+                                                           </small>
+                                                       </a>
+                                                   </li>
+                                                   {% endfor %}
+                                               </ul>
+                                               {% endif %}
+                                           </li>
+                                           {% endfor %}
+                                       </ul>
+                                   </div>
+                               </div>
+                           </div>
+                           {% endfor %}
+                       </div>
+                   </div>
 
-                <div class="tab-pane fade" id="gantt-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gantt-tab-{{ project_info.project.id }}">
-                    <div id="gantt_here_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
-                </div>
+                   <div class="tab-pane fade" id="gantt-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gantt-tab-{{ project_info.project.id }}">
+                       <div id="gantt_here_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
+                   </div>
 
-                <div class="tab-pane fade" id="breakdown-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="breakdown-tab-{{ project_info.project.id }}">
-                    <!-- Breakdown chart content -->
-                    <div id="breakdown-chart"></div>
-                </div>
-                <div class="tab-pane fade" id="reference-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="reference-tab-{{ project_info.project.id }}">
-                    <h3>Reference</h3>
-                    <ul class="nav nav-tabs" id="referenceTabs-{{ project_info.project.id }}" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="videos-tab-{{ project_info.project.id }}" data-toggle="tab" href="#videos-{{ project_info.project.id }}" role="tab" aria-controls="videos-{{ project_info.project.id }}" aria-selected="true">Videos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="schematics-tab-{{ project_info.project.id }}" data-toggle="tab" href="#schematics-{{ project_info.project.id }}" role="tab" aria-controls="schematics-{{ project_info.project.id }}" aria-selected="false">Schematics</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="notes-tab-{{ project_info.project.id }}" data-toggle="tab" href="#notes-{{ project_info.project.id }}" role="tab" aria-controls="notes-{{ project_info.project.id }}" aria-selected="false">Notes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="gallery-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gallery-{{ project_info.project.id }}" role="tab" aria-controls="gallery-{{ project_info.project.id }}" aria-selected="false">Gallery</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="model-tab-{{ project_info.project.id }}" data-toggle="tab" href="#model-{{ project_info.project.id }}" role="tab" aria-controls="model-{{ project_info.project.id }}" aria-selected="false">Model Interactor</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="chat-tab-{{ project_info.project.id }}" data-toggle="tab" href="#chat-{{ project_info.project.id }}" role="tab" aria-controls="chat-{{ project_info.project.id }}" aria-selected="false">Chat</a>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="referenceTabsContent-{{ project_info.project.id }}">
-                        <div class="tab-pane fade show active" id="videos-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="videos-tab-{{ project_info.project.id }}">
-                            <div class="row">
-                                {% for video in project_info.project.references.all %}
-                                {% if video.type == 'video' %}
-                                <div class="col-md-4">
-                                    <div class="embed-responsive embed-responsive-16by9">
-                                        <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="schematics-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schematics-tab-{{ project_info.project.id }}">
-                            <ul class="list-group">
-                                {% for schematic in project_info.project.references.all %}
-                                {% if schematic.type == 'schematic' %}
-                                <li class="list-group-item">
-                                    <a href="{{ schematic.content }}" target="_blank">{{ schematic.content }}</a>
-                                </li>
-                                {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="tab-pane fade" id="notes-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="notes-tab-{{ project_info.project.id }}">
-                            <ul class="list-group">
-                                {% for note in project_info.project.references.all %}
-                                {% if note.type == 'note' %}
-                                <li class="list-group-item">{{ note.content }}</li>
-                                {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="tab-pane fade" id="gallery-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gallery-tab-{{ project_info.project.id }}">
-                            <div class="row">
-                                {% for media in project_info.project.references.all %}
-                                {% if media.type == 'image' or media.type == 'video' %}
-                                <div class="col-md-4">
-                                    {% if media.type == 'image' %}
-                                    <img src="{{ media.content }}" class="img-fluid" alt="Gallery Image">
-                                    {% elif media.type == 'video' %}
-                                    <div class="embed-responsive embed-responsive-16by9">
-                                        <iframe class="embed-responsive-item" src="{{ media.content }}" allowfullscreen></iframe>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="model-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="model-tab-{{ project_info.project.id }}">
-                            {% for document in project_info.project.documents.all %}
-                            {% if document.is_model %}
-                            <div id="model-viewer-container-{{ document.id }}" style="position: relative; width: 100%; height: 300px; margin-bottom: 20px;">
-                                <model-viewer src="{{ document.file.url }}" alt="3D Model" auto-rotate camera-controls style="width: 100%; height: 100%;"></model-viewer>
-                                <button class="fullscreen-button" style="position: absolute; top: 10px; right: 10px; z-index: 10;">Full Screen</button>
-                            </div>
-                            {% endif %}
-                            {% endfor %}
-                        </div>
-                        <div class="tab-pane fade" id="chat-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="chat-tab-{{ project_info.project.id }}">
-                            <div id="chat-container">
-                                <!-- Insert Chat Widget or Chat Code Here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="schedule-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schedule-tab-{{ project_info.project.id }}">
-                    <!-- Schedule content -->
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endblock %}
+                   <div class="tab-pane fade" id="breakdown-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="breakdown-tab-{{ project_info.project.id }}">
+                       <!-- Breakdown chart content -->
+                       <div id="breakdown-chart"></div>
+                   </div>
+                   <div class="tab-pane fade" id="reference-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="reference-tab-{{ project_info.project.id }}">
+                       <h3>Reference</h3>
+                       <ul class="nav nav-tabs" id="referenceTabs-{{ project_info.project.id }}" role="tablist">
+                           <li class="nav-item">
+                               <a class="nav-link active" id="videos-tab-{{ project_info.project.id }}" data-toggle="tab" href="#videos-{{ project_info.project.id }}" role="tab" aria-controls="videos-{{ project_info.project.id }}" aria-selected="true">Videos</a>
+                           </li>
+                           <li class="nav-item">
+                               <a class="nav-link" id="schematics-tab-{{ project_info.project.id }}" data-toggle="tab" href="#schematics-{{ project_info.project.id }}" role="tab" aria-controls="schematics-{{ project_info.project.id }}" aria-selected="false">Schematics</a>
+                           </li>
+                           <li class="nav-item">
+                               <a class="nav-link" id="notes-tab-{{ project_info.project.id }}" data-toggle="tab" href="#notes-{{ project_info.project.id }}" role="tab" aria-controls="notes-{{ project_info.project.id }}" aria-selected="false">Notes</a>
+                           </li>
+                           <li class="nav-item">
+                               <a class="nav-link" id="gallery-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gallery-{{ project_info.project.id }}" role="tab" aria-controls="gallery-{{ project_info.project.id }}" aria-selected="false">Gallery</a>
+                           </li>
+                           <li class="nav-item">
+                               <a class="nav-link" id="model-tab-{{ project_info.project.id }}" data-toggle="tab" href="#model-{{ project_info.project.id }}" role="tab" aria-controls="model-{{ project_info.project.id }}" aria-selected="false">Model Interactor</a>
+							   </li>
+                           <li class="nav-item">
+                               <a class="nav-link" id="chat-tab-{{ project_info.project.id }}" data-toggle="tab" href="#chat-{{ project_info.project.id }}" role="tab" aria-controls="chat-{{ project_info.project.id }}" aria-selected="false">Chat</a>
+                           </li>
+                       </ul>
+                       <div class="tab-content" id="referenceTabsContent-{{ project_info.project.id }}">
+                           <div class="tab-pane fade show active" id="videos-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="videos-tab-{{ project_info.project.id }}">
+                               <div class="row">
+                                   {% for video in project_info.project.references.all %}
+                                   {% if video.type == 'video' %}
+                                   <div class="col-md-4">
+                                       <div class="embed-responsive embed-responsive-16by9">
+                                           <iframe class="embed-responsive-item" src="{{ video.content }}" allowfullscreen></iframe>
+                                       </div>
+                                   </div>
+                                   {% endif %}
+                                   {% endfor %}
+                               </div>
+                           </div>
+                           <div class="tab-pane fade" id="schematics-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schematics-tab-{{ project_info.project.id }}">
+                               <ul class="list-group">
+                                   {% for schematic in project_info.project.references.all %}
+                                   {% if schematic.type == 'schematic' %}
+                                   <li class="list-group-item">
+                                       <a href="{{ schematic.content }}" target="_blank">{{ schematic.content }}</a>
+                                   </li>
+                                   {% endif %}
+                                   {% endfor %}
+                               </ul>
+                           </div>
+                           <div class="tab-pane fade" id="notes-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="notes-tab-{{ project_info.project.id }}">
+                               <ul class="list-group">
+                                   {% for note in project_info.project.references.all %}
+                                   {% if note.type == 'note' %}
+                                   <li class="list-group-item">{{ note.content }}</li>
+                                   {% endif %}
+                                   {% endfor %}
+                               </ul>
+                           </div>
+                           <div class="tab-pane fade" id="gallery-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gallery-tab-{{ project_info.project.id }}">
+                               <div class="row">
+                                   {% for media in project_info.project.references.all %}
+                                   {% if media.type == 'image' or media.type == 'video' %}
+                                   <div class="col-md-4">
+                                       {% if media.type == 'image' %}
+                                       <img src="{{ media.content }}" class="img-fluid" alt="Gallery Image">
+                                       {% elif media.type == 'video' %}
+                                       <div class="embed-responsive embed-responsive-16by9">
+                                           <iframe class="embed-responsive-item" src="{{ media.content }}" allowfullscreen></iframe>
+                                       </div>
+                                       {% endif %}
+                                   </div>
+                                   {% endif %}
+                                   {% endfor %}
+                               </div>
+                           </div>
+                           <div class="tab-pane fade" id="model-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="model-tab-{{ project_info.project.id }}">
+                               {% for document in project_info.project.documents.all %}
+                               {% if document.is_model %}
+                               <div id="model-viewer-container-{{ document.id }}" style="position: relative; width: 100%; height: 300px; margin-bottom: 20px;">
+                                   <model-viewer src="{{ document.file.url }}" alt="3D Model" auto-rotate camera-controls style="width: 100%; height: 100%;"></model-viewer>
+                                   <button class="fullscreen-button" style="position: absolute; top: 10px; right: 10px; z-index: 10;">Full Screen</button>
+                               </div>
+                               {% endif %}
+                               {% endfor %}
+                           </div>
+                           <div class="tab-pane fade" id="chat-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="chat-tab-{{ project_info.project.id }}">
+                               <div id="chat-container">
+                                   <!-- Insert Chat Widget or Chat Code Here -->
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="tab-pane fade" id="schedule-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schedule-tab-{{ project_info.project.id }}">
+                       <!-- Schedule content -->
+                   </div>
+               </div>
+           </div>
+           {% endfor %}
+       </div>
+   </div>
+   {% endblock %}
 
+   {% block javascripts %}
+   <script>
+       document.addEventListener('DOMContentLoaded', function() {
+           {% for project_info in project_data %}
+           console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
 
-{% block javascripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        {% for project_info in project_data %}
-        console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
+           const tasks{{ project_info.project.id }} = [
+               {% for phase_info in project_info.phases %}
+                   {% for task in phase_info.tasks %}
+                   {
+                       id: "{{ task.id }}",
+                       text: "{{ task.title }}",
+                       start_date: "{{ task.start_date|default_if_none:task.created_at|date:'Y-m-d H:i' }}",
+                       duration: {{ task.hours|default:1 }},
+                       parent: {{ task.parent_task_id|default:0 }},
+                       progress: {{ task.progress|default:0 }},
+                       open: true
+                   },
+                   {% endfor %}
+               {% endfor %}
+           ];
+           console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
 
-        const tasks{{ project_info.project.id }} = [
-            {% for phase_info in project_info.phases %}
-                {% for task in phase_info.tasks %}
-                {
-                    id: "{{ task.id }}",
-                    text: "{{ task.title }}",
-                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'Y-m-d H:i' }}",
-                    duration: {{ task.hours|default:1 }},
-                    parent: {{ task.parent_task_id|default:0 }},
-                    progress: {{ task.progress|default:0 }},
-                    open: true
-                },
-                {% endfor %}
-            {% endfor %}
-        ];
-        console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
-
-        const links{{ project_info.project.id }} = [
-            {% for phase_info in project_info.phases %}
-                {% for task in phase_info.tasks %}
-                    {% for dep in task.dependencies.all %}
-                    {
-                        id: "{{ dep.id }}",
-                        source: "{{ dep.source_id }}",
-                        target: "{{ dep.target_id }}",
-                        type: "{{ dep.type }}"
-                    },
-                    {% endfor %}
-                {% endfor %}
-            {% endfor %}
-        ];
-        console.log("Links for project {{ project_info.project.id }}:", links{{ project_info.project.id }});
-
-        gantt.config.date_format = "%Y-%m-%d %H:%i";
-        gantt.init("gantt_here_{{ project_info.project.id }}");
-        gantt.parse({ data: tasks{{ project_info.project.id }}, links: links{{ project_info.project.id }} });
-        {% endfor %}
-    });
-</script>
-<script>
-    console.log("Project Data:", {{ project_data|safe }});
-</script>
-{% endblock %}
+           // Ensure the element exists before initializing Gantt
+           const ganttContainer = document.getElementById("gantt_here_{{ project_info.project.id }}");
+           if (ganttContainer) {
+               try {
+                   gantt.config.date_format = "%Y-%m-%d %H:%i";
+                   gantt.init(ganttContainer);
+                   gantt.parse({ data: tasks{{ project_info.project.id }} });
+                   console.log("Gantt chart initialized for project {{ project_info.project.id }}");
+               } catch (error) {
+                   console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
+               }
+           } else {
+               console.error("Gantt container not found for project:", {{ project_info.project.id }});
+           }
+           {% endfor %}
+       });
+   </script>
+   {% endblock %}

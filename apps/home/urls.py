@@ -2,11 +2,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, re_path
 from apps.home import views
+from rest_framework.urlpatterns import format_suffix_patterns
+
 
 urlpatterns = [
     # The home page
     path('', views.index, name='home'),
-
+    re_path(r'^data/(.*)$', views.data_list),
+    
     # Tool management
     path('tools/', views.tool_list, name='tool_list'),  # Changed to 'tools/' to avoid conflict with home
     path('tool/<int:pk>/', views.tool_detail, name='tool_detail'),
@@ -37,6 +40,8 @@ urlpatterns = [
     # Matches any HTML file
     re_path(r'^.*\.*', views.pages, name='pages'),
 ]
+
+urlpatterns = format_suffix_patterns(urlpatterns)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
