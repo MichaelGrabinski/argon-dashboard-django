@@ -22,7 +22,8 @@ from django.db.models import Count, Sum, F
 from .serializers import TaskSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
 @login_required(login_url="/login/")
@@ -446,74 +447,6 @@ def construction_hub(request):
         'project_type': project_type  # Pass the project_type to the template
     })
     
-def other_hub(request):
-    # Set default project_type to 'construction'
-    project_type = request.GET.get('project_type', 'construction')
-    
-    # Filter projects by the specified or default project type
-    projects = Project.objects.filter(project_type=project_type)
-
-    if request.method == 'POST':
-        if 'document' in request.FILES:
-            project_id = request.POST.get('project_id')
-            try:
-                project = get_object_or_404(Project, pk=project_id)
-            except Project.DoesNotExist:
-                return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
-            file = request.FILES['document']
-            is_model = request.POST.get('is_model', 'off') == 'on'
-            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
-            return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-        elif 'file' in request.FILES:
-            form = ReferenceMaterialForm(request.POST, request.FILES)
-            if form.is_valid():
-                reference_material = form.save(commit=False)
-                project_id = form.cleaned_data['project'].id
-                reference_material.project = get_object_or_404(Project, pk=project_id)
-                reference_material.save()
-                return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            else:
-                return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
-
-    reference_form = ReferenceMaterialForm()
-    project_data = []
-    for project in projects:
-        phases = project.phases.all()
-        phase_data = []
-        total_hours = 0
-        completed_hours = 0
-        for phase in phases:
-            tasks = phase.tasks.filter(parent_task__isnull=True)
-            total_phase_tasks = phase.tasks.count()
-            completed_phase_tasks = phase.tasks.filter(status='closed').count()
-            phase_completion_percentage = (completed_phase_tasks / total_phase_tasks) * 100 if total_phase_tasks > 0 else 0
-            phase_data.append({
-                'phase': phase,
-                'tasks': tasks,
-                'completion_percentage': phase_completion_percentage
-            })
-            for task in phase.tasks.all():
-                if task.hours:
-                    total_hours += task.hours
-                    if task.status == 'closed':
-                        completed_hours += task.hours
-        remaining_hours = total_hours - completed_hours
-        completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
-        project_data.append({
-            'project': project,
-            'phases': phase_data,
-            'total_hours': total_hours,
-            'completed_hours': completed_hours,
-            'remaining_hours': remaining_hours,
-            'completion_percentage': completion_percentage
-        })
-
-    return render(request, 'home/OtherProjects.html', {
-        'project_data': project_data,
-        'reference_form': reference_form,
-        'project_type': project_type  # Pass the project_type to the template
-    })
-    
 def project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     notes = project.notes.all()
@@ -670,3 +603,131 @@ def data_list(request, offset):
         return Response({
             "data": taskData.data
         })
+    
+
+
+
+
+
+
+
+
+
+
+
+def other_hub(request):
+    # Set default project_type to 'construction'
+    project_type = request.GET.get('project_type', 'construction')
+    
+    # Filter projects by the specified or default project type
+    projects = Project.objects.filter(project_type=project_type)
+
+    if request.method == 'POST':
+        if 'document' in request.FILES:
+            project_id = request.POST.get('project_id')
+            try:
+                project = get_object_or_404(Project, pk=project_id)
+            except Project.DoesNotExist:
+                return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
+            file = request.FILES['document']
+            is_model = request.POST.get('is_model', 'off') == 'on'
+            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
+            return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+        elif 'file' in request.FILES:
+            form = ReferenceMaterialForm(request.POST, request.FILES)
+            if form.is_valid():
+                reference_material = form.save(commit=False)
+                project_id = form.cleaned_data['project'].id
+                reference_material.project = get_object_or_404(Project, pk=project_id)
+                reference_material.save()
+                return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+            else:
+                return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
+
+    reference_form = ReferenceMaterialForm()
+    project_data = []
+    for project in projects:
+        phases = project.phases.all()
+        phase_data = []
+        total_hours = 0
+        completed_hours = 0
+        for phase in phases:
+            tasks = phase.tasks.filter(parent_task__isnull=True)
+            total_phase_tasks = phase.tasks.count()
+            completed_phase_tasks = phase.tasks.filter(status='closed').count()
+            phase_completion_percentage = (completed_phase_tasks / total_phase_tasks) * 100 if total_phase_tasks > 0 else 0
+            phase_data.append({
+                'phase': phase,
+                'tasks': tasks,
+                'completion_percentage': phase_completion_percentage
+            })
+            for task in phase.tasks.all():
+                if task.hours:
+                    total_hours += task.hours
+                    if task.status == 'closed':
+                        completed_hours += task.hours
+        remaining_hours = total_hours - completed_hours
+        completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
+        project_data.append({
+            'project': project,
+            'phases': phase_data,
+            'total_hours': total_hours,
+            'completed_hours': completed_hours,
+            'remaining_hours': remaining_hours,
+            'completion_percentage': completion_percentage
+        })
+
+    return render(request, 'home/OtherProjects.html', {
+        'project_data': project_data,
+        'reference_form': reference_form,
+        'project_type': project_type  # Pass the project_type to the template
+    })
+    
+    
+def tasks_data(request):
+    project_id = request.GET.get('project_id')
+    if project_id:
+        tasks = Task.objects.filter(phase__project_id=project_id).values(
+            'id', 'title', 'status', 'priority', 'due_date', 'start_date', 'hours', 'assigned_to__username', 'phase__name', 'completed', 'parent_task_id'
+        )
+    else:
+        tasks = Task.objects.all().values(
+            'id', 'title', 'status', 'priority', 'due_date', 'start_date', 'hours', 'assigned_to__username', 'phase__name', 'completed', 'parent_task_id'
+        )
+    
+    tasks_list = list(tasks)
+
+    # Calculate phase start date, due date, and total hours
+    phases = ProjectPhase.objects.filter(project_id=project_id) if project_id else ProjectPhase.objects.all()
+    phase_data = []
+    for phase in phases:
+        phase_tasks = Task.objects.filter(phase=phase)
+        if phase_tasks.exists():
+            start_date = phase_tasks.order_by('start_date').first().start_date
+            due_date = phase_tasks.order_by('-due_date').first().due_date
+            total_hours = sum(task.hours for task in phase_tasks if task.hours)
+            phase_data.append({
+                'phase_name': phase.name,
+                'start_date': start_date.strftime('%Y-%m-%d') if start_date else None,
+                'due_date': due_date.strftime('%Y-%m-%d') if due_date else None,
+                'total_hours': total_hours
+            })
+    
+    return JsonResponse({
+        'tasks': tasks_list,
+        'phases': phase_data
+    })
+    
+@csrf_exempt
+def update_task_status(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('id')
+        completed = request.POST.get('completed') == 'true'
+        try:
+            task = Task.objects.get(id=task_id)
+            task.completed = completed
+            task.save()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

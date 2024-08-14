@@ -13,6 +13,8 @@ urlpatterns = [
     # Tool management
     path('tools/', views.tool_list, name='tool_list'),  # Changed to 'tools/' to avoid conflict with home
     path('tool/<int:pk>/', views.tool_detail, name='tool_detail'),
+    path('tasks_data/', views.tasks_data, name='tasks_data'),
+    path('update_task_status/', views.update_task_status, name='update_task_status'),
 
     path('properties/', views.properties_list, name='properties_list'),
     path('properties/<int:property_pk>/', views.property_detail, name='property_detail'),
