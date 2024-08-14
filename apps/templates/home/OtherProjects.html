@@ -441,43 +441,43 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        {% for project_info in project_data %}
-        console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
+document.addEventListener('DOMContentLoaded', function() {
+    {% for project_info in project_data %}
+    console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
 
-        const tasks{{ project_info.project.id }} = [
-            {% for phase_info in project_info.phases %}
-                {% for task in phase_info.tasks %}
-                {
-                    id: "{{ task.id }}",
-                    text: "{{ task.title }}",
-                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'Y-m-d H:i' }}",
-                    duration: {{ task.hours|default:1 }},
-                    parent: {{ task.parent_task_id|default:0 }},
-                    progress: {{ task.progress|default:0 }},
-                    open: true
-                },
-                {% endfor %}
+    const tasks{{ project_info.project.id }} = [
+        {% for phase_info in project_info.phases %}
+            {% for task in phase_info.tasks %}
+            {
+                id: "{{ task.id }}",
+                text: "{{ task.title }}",
+                start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
+                duration: {{ task.hours|default:1 }},
+                parent: {{ task.parent_task_id|default:0 }},
+                progress: {{ task.progress|default:0 }},
+                open: true
+            },
             {% endfor %}
-        ];
-        console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
-
-        // Ensure the element exists before initializing Gantt
-        const ganttContainer{{ project_info.project.id }} = document.getElementById("gantt_here_{{ project_info.project.id }}");
-        if (ganttContainer{{ project_info.project.id }}) {
-            try {
-                gantt.config.date_format = "%Y-%m-%d %H:%i";
-                gantt.init(ganttContainer{{ project_info.project.id }});
-                gantt.parse({ data: tasks{{ project_info.project.id }} });
-                console.log("Gantt chart initialized for project {{ project_info.project.id }}");
-            } catch (error) {
-                console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
-            }
-        } else {
-            console.error("Gantt container not found for project:", {{ project_info.project.id }});
-        }
         {% endfor %}
-    });
+    ];
+    console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
+
+    // Ensure the element exists before initializing Gantt
+    const ganttContainer{{ project_info.project.id }} = document.getElementById("gantt_here_{{ project_info.project.id }}");
+    if (ganttContainer{{ project_info.project.id }}) {
+        try {
+            gantt.config.date_format = "%Y-%m-%d %H:%i";
+            gantt.init(ganttContainer{{ project_info.project.id }});
+            gantt.parse({ data: tasks{{ project_info.project.id }} });
+            console.log("Gantt chart initialized for project {{ project_info.project.id }}");
+        } catch (error) {
+            console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
+        }
+    } else {
+        console.error("Gantt container not found for project:", {{ project_info.project.id }});
+    }
+    {% endfor %}
+});
 </script>
 <script>
 $(document).ready(function() {

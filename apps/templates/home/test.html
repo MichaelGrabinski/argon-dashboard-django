@@ -3,36 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Management</title>
+    <title>Gantt Chart Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
     <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
-    <style>
-        #gantt_here {
-            width: 100%;
-            height: 100vh;
-        }
-    </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="mb-4">Other Projects Hub</h1>
-        <div id="gantt_here"></div>
-    </div>
+    <div id="gantt_here" style="width: 100%; height: 500px;"></div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            gantt.config.date_format = "%Y-%m-%d %H:%i";
-            gantt.init("gantt_here");
-            gantt.parse({
-                data: [
-                    {id: 1, text: "Project #1", start_date: "2023-01-01 00:00", duration: 10, parent: 0, progress: 0.4, open: true},
-                    {id: 2, text: "Task #1", start_date: "2023-01-01 00:00", duration: 5, parent: 1, progress: 1},
-                    {id: 3, text: "Task #2", start_date: "2023-01-06 00:00", duration: 2, parent: 1, progress: 0.5},
-                    {id: 4, text: "Task #3", start_date: "2023-01-08 00:00", duration: 3, parent: 1, progress: 0.8, open: true},
-                    {id: 5, text: "Task #3.1", start_date: "2023-01-09 00:00", duration: 2, parent: 4, progress: 0.2},
-                    {id: 6, text: "Task #3.2", start_date: "2023-01-11 00:00", duration: 1, parent: 4, progress: 0}
-                ]
-            });
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Initializing Gantt chart with static data");
+
+        const staticTasks = [
+            { id: 1, text: "Task #1", start_date: "2024-08-12 00:00", duration: 5, progress: 0.6, parent: 0 },
+            { id: 2, text: "Task #2", start_date: "2024-08-15 00:00", duration: 3, progress: 0.4, parent: 0 },
+            { id: 3, text: "Task #3", start_date: "2024-08-18 00:00", duration: 4, progress: 0.2, parent: 0 },
+            { id: 4, text: "Task #4", start_date: "2024-08-22 00:00", duration: 2, progress: 0.8, parent: 0 },
+            { id: 5, text: "Task #5", start_date: "2024-08-25 00:00", duration: 6, progress: 0.5, parent: 0 }
+        ];
+        console.log("Static tasks:", staticTasks);
+
+        // Ensure the element exists before initializing Gantt
+        const ganttContainer = document.getElementById("gantt_here");
+        console.log("Gantt container:", ganttContainer);
+
+        if (ganttContainer) {
+            try {
+                gantt.config.date_format = "%Y-%m-%d %H:%i";
+                gantt.init(ganttContainer);
+                gantt.parse({ data: staticTasks });
+                console.log("Gantt chart initialized with static data");
+            } catch (error) {
+                console.error("Error initializing Gantt chart:", error);
+            }
+        } else {
+            console.error("Gantt container not found");
+        }
+    });
     </script>
 </body>
 </html>
