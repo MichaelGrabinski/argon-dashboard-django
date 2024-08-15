@@ -338,6 +338,22 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
         
+
+class TaskLink(models.Model):
+    LINK_TYPES = (
+        ('0', 'Finish to Start (default)'),
+        ('1', 'Start to Start'),
+        ('2', 'Finish to Finish'),
+        ('3', 'Start to Finish'),
+    )
+
+    source = models.ForeignKey(Task, related_name='link_sources', on_delete=models.CASCADE)
+    target = models.ForeignKey(Task, related_name='link_targets', on_delete=models.CASCADE)
+    type = models.CharField(max_length=1, choices=LINK_TYPES, default='0')
+
+    def __str__(self):
+        return f"{self.get_type_display()} link from {self.source} to {self.target}"   
+     
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

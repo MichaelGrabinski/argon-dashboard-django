@@ -1,5 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
+{% load custom_filters %}
 {% block stylesheets %}
 <style>
 .status-open {
@@ -191,9 +192,9 @@
         <li class="nav-item">
             <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}" aria-selected="true">Main</a>
         </li>
-        <li class="nav-item">
-<a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
-        </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
+                </li>
         <li class="nav-item">
             <a class="nav-link" id="breakdown-tab-{{ project_info.project.id }}" data-toggle="tab" href="#breakdown-{{ project_info.project.id }}" role="tab" aria-controls="breakdown-{{ project_info.project.id }}" aria-selected="false">Breakdown Chart</a>
         </li>
@@ -303,9 +304,9 @@
             </div>
         </div>
 
-        <div class="tab-pane fade" id="gantt-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gantt-tab-{{ project_info.project.id }}">
-            <div id="gantt_here_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
-        </div>
+                <div class="tab-pane fade" id="gantt-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gantt-tab-{{ project_info.project.id }}">
+                    <div id="gantt_here_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
+                </div>
 
         <div class="tab-pane fade" id="breakdown-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="breakdown-tab-{{ project_info.project.id }}">
             <!-- Breakdown chart content -->
@@ -436,45 +437,225 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
 
+{% load custom_filters %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     {% for project_info in project_data %}
-    console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
+    (function(projectId) {
+        console.log("Initializing Gantt chart for project:", projectId);
 
-    const tasks{{ project_info.project.id }} = [
-        {% for phase_info in project_info.phases %}
-            {% for task in phase_info.tasks %}
-            {
-                id: "{{ task.id }}",
-                text: "{{ task.title }}",
-                start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
-                duration: {{ task.hours|default:1 }},
-                parent: {{ task.parent_task_id|default:0 }},
-                progress: {{ task.progress|default:0 }},
-                open: true
-            },
+        const tasks = [
+            {% for phase_info in project_info.phases %}
+                {% for task in phase_info.tasks %}
+                {
+                    id: "{{ task.id }}",
+                    text: "{{ task.title }}",
+                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%M' }}",
+                    duration: {{ task.hours|default:1 }},
+                    parent: "{{ task|parent_id }}", // Use custom filter
+                    progress: {{ task.progress|default:0 }},
+                    open: true
+                },
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-    ];
-    console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
+        ];
+        console.log("Tasks for project", projectId, ":", tasks);
 
-    const ganttContainer{{ project_info.project.id }} = document.getElementById("gantt_here_{{ project_info.project.id }}");
-    console.log("Gantt container for project {{ project_info.project.id }}:", ganttContainer{{ project_info.project.id }});
+        const ganttContainer = document.getElementById("gantt_here_" + projectId);
+        console.log("Gantt container for project", projectId, ":", ganttContainer);
 
-    if (ganttContainer{{ project_info.project.id }}) {
-        try {
-            gantt.config.date_format = "%Y-%m-%d %H:%i";
-            gantt.init(ganttContainer{{ project_info.project.id }});
-            gantt.parse({ data: tasks{{ project_info.project.id }} });
-            console.log("Gantt chart initialized for project {{ project_info.project.id }}");
-        } catch (error) {
-            console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
+        if (ganttContainer) {
+            try {
+                gantt.config.date_format = "%Y-%m-%d %H:%M";
+                gantt.init(ganttContainer);
+                gantt.clearAll(); // Clear any existing data
+                gantt.parse({ data: tasks });
+                console.log("Gantt chart initialized for project", projectId);
+
+                // Event listener for task updates
+                gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
+                    console.log("Task updated:", id, item);
+                    updateTask(id, item);
+                });
+
+                // Event listener for task progress changes
+                gantt.attachEvent("onTaskProgressChanged", function(id, progress) {
+                    console.log("Task progress updated:", id, progress);
+                    updateTask(id, gantt.getTask(id));
+                });
+
+                // Event listener for adding new tasks
+                gantt.attachEvent("onAfterTaskAdd", function(id, item) {
+                    console.log("Task added:", id, item);
+                    addTask(id, item, projectId);
+                });
+
+                // Event listener for task status changes
+                gantt.attachEvent("onTaskClick", function(id, e) {
+                    const task = gantt.getTask(id);
+                    const completed = task.progress === 1;
+                    updateTaskStatus(id, completed);
+                });
+
+                // Event listener for adding links
+                gantt.attachEvent("onAfterLinkAdd", function(id, link) {
+                    console.log("Link added:", id, link);
+                    updateLink(id, link, 'add');
+                });
+
+                // Event listener for deleting links
+                gantt.attachEvent("onAfterLinkDelete", function(id, link) {
+                    console.log("Link deleted:", id, link);
+                    updateLink(id, link, 'delete');
+                });
+
+            } catch (error) {
+                console.error("Error initializing Gantt chart for project", projectId, ":", error);
+            }
+        } else {
+            console.error("Gantt container not found for project:", projectId);
         }
-    } else {
-        console.error("Gantt container not found for project:", {{ project_info.project.id }});
-    }
+    })({{ project_info.project.id }});
     {% endfor %}
 });
+
+// Function to format date to 'YYYY-MM-DD HH:MM'
+function formatDate(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+// Function to update task
+function updateTask(id, task) {
+    const formattedStartDate = formatDate(task.start_date);
+    const parentTaskId = task.parent && task.parent !== "0" ? task.parent : null;
+
+    console.log('Updating task:', {
+        id: id,
+        title: task.text,
+        start_date: formattedStartDate,
+        duration: task.duration,
+        progress: task.progress,
+        parent: parentTaskId
+    });
+
+    $.ajax({
+        url: '{% url "update_task" %}',
+        method: 'POST',
+        data: {
+            'id': id,
+            'title': task.text,
+            'start_date': formattedStartDate,
+            'duration': task.duration,
+            'progress': task.progress,
+            'parent': parentTaskId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            console.log('Task updated successfully.', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to update task:', error);
+        }
+    });
+}
+
+// Function to add new task
+function addTask(id, task, projectId) {
+    const formattedStartDate = formatDate(task.start_date);
+    const parentTaskId = task.parent && task.parent !== "0" ? task.parent : null;
+
+    console.log('Adding task:', {
+        id: id,
+        title: task.text,
+        start_date: formattedStartDate,
+        duration: task.duration,
+        progress: task.progress,
+        parent: parentTaskId,
+        project_id: projectId
+    });
+
+    $.ajax({
+        url: '{% url "add_task" %}',
+        method: 'POST',
+        data: {
+            'id': id,
+            'title': task.text,
+            'start_date': formattedStartDate,
+            'duration': task.duration,
+            'progress': task.progress,
+            'parent': parentTaskId,
+            'project_id': projectId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            console.log('Task added successfully.', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to add task:', error);
+        }
+    });
+}
+
+// Function to update task status
+function updateTaskStatus(id, completed) {
+    console.log('Updating task status:', {
+        id: id,
+        completed: completed
+    });
+
+    $.ajax({
+        url: '{% url "update_task_status" %}',
+        method: 'POST',
+        data: {
+            'id': id,
+            'completed': completed,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            console.log('Task status updated successfully.', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to update task status:', error);
+        }
+    });
+}
+
+// Function to update link
+function updateLink(id, link, action) {
+    console.log('Updating link:', {
+        id: id,
+        source: link.source,
+        target: link.target,
+        type: link.type,
+        action: action
+    });
+
+    $.ajax({
+        url: '{% url "update_link" %}',
+        method: 'POST',
+        data: {
+            'id': id,
+            'source': link.source,
+            'target': link.target,
+            'type': link.type,
+            'action': action,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            console.log('Link updated successfully.', response);
+        },
+        error: function(xhr, status, error) {
+            console.error('Failed to update link:', error);
+        }
+    });
+}
 </script>
 
 <script>

@@ -15,14 +15,21 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Initializing Gantt chart with static data");
 
-        const staticTasks = [
-            { id: 1, text: "Task #1", start_date: "2024-08-12 00:00", duration: 5, progress: 0.6, parent: 0 },
-            { id: 2, text: "Task #2", start_date: "2024-08-15 00:00", duration: 3, progress: 0.4, parent: 0 },
-            { id: 3, text: "Task #3", start_date: "2024-08-18 00:00", duration: 4, progress: 0.2, parent: 0 },
-            { id: 4, text: "Task #4", start_date: "2024-08-22 00:00", duration: 2, progress: 0.8, parent: 0 },
-            { id: 5, text: "Task #5", start_date: "2024-08-25 00:00", duration: 6, progress: 0.5, parent: 0 }
-        ];
-        console.log("Static tasks:", staticTasks);
+    const tasks{{ project_info.project.id }} = [
+        {% for phase_info in project_info.phases %}
+            {% for task in phase_info.tasks %}
+            {
+                id: "{{ task.id }}",
+                text: "{{ task.title }}",
+                start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
+                duration: {{ task.hours|default:1 }},
+                parent: {{ task.parent_task_id|default:0 }},
+                progress: {{ task.progress|default:0 }},
+                open: true
+            },
+            {% endfor %}
+        {% endfor %}
+    ];
 
         // Ensure the element exists before initializing Gantt
         const ganttContainer = document.getElementById("gantt_here");

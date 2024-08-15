@@ -4,4 +4,16 @@ register = template.Library()
 
 @register.filter(name='endswith')
 def endswith(value, arg):
-    return str(value).endswith(arg)
+    return str(value).endswith(arg)\
+
+register = template.Library()
+
+@register.filter
+def parent_title(task):
+    return task.parent_task.title if task.parent_task else ''
+    
+register = template.Library()
+
+@register.filter
+def parent_id(task):
+    return task.parent_task.id if task.parent_task else 0

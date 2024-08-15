@@ -6,7 +6,7 @@ from django.template import loader
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect 
 from .forms import ToolSearchForm
-from apps.home.models import Tool, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
+from apps.home.models import Tool, TaskLink, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
@@ -24,6 +24,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
 
 
 @login_required(login_url="/login/")
@@ -717,6 +718,102 @@ def tasks_data(request):
         'tasks': tasks_list,
         'phases': phase_data
     })
+    
+@csrf_exempt
+def update_task(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('id')
+        title = request.POST.get('title')
+        start_date = request.POST.get('start_date')
+        duration = request.POST.get('duration')
+        progress = request.POST.get('progress')
+        parent = request.POST.get('parent')
+
+        try:
+            task = Task.objects.get(id=task_id)
+            task.title = title
+            task.start_date = datetime.strptime(start_date, '%Y-%m-%d %H:%M')
+            task.hours = duration
+            task.progress = progress
+
+            # Validate parent_task_id
+            if parent:
+                try:
+                    parent_task = Task.objects.get(id=parent)
+                    task.parent_task = parent_task
+                except Task.DoesNotExist:
+                    task.parent_task = None
+            else:
+                task.parent_task = None
+
+            task.save()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
+        except ValueError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+    
+    
+@csrf_exempt
+def add_task(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        start_date = request.POST.get('start_date')
+        duration = request.POST.get('duration')
+        progress = request.POST.get('progress')
+        parent = request.POST.get('parent')
+        project_id = request.POST.get('project_id')
+
+        try:
+            project = Project.objects.get(id=project_id)
+            new_task = Task(
+                title=title,
+                start_date=datetime.strptime(start_date, '%Y-%m-%d %H:%M'),
+                hours=duration,
+                progress=progress,
+                project=project
+            )
+
+            # Validate parent_task_id
+            if parent:
+                try:
+                    parent_task = Task.objects.get(id=parent)
+                    new_task.parent_task = parent_task
+                except Task.DoesNotExist:
+                    new_task.parent_task = None
+
+            new_task.save()
+            return JsonResponse({'status': 'success', 'task_id': new_task.id})
+        except Project.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Project not found'}, status=404)
+        except ValueError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def update_link(request):
+    if request.method == 'POST':
+        link_id = request.POST.get('id')
+        source = request.POST.get('source')
+        target = request.POST.get('target')
+        link_type = request.POST.get('type')
+        action = request.POST.get('action')
+
+        if action == 'add':
+            TaskLink.objects.create(source_id=source, target_id=target, type=link_type)
+        elif action == 'delete':
+            try:
+                link = TaskLink.objects.get(id=link_id)
+                link.delete()
+            except TaskLink.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Link not found'}, status=404)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+    
+    
+    
+    
     
 @csrf_exempt
 def update_task_status(request):
