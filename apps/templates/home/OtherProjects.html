@@ -80,13 +80,9 @@
     overflow-x: auto;
 }
 </style>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded first -->
-<script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
 {% endblock stylesheets %}
 {% block content %}
 <div class="container mt-4">
@@ -94,7 +90,7 @@
     {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
-    <div class="dropdown mb-3" style="position: absolute; top: 100px; left: 10px;">
+    <div class="dropdown mb-3">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="projectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Select Project
         </button>
@@ -103,9 +99,22 @@
             {% for project_info in project_data %}
             <a class="dropdown-item" href="#project-{{ project_info.project.id }}" data-toggle="tab">{{ project_info.project.title }}</a>
             {% endfor %}
-
         </div>
     </div>
+
+    <div class="dropdown mb-3">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="ganttDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Select Project for Gantt Chart
+        </button>
+        <div class="dropdown-menu" aria-labelledby="ganttDropdown">
+            {% for project_info in project_data %}
+            <a class="dropdown-item" href="#" data-project-id="{{ project_info.project.id }}">{{ project_info.project.title }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="gantt_here" style="width: 100%; height: 500px;"></div>
+
     <div class="tab-content mt-5" id="projectTabsContent">
         <!-- Hub Tab Content -->
         <div class="tab-pane fade show active" id="hub" role="tabpanel">
@@ -432,7 +441,6 @@
     </div>
 </div>
 {% endfor %}
-
 {% endblock %}
 
 {% block javascripts %}
@@ -440,45 +448,51 @@
 <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    {% for project_info in project_data %}
-    console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
+    const ganttContainer = document.getElementById("gantt_here");
+    gantt.config.date_format = "%Y-%m-%d %H:%i";
+    gantt.init(ganttContainer);
 
-    const tasks{{ project_info.project.id }} = [
-        {% for phase_info in project_info.phases %}
-            {% for task in phase_info.tasks %}
-            {
-                id: "{{ task.id }}",
-                text: "{{ task.title }}",
-                start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
-                duration: {{ task.hours|default:1 }},
-                parent: {{ task.parent_task_id|default:0 }},
-                progress: {{ task.progress|default:0 }},
-                open: true
-            },
-            {% endfor %}
+    $('.dropdown-item').on('click', function() {
+        const projectId = $(this).data('project-id');
+        console.log("Selected project ID:", projectId);
+
+        const tasks = getTasksForProject(projectId);
+        console.log("Tasks for project " + projectId + ":", tasks);
+
+        gantt.clearAll(); // Clear the Gantt chart before loading new data
+        gantt.parse({ data: tasks });
+    });
+
+    function getTasksForProject(projectId) {
+        const projectTasks = [];
+        {% for project_info in project_data %}
+            if (projectId == {{ project_info.project.id }}) {
+                const tasks = [
+                    {% for phase_info in project_info.phases %}
+                        {% for task in phase_info.tasks %}
+                        {
+                            id: "{{ task.id }}",
+                            text: "{{ task.title }}",
+                            start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
+                            duration: {{ task.hours|default:1 }},
+                            parent: {{ task.parent_task_id|default:0 }},
+                            progress: {{ task.progress|default:0 }},
+                            open: true
+                        },
+                        {% endfor %}
+                    {% endfor %}
+                ];
+                projectTasks.push(...tasks);
+            }
         {% endfor %}
-    ];
-    console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
-
-    // Ensure the element exists before initializing Gantt
-    const ganttContainer{{ project_info.project.id }} = document.getElementById("gantt_here_{{ project_info.project.id }}");
-    if (ganttContainer{{ project_info.project.id }}) {
-        try {
-            gantt.config.date_format = "%Y-%m-%d %H:%i";
-            gantt.init(ganttContainer{{ project_info.project.id }});
-            gantt.parse({ data: tasks{{ project_info.project.id }} });
-            console.log("Gantt chart initialized for project {{ project_info.project.id }}");
-        } catch (error) {
-            console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
-        }
-    } else {
-        console.error("Gantt container not found for project:", {{ project_info.project.id }});
+        return projectTasks;
     }
-    {% endfor %}
 });
 </script>
+
 <script>
 $(document).ready(function() {
     {% for project_info in project_data %}
