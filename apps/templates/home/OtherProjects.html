@@ -90,7 +90,7 @@
     {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
-    <div class="dropdown mb-3">
+    <div class="dropdown mb-3" style="position: absolute; top: 100px; left: 10px;">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="projectDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Select Project
         </button>
@@ -101,19 +101,6 @@
             {% endfor %}
         </div>
     </div>
-
-    <div class="dropdown mb-3">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="ganttDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Select Project for Gantt Chart
-        </button>
-        <div class="dropdown-menu" aria-labelledby="ganttDropdown">
-            {% for project_info in project_data %}
-            <a class="dropdown-item" href="#" data-project-id="{{ project_info.project.id }}">{{ project_info.project.title }}</a>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div id="gantt_here" style="width: 100%; height: 500px;"></div>
 
     <div class="tab-content mt-5" id="projectTabsContent">
         <!-- Hub Tab Content -->
@@ -205,7 +192,7 @@
             <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}" aria-selected="true">Main</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
+<a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="breakdown-tab-{{ project_info.project.id }}" data-toggle="tab" href="#breakdown-{{ project_info.project.id }}" role="tab" aria-controls="breakdown-{{ project_info.project.id }}" aria-selected="false">Breakdown Chart</a>
@@ -340,7 +327,7 @@
                     <a class="nav-link" id="gallery-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gallery-{{ project_info.project.id }}" role="tab" aria-controls="gallery-{{ project_info.project.id }}" aria-selected="false">Gallery</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="model-tab-{{ project_info.project.id }}" data-toggle="tab" href="#model-{{ project_info.project.id }}" role="tab" aria-controls="model-{{ project_info.project.id }}" aria-selected="false">Model Interactor</a>
+<a class="nav-link" id="model-tab-{{ project_info.project.id }}" data-toggle="tab" href="#model-{{ project_info.project.id }}" role="tab" aria-controls="model-{{ project_info.project.id }}" aria-selected="false">Model Interactor</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="chat-tab-{{ project_info.project.id }}" data-toggle="tab" href="#chat-{{ project_info.project.id }}" role="tab" aria-controls="chat-{{ project_info.project.id }}" aria-selected="false">Chat</a>
@@ -451,45 +438,42 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ganttContainer = document.getElementById("gantt_here");
-    gantt.config.date_format = "%Y-%m-%d %H:%i";
-    gantt.init(ganttContainer);
+    {% for project_info in project_data %}
+    console.log("Initializing Gantt chart for project:", {{ project_info.project.id }});
 
-    $('.dropdown-item').on('click', function() {
-        const projectId = $(this).data('project-id');
-        console.log("Selected project ID:", projectId);
-
-        const tasks = getTasksForProject(projectId);
-        console.log("Tasks for project " + projectId + ":", tasks);
-
-        gantt.clearAll(); // Clear the Gantt chart before loading new data
-        gantt.parse({ data: tasks });
-    });
-
-    function getTasksForProject(projectId) {
-        const projectTasks = [];
-        {% for project_info in project_data %}
-            if (projectId == {{ project_info.project.id }}) {
-                const tasks = [
-                    {% for phase_info in project_info.phases %}
-                        {% for task in phase_info.tasks %}
-                        {
-                            id: "{{ task.id }}",
-                            text: "{{ task.title }}",
-                            start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
-                            duration: {{ task.hours|default:1 }},
-                            parent: {{ task.parent_task_id|default:0 }},
-                            progress: {{ task.progress|default:0 }},
-                            open: true
-                        },
-                        {% endfor %}
-                    {% endfor %}
-                ];
-                projectTasks.push(...tasks);
-            }
+    const tasks{{ project_info.project.id }} = [
+        {% for phase_info in project_info.phases %}
+            {% for task in phase_info.tasks %}
+            {
+                id: "{{ task.id }}",
+                text: "{{ task.title }}",
+                start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%i' }}",
+                duration: {{ task.hours|default:1 }},
+                parent: {{ task.parent_task_id|default:0 }},
+                progress: {{ task.progress|default:0 }},
+                open: true
+            },
+            {% endfor %}
         {% endfor %}
-        return projectTasks;
+    ];
+    console.log("Tasks for project {{ project_info.project.id }}:", tasks{{ project_info.project.id }});
+
+    const ganttContainer{{ project_info.project.id }} = document.getElementById("gantt_here_{{ project_info.project.id }}");
+    console.log("Gantt container for project {{ project_info.project.id }}:", ganttContainer{{ project_info.project.id }});
+
+    if (ganttContainer{{ project_info.project.id }}) {
+        try {
+            gantt.config.date_format = "%Y-%m-%d %H:%i";
+            gantt.init(ganttContainer{{ project_info.project.id }});
+            gantt.parse({ data: tasks{{ project_info.project.id }} });
+            console.log("Gantt chart initialized for project {{ project_info.project.id }}");
+        } catch (error) {
+            console.error("Error initializing Gantt chart for project {{ project_info.project.id }}:", error);
+        }
+    } else {
+        console.error("Gantt container not found for project:", {{ project_info.project.id }});
     }
+    {% endfor %}
 });
 </script>
 
