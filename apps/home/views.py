@@ -355,6 +355,7 @@ def create_task(request):
     return render(request, 'home/create_task.html', context)
 
 
+@login_required
 def create_quick_task(request):
     if request.method == 'POST':
         form = QuickTaskForm(request.POST)
@@ -363,6 +364,7 @@ def create_quick_task(request):
             task.created_by = request.user
             task.status = 'open'
             task.save()
+            form.save_m2m()  # Save many-to-many relationships (e.g., tags)
             ActivityLog.objects.create(task=task, user=request.user, action="Created the task via quick widget")
             return redirect('task_list')
     else:
@@ -717,7 +719,22 @@ def tasks_data(request):
     return JsonResponse({
         'tasks': tasks_list,
         'phases': phase_data
-    })
+    })    
+    
+@csrf_exempt
+def update_task_status(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('id')
+        completed = request.POST.get('completed') == 'true'
+        try:
+            task = Task.objects.get(id=task_id)
+            task.completed = completed
+            task.save()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+    
     
 @csrf_exempt
 def update_task(request):
@@ -728,6 +745,7 @@ def update_task(request):
         duration = request.POST.get('duration')
         progress = request.POST.get('progress')
         parent = request.POST.get('parent')
+        phase_id = request.POST.get('phase')
 
         try:
             task = Task.objects.get(id=task_id)
@@ -746,6 +764,14 @@ def update_task(request):
             else:
                 task.parent_task = None
 
+            # Validate phase_id
+            if phase_id:
+                try:
+                    phase = ProjectPhase.objects.get(id=phase_id)
+                    task.phase = phase
+                except ProjectPhase.DoesNotExist:
+                    task.phase = None
+
             task.save()
             return JsonResponse({'status': 'success'})
         except Task.DoesNotExist:
@@ -753,8 +779,7 @@ def update_task(request):
         except ValueError as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
-    
-    
+
 @csrf_exempt
 def add_task(request):
     if request.method == 'POST':
@@ -764,6 +789,9 @@ def add_task(request):
         progress = request.POST.get('progress')
         parent = request.POST.get('parent')
         project_id = request.POST.get('project_id')
+        phase_id = request.POST.get('phase')
+
+        print(f"Received data: title={title}, start_date={start_date}, duration={duration}, progress={progress}, parent={parent}, project_id={project_id}, phase_id={phase_id}")
 
         try:
             project = Project.objects.get(id=project_id)
@@ -783,11 +811,22 @@ def add_task(request):
                 except Task.DoesNotExist:
                     new_task.parent_task = None
 
+            # Validate phase_id
+            if phase_id:
+                try:
+                    phase = ProjectPhase.objects.get(id=phase_id)
+                    new_task.phase = phase
+                except ProjectPhase.DoesNotExist:
+                    new_task.phase = None
+
             new_task.save()
+            print(f"Task created successfully: {new_task}")
             return JsonResponse({'status': 'success', 'task_id': new_task.id})
         except Project.DoesNotExist:
+            print("Project not found")
             return JsonResponse({'status': 'error', 'message': 'Project not found'}, status=404)
         except ValueError as e:
+            print(f"ValueError: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
@@ -809,22 +848,4 @@ def update_link(request):
             except TaskLink.DoesNotExist:
                 return JsonResponse({'status': 'error', 'message': 'Link not found'}, status=404)
         return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
-    
-    
-    
-    
-    
-@csrf_exempt
-def update_task_status(request):
-    if request.method == 'POST':
-        task_id = request.POST.get('id')
-        completed = request.POST.get('completed') == 'true'
-        try:
-            task = Task.objects.get(id=task_id)
-            task.completed = completed
-            task.save()
-            return JsonResponse({'status': 'success'})
-        except Task.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

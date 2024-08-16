@@ -39,7 +39,11 @@ class AssignTaskForm(forms.Form):
 class QuickTaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'priority', 'category', 'hours', 'assigned_to', 'location']
+        fields = [
+            'title', 'description', 'priority', 'category', 'hours', 
+            'assigned_to', 'location', 'due_date', 'project', 'phase', 
+            'parent_task', 'tags'
+        ]
         widgets = {
             'title': forms.TextInput(attrs={'value': 'New Task'}),
             'description': forms.Textarea(attrs={'value': 'Description of the task'}),
@@ -48,7 +52,10 @@ class QuickTaskForm(forms.ModelForm):
             'hours': forms.NumberInput(attrs={'value': 1}),
             'assigned_to': forms.Select(attrs={'value': None}),
             'location': forms.Select(),  # Use a dropdown for location
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'tags': forms.CheckboxSelectMultiple(),
         }
+        
 class ReferenceMaterialForm(forms.ModelForm):
     class Meta:
         model = ReferenceMaterial

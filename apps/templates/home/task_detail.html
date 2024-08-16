@@ -12,6 +12,9 @@
     .priority-low { border-left: 5px solid #28a745; } /* Green */
     .priority-medium { border-left: 5px solid #ffc107; } /* Yellow */
     .priority-high { border-left: 5px solid #dc3545; } /* Red */
+    .task-details { display: flex; flex-wrap: wrap; }
+    .task-details .detail { flex: 1 1 50%; padding: 5px; }
+    .task-details .detail strong { display: inline-block; width: 150px; }
 </style>
 {% endblock stylesheets %}
 
@@ -20,17 +23,29 @@
     <h1>{{ task.title }}</h1>
     <div class="card status-{{ task.status }} priority-{{ task.priority }}">
         <div class="card-body">
-            <p>{{ task.description }}</p>
-            <p><strong>Status:</strong> {{ task.get_status_display }}</p>
-            <p><strong>Priority:</strong> {{ task.get_priority_display }}</p>
-            <p><strong>Category:</strong> {{ task.category }}</p>
-            <p><strong>Hours:</strong> {{ task.hours }}</p>
-            <p><strong>Due Date:</strong> {{ task.due_date }}</p>
-            <p><strong>Assigned To:</strong> {% if task.assigned_to %}{{ task.assigned_to.username }}{% else %}Not assigned{% endif %}</p>
-            <p><strong>Location:</strong> {{ task.location.name }}</p>
-            <p><strong>Created By:</strong> {{ task.created_by.username }}</p>
-            <p><strong>Created At:</strong> {{ task.created_at }}</p>
-            <p><strong>Updated At:</strong> {{ task.updated_at }}</p>
+            <div class="task-details">
+                <div class="detail"><strong>Description:</strong> {{ task.description }}</div>
+                <div class="detail"><strong>Status:</strong> {{ task.get_status_display }}</div>
+                <div class="detail"><strong>Priority:</strong> {{ task.get_priority_display }}</div>
+                <div class="detail"><strong>Category:</strong> {{ task.category }}</div>
+                <div class="detail"><strong>Hours:</strong> {{ task.hours }}</div>
+                <div class="detail"><strong>Due Date:</strong> {{ task.due_date }}</div>
+                <div class="detail"><strong>Start Date:</strong> {{ task.start_date }}</div>
+                <div class="detail"><strong>Progress:</strong> {{ task.progress|floatformat:2 }}%</div>
+                <div class="detail"><strong>Completed Date:</strong> {{ task.completed_date }}</div>
+                <div class="detail"><strong>Completed:</strong> {{ task.completed|yesno:"Yes,No" }}</div>
+                <div class="detail"><strong>Assigned To:</strong> {% if task.assigned_to %}{{ task.assigned_to.username }}{% else %}Not assigned{% endif %}</div>
+                <div class="detail"><strong>Location:</strong> {{ task.location.name }}</div>
+                {% if task.project %}
+                <div class="detail"><strong>Project:</strong> {{ task.project.name }}</div>
+                {% endif %}
+                <div class="detail"><strong>Phase:</strong> {{ task.phase.name }}</div>
+                <div class="detail"><strong>Parent Task:</strong> {% if task.parent_task %}{{ task.parent_task.title }}{% else %}None{% endif %}</div>
+                <div class="detail"><strong>Tags:</strong> {% for tag in task.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+                <div class="detail"><strong>Created By:</strong> {{ task.created_by.username }}</div>
+                <div class="detail"><strong>Created At:</strong> {{ task.created_at }}</div>
+                <div class="detail"><strong>Updated At:</strong> {{ task.updated_at }}</div>
+            </div>
         </div>
     </div>
 
@@ -46,7 +61,7 @@
         <button type="submit" name="attachment" class="btn btn-primary">Add Attachment</button>
     </form>
 
-    <h2>Comments</h2>
+   <h2>Comments</h2>
     <ul>
         {% for comment in comments %}
             <li>{{ comment.content }} - <small>{{ comment.user.username }} at {{ comment.created_at }}</small></li>
@@ -54,16 +69,10 @@
     </ul>
     <form method="post">
         {% csrf_token %}
-        {{ comment_form.as_p }}
+        {{ comment_form.content }}
+		<p></p>
         <button type="submit" name="comment" class="btn btn-primary">Add Comment</button>
     </form>
-
-    <h2>Activity Log</h2>
-    <ul>
-        {% for log in activity_logs %}
-            <li>{{ log.action }} - <small>{{ log.user.username }} at {{ log.timestamp }}</small></li>
-        {% endfor %}
-    </ul>
 
     <h2>Assign Task</h2>
     <form method="post">
@@ -82,5 +91,18 @@
         </select>
         <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
     </form>
+	
+	
+	
+	    <h2>Activity Log</h2>
+    <ul>
+        {% for log in activity_logs %}
+            <li>{{ log.action }} - <small>{{ log.user.username }} at {{ log.timestamp }}</small></li>
+        {% endfor %}
+    </ul>
 </div>
+
+
+
+
 {% endblock content %}

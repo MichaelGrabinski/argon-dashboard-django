@@ -17,6 +17,7 @@
     "node": ">=10.0.0"
   },
   "dependencies": {
+    "@daypilot/daypilot-lite-javascript": "^3.25.0",
     "gantt-task-react": "^0.3.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

@@ -84,6 +84,8 @@
 <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css">
+<link rel="stylesheet" href="https://cdn.daypilot.org/daypilot-lite.min.css">
 {% endblock stylesheets %}
 {% block content %}
 <div class="container mt-4">
@@ -107,12 +109,18 @@
         <!-- Hub Tab Content -->
         <div class="tab-pane fade show active" id="hub" role="tabpanel">
             <ul class="nav nav-tabs" id="hubDetailTabs" role="tablist">
-                <li class="nav-item">
+        
+        <li class="nav-item">
                     <a class="nav-link active" id="hub-main-tab" data-toggle="tab" href="#hub-main" role="tab" aria-controls="hub-main" aria-selected="true">Main</a>
                 </li>
-                <li class="nav-item">
+           
+	
+		   <li class="nav-item">
                     <a class="nav-link" id="hub-schedule-tab" data-toggle="tab" href="#hub-schedule" role="tab" aria-controls="hub-schedule" aria-selected="false">Schedule</a>
                 </li>
+			
+				
+				
             </ul>
             <div class="tab-content" id="hubDetailTabsContent">
                 <div class="tab-pane fade show active" id="hub-main" role="tabpanel" aria-labelledby="hub-main-tab">
@@ -192,18 +200,22 @@
         <li class="nav-item">
             <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}" aria-selected="true">Main</a>
         </li>
-                <li class="nav-item">
+   <!--             <li class="nav-item">
                     <a class="nav-link" id="gantt-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gantt-{{ project_info.project.id }}" role="tab" aria-controls="gantt-{{ project_info.project.id }}" aria-selected="false">Gantt Chart</a>
                 </li>
+
         <li class="nav-item">
             <a class="nav-link" id="breakdown-tab-{{ project_info.project.id }}" data-toggle="tab" href="#breakdown-{{ project_info.project.id }}" role="tab" aria-controls="breakdown-{{ project_info.project.id }}" aria-selected="false">Breakdown Chart</a>
         </li>
+		-->
         <li class="nav-item">
             <a class="nav-link" id="reference-tab-{{ project_info.project.id }}" data-toggle="tab" href="#reference-{{ project_info.project.id }}" role="tab" aria-controls="reference-{{ project_info.project.id }}" aria-selected="false">Reference</a>
         </li>
+		<!--
         <li class="nav-item">
             <a class="nav-link" id="schedule-tab-{{ project_info.project.id }}" data-toggle="tab" href="#schedule-{{ project_info.project.id }}" role="tab" aria-controls="schedule-{{ project_info.project.id }}" aria-selected="false">Schedule</a>
         </li>
+		-->
         <li class="nav-item">
             <a class="nav-link" id="tasks-tab-{{ project_info.project.id }}" data-toggle="tab" href="#tasks-{{ project_info.project.id }}" role="tab" aria-controls="tasks-{{ project_info.project.id }}" aria-selected="false">Tasks</a>
         </li>
@@ -308,10 +320,9 @@
                     <div id="gantt_here_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
                 </div>
 
-        <div class="tab-pane fade" id="breakdown-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="breakdown-tab-{{ project_info.project.id }}">
-            <!-- Breakdown chart content -->
-            <div id="breakdown-chart"></div>
-        </div>
+       <div class="tab-pane fade" id="breakdown-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="breakdown-tab-{{ project_info.project.id }}">
+    <div id="breakdown_tree_{{ project_info.project.id }}"></div>
+</div>
         <div class="tab-pane fade" id="reference-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="reference-tab-{{ project_info.project.id }}">
             <h3>Reference</h3>
             <ul class="nav nav-tabs" id="referenceTabs-{{ project_info.project.id }}" role="tablist">
@@ -402,9 +413,9 @@
                 </div>
             </div>
         </div>
-        <div class="tab-pane fade" id="schedule-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schedule-tab-{{ project_info.project.id }}">
-            <!-- Schedule content -->
-        </div>
+       <div class="tab-pane fade" id="schedule-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="schedule-tab-{{ project_info.project.id }}">
+    <div id="schedule_container_{{ project_info.project.id }}" style='width:100%; height:500px;'></div>
+</div>
         <div class="tab-pane fade" id="tasks-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="tasks-tab-{{ project_info.project.id }}">
             <div class="task-grid-container">
                 <table id="tasksTable-{{ project_info.project.id }}" class="display" style="width: 100%;">
@@ -436,7 +447,8 @@
 <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
+<script src="https://cdn.daypilot.org/daypilot-lite.min.js"></script>
 {% load custom_filters %}
 
 <script>
@@ -455,6 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     duration: {{ task.hours|default:1 }},
                     parent: "{{ task|parent_id }}", // Use custom filter
                     progress: {{ task.progress|default:0 }},
+                    phase: "{{ phase_info.phase.id }}", // Include phase ID
                     open: true
                 },
                 {% endfor %}
@@ -542,7 +555,8 @@ function updateTask(id, task) {
         start_date: formattedStartDate,
         duration: task.duration,
         progress: task.progress,
-        parent: parentTaskId
+        parent: parentTaskId,
+        phase: task.phase // Include phase ID
     });
 
     $.ajax({
@@ -555,6 +569,7 @@ function updateTask(id, task) {
             'duration': task.duration,
             'progress': task.progress,
             'parent': parentTaskId,
+            'phase': task.phase, // Include phase ID
             'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
         success: function(response) {
@@ -578,7 +593,8 @@ function addTask(id, task, projectId) {
         duration: task.duration,
         progress: task.progress,
         parent: parentTaskId,
-        project_id: projectId
+        project_id: projectId,
+        phase: task.phase // Include phase ID
     });
 
     $.ajax({
@@ -592,6 +608,7 @@ function addTask(id, task, projectId) {
             'progress': task.progress,
             'parent': parentTaskId,
             'project_id': projectId,
+            'phase': task.phase, // Include phase ID
             'csrfmiddlewaretoken': '{{ csrf_token }}'
         },
         success: function(response) {
@@ -799,5 +816,230 @@ $(document).ready(function() {
     });
     {% endfor %}
 });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for project_info in project_data %}
+    (function(projectId) {
+        console.log("Initializing Gantt chart for project:", projectId);
+
+        const tasks = [
+            {% for phase_info in project_info.phases %}
+                {% for task in phase_info.tasks %}
+                {
+                    id: "{{ task.id }}",
+                    text: "{{ task.title }}",
+                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%M' }}",
+                    duration: {{ task.hours|default:1 }},
+                    parent: "{{ task|parent_id }}", // Use custom filter
+                    progress: {{ task.progress|default:0 }},
+                    phase: "{{ phase_info.phase.id }}", // Include phase ID
+                    open: true
+                },
+                {% endfor %}
+            {% endfor %}
+        ];
+        console.log("Tasks for project", projectId, ":", tasks);
+
+        const ganttContainer = document.getElementById("gantt_here_" + projectId);
+        console.log("Gantt container for project", projectId, ":", ganttContainer);
+
+        if (ganttContainer) {
+            try {
+                gantt.config.date_format = "%Y-%m-%d %H:%M";
+                gantt.init(ganttContainer);
+                gantt.clearAll(); // Clear any existing data
+                gantt.parse({ data: tasks });
+                console.log("Gantt chart initialized for project", projectId);
+
+                // Event listener for task updates
+                gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
+                    console.log("Task updated:", id, item);
+                    updateTask(id, item);
+                });
+
+                // Event listener for task progress changes
+                gantt.attachEvent("onTaskProgressChanged", function(id, progress) {
+                    console.log("Task progress updated:", id, progress);
+                    updateTask(id, gantt.getTask(id));
+                });
+
+                // Event listener for adding new tasks
+                gantt.attachEvent("onAfterTaskAdd", function(id, item) {
+                    console.log("Task added:", id, item);
+                    addTask(id, item, projectId);
+                });
+
+                // Event listener for task status changes
+                gantt.attachEvent("onTaskClick", function(id, e) {
+                    const task = gantt.getTask(id);
+                    const completed = task.progress === 1;
+                    updateTaskStatus(id, completed);
+                });
+
+                // Event listener for adding links
+                gantt.attachEvent("onAfterLinkAdd", function(id, link) {
+                    console.log("Link added:", id, link);
+                    updateLink(id, link, 'add');
+                });
+
+                // Event listener for deleting links
+                gantt.attachEvent("onAfterLinkDelete", function(id, link) {
+                    console.log("Link deleted:", id, link);
+                    updateLink(id, link, 'delete');
+                });
+
+                // Initialize breakdown tree
+                initializeBreakdownTree(projectId);
+
+            } catch (error) {
+                console.error("Error initializing Gantt chart for project", projectId, ":", error);
+            }
+        } else {
+            console.error("Gantt container not found for project:", projectId);
+        }
+    })({{ project_info.project.id }});
+    {% endfor %}
+});
+
+// Function to initialize breakdown tree
+function initializeBreakdownTree(projectId) {
+    const breakdownContainer = document.getElementById("breakdown_tree_" + projectId);
+    if (!breakdownContainer) {
+        console.error("Breakdown container not found for project:", projectId);
+        return;
+    }
+
+    const phases = {% for project_info in project_data %}{{ project_info.project.id }} == projectId ? {{ project_info.phases|safe }} : null{% if not forloop.last %} || {% endif %}{% endfor %};
+    if (!phases) {
+        console.error("Phases not found for project:", projectId);
+        return;
+    }
+
+    const treeData = phases.map(phaseInfo => {
+        return {
+            text: phaseInfo.phase.name,
+            nodes: phaseInfo.tasks.map(task => ({
+                text: task.title
+            }))
+        };
+    });
+
+    $(breakdownContainer).treeview({
+        data: treeData,
+        levels: 1,
+        expandIcon: "fa fa-plus",
+        collapseIcon: "fa fa-minus",
+        nodeIcon: "fa fa-folder"
+    });
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for project_info in project_data %}
+    (function(projectId) {
+        console.log("Initializing Gantt chart for project:", projectId);
+
+        const tasks = [
+            {% for phase_info in project_info.phases %}
+                {% for task in phase_info.tasks %}
+                {
+                    id: "{{ task.id }}",
+                    text: "{{ task.title }}",
+                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%M' }}",
+                    duration: {{ task.hours|default:1 }},
+                    parent: "{{ task|parent_id }}", // Use custom filter
+                    progress: {{ task.progress|default:0 }},
+                    phase: "{{ phase_info.phase.id }}", // Include phase ID
+                    open: true
+                },
+                {% endfor %}
+            {% endfor %}
+        ];
+        console.log("Tasks for project", projectId, ":", tasks);
+
+        const ganttContainer = document.getElementById("gantt_here_" + projectId);
+        console.log("Gantt container for project", projectId, ":", ganttContainer);
+
+        if (ganttContainer) {
+            try {
+                gantt.config.date_format = "%Y-%m-%d %H:%M";
+                gantt.init(ganttContainer);
+                gantt.clearAll(); // Clear any existing data
+                gantt.parse({ data: tasks });
+                console.log("Gantt chart initialized for project", projectId);
+
+                // Event listener for task updates
+                gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
+                    console.log("Task updated:", id, item);
+                    updateTask(id, item);
+                });
+
+                // Event listener for task progress changes
+                gantt.attachEvent("onTaskProgressChanged", function(id, progress) {
+                    console.log("Task progress updated:", id, progress);
+                    updateTask(id, gantt.getTask(id));
+                });
+
+                // Event listener for adding new tasks
+                gantt.attachEvent("onAfterTaskAdd", function(id, item) {
+                    console.log("Task added:", id, item);
+                    addTask(id, item, projectId);
+                });
+
+                // Event listener for task status changes
+                gantt.attachEvent("onTaskClick", function(id, e) {
+                    const task = gantt.getTask(id);
+                    const completed = task.progress === 1;
+                    updateTaskStatus(id, completed);
+                });
+
+                // Event listener for adding links
+                gantt.attachEvent("onAfterLinkAdd", function(id, link) {
+                    console.log("Link added:", id, link);
+                    updateLink(id, link, 'add');
+                });
+
+                // Event listener for deleting links
+                gantt.attachEvent("onAfterLinkDelete", function(id, link) {
+                    console.log("Link deleted:", id, link);
+                    updateLink(id, link, 'delete');
+                });
+
+                // Initialize DayPilot calendar
+                initializeDayPilotCalendar(projectId, tasks);
+
+            } catch (error) {
+                console.error("Error initializing Gantt chart for project", projectId, ":", error);
+            }
+        } else {
+            console.error("Gantt container not found for project:", projectId);
+        }
+    })({{ project_info.project.id }});
+    {% endfor %}
+});
+
+// Function to initialize DayPilot calendar
+function initializeDayPilotCalendar(projectId, tasks) {
+    const calendarContainer = document.getElementById("schedule_container_" + projectId);
+    if (!calendarContainer) {
+        console.error("Calendar container not found for project:", projectId);
+        return;
+    }
+
+    const events = tasks.map(task => ({
+        id: task.id,
+        text: task.text,
+        start: task.start_date,
+        end: new Date(new Date(task.start_date).getTime() + task.duration * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')
+    }));
+
+    const calendar = new DayPilot.Month(calendarContainer);
+    calendar.startDate = new DayPilot.Date().firstDayOfMonth();
+    calendar.events.list = events;
+    calendar.init();
+}
 </script>
 {% endblock %}
