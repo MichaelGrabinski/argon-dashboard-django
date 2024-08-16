@@ -1,0 +1,22 @@
+title,description,status,due_date,priority,category,hours,created_at,updated_at,assigned_to,created_by,location,project,phase,parent_task
+Create Initial Design,Create the initial design sketches and blueprints for the shed,open,2024-08-20,high,Design,10,2024-08-15,2024-08-15,Michael,Michael,Office - Pulaski,Building a 12 by 16 Shed,Planning Phase,
+Finalize Design,Finalize the design and create detailed CAD models,open,2024-08-31,high,Design,15,2024-08-21,2024-08-21,Michael,Michael,Office - Pulaski,Building a 12 by 16 Shed,Planning Phase,
+Obtain Permits,Obtain necessary permits for construction,open,2024-08-31,high,Legal,5,2024-08-15,2024-08-15,Michael,Michael,Office - Pulaski,Building a 12 by 16 Shed,Planning Phase,
+Conduct Soil Test,Conduct soil test to ensure site suitability,open,2024-08-25,high,Preparation,8,2024-08-18,2024-08-18,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Planning Phase,
+Excavate Site,Excavate the site for the foundation,open,2024-09-05,high,Construction,20,2024-09-01,2024-09-01,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Foundation Phase,
+Lay Gravel Base,Lay a gravel base for the foundation,open,2024-09-06,medium,Construction,8,2024-09-02,2024-09-02,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Foundation Phase,Excavate Site
+Pour Foundation,Pour the concrete foundation,open,2024-09-15,high,Construction,30,2024-09-06,2024-09-06,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Foundation Phase,Lay Gravel Base
+Cure Foundation,Allow foundation to cure,open,2024-09-20,high,Construction,5,2024-09-16,2024-09-16,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Foundation Phase,Pour Foundation
+Install Foundation Anchors,Install anchors for the foundation,open,2024-09-21,medium,Construction,10,2024-09-18,2024-09-18,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Foundation Phase,Cure Foundation
+Frame Walls,Frame the walls of the shed,open,2024-09-30,high,Construction,40,2024-09-16,2024-09-16,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Framing Phase,Install Foundation Anchors
+Install Wall Sheathing,Install wall sheathing on framed walls,open,2024-10-05,medium,Construction,20,2024-09-25,2024-09-25,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Framing Phase,Frame Walls
+Frame Roof,Frame the roof structure,open,2024-10-10,high,Construction,25,2024-10-01,2024-10-01,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Roofing Phase,Install Wall Sheathing
+Install Roof,Install the roof on the shed,open,2024-10-15,high,Construction,20,2024-10-01,2024-10-01,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Roofing Phase,Frame Roof
+Install Roofing Material,Install shingles or other roofing material,open,2024-10-20,medium,Construction,15,2024-10-05,2024-10-05,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Roofing Phase,Install Roof
+Install Vinyl Siding,Install vinyl siding on the exterior of the shed,open,2024-10-25,medium,Finishing,20,2024-10-10,2024-10-10,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Install Doors and Windows,Install doors and windows on the shed,open,2024-10-30,medium,Finishing,15,2024-10-16,2024-10-16,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Install Interior Walls,Install drywall inside the shed,open,2024-10-25,medium,Finishing,20,2024-10-18,2024-10-18,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Install Electrical Wiring,Install electrical wiring and outlets,open,2024-10-28,high,Electrical,15,2024-10-20,2024-10-20,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Install Lighting Fixtures,Install lighting fixtures,open,2024-10-29,medium,Electrical,10,2024-10-21,2024-10-21,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,Install Electrical Wiring
+Install Vinyl Flooring,Install vinyl flooring inside the shed,open,2024-10-30,medium,Finishing,12,2024-10-22,2024-10-22,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
+Final Inspection,Conduct final inspection and obtain approval,open,2024-10-31,high,Legal,5,2024-10-30,2024-10-30,Michael,Michael,Construction Site,Building a 12 by 16 Shed,Finishing Phase,
