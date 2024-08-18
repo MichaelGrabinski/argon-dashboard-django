@@ -264,7 +264,7 @@ def task_list(request):
     if status_filter:
         tasks = tasks.filter(status=status_filter)
     if location_filter:
-        tasks = tasks.filter(location__name__icontains=location_filter)
+        tasks = tasks.filter(location__name__icontains(location_filter))
 
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)

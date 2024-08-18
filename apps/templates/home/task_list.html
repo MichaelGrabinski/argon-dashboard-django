@@ -17,6 +17,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css">
 <link rel="stylesheet" href="{% static 'jquery-gantt/jquery.fn.gantt.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.css">
 <style>
     #gantt_here {
         width: 100%;
@@ -30,6 +32,67 @@
         width: 100%;
         height: 600px;
     }
+    .task-grid-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+</style>
+<style>
+
+
+.status-in_progress {
+    border-left: 5px solid #ffc107; /* Yellow */
+    background-color: #fff8e1; /* Light Yellow */
+}
+
+.status-waiting_for_materials {
+    border-left: 5px solid #17a2b8; /* Teal */
+    background-color: #e0f7f9; /* Light Teal */
+}
+
+.status-on_hold {
+    border-left: 5px solid #6c757d; /* Gray */
+    background-color: #f2f2f2; /* Light Gray */
+}
+
+.strikethrough {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px; /* Thicken the strikethrough line */
+}
+
+.indented {
+    padding-left: 20px;
+}
+
+
+.assigned-to-michael {
+    border-left: 5px solid #007bff; /* Blue */
+    background-color: #e7f3ff; /* Light Blue */
+}
+
+.assigned-to-nicholas {
+    border-left: 5px solid #28a745; /* Green */
+    background-color: #e6f9e6; /* Light Green */
+}
+
+.assigned-to-nick {
+    border-left: 5px solid #dc3545; /* Red */
+    background-color: #f8d7da; /* Light Red */
+}
+
+.assigned-to-other {
+    border-left: 5px solid #17a2b8; /* Teal */
+    background-color: #e0f7f9; /* Light Teal */
+}
+
+.dataTables_wrapper {
+    width: 100%;
+}
+
+.task-grid-container {
+    width: 100%;
+    overflow-x: auto;
+}
 </style>
 {% endblock stylesheets %}
 
@@ -54,6 +117,9 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" id="project-management-tab" data-toggle="tab" href="#project-management" role="tab" aria-controls="project-management" aria-selected="false">Project Management</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="task-grid-tab" data-toggle="tab" href="#task-grid" role="tab" aria-controls="task-grid" aria-selected="false">Task Grid</a>
         </li>
     </ul>
     <div class="tab-content" id="taskTabsContent">
@@ -121,10 +187,31 @@
             <h2>Project Management</h2>
             <div id="project_tree"></div>
         </div>
+        <div class="tab-pane fade" id="task-grid" role="tabpanel" aria-labelledby="task-grid-tab">
+            <h2>Task Grid</h2>
+            <div class="task-grid-container">
+                <table id="tasksTable" class="display" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Start Date</th>
+<th>Due Date</th>
+                            <th>Hours</th>
+                            <th>Assigned To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated by DataTables -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock content %}
-
 {% block javascripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -133,18 +220,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
 <script src="{% static 'jquery-gantt/jquery.fn.gantt.js' %}"></script>
+<script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
 <script src="{% static 'argon.js' %}"></script> <!-- Ensure argon.js is included last -->
 
 <script>
-    // Initialize FullCalendar
-    console.log('Initializing FullCalendar');
     $(document).ready(function() {
+        // Initialize FullCalendar
         var events = [
             {% for task in tasks %}
             {% if task.due_date %}
             {
                 title: "{{ task.title }}",
-                start: "{{ task.due_date|date:'Y-m-d' }}",  // Ensure date format is correct
+                start: "{{ task.due_date|date:'Y-m-d' }}",
                 description: "{{ task.description }}",
                 color: "{% if task.priority == 'high' %}#dc3545{% elif task.priority == 'medium' %}#ffc107{% else %}#28a745{% endif %}"
             },
@@ -152,14 +240,11 @@
             {% endfor %}
         ];
 
-        console.log('Events data: ', events);
-
         $('#calendar').fullCalendar({
             events: events
         });
 
         // Initialize Gantt Chart
-        console.log('Initializing Gantt Chart');
         var demoSource = [
             {% for task in tasks %}
             {% if task.due_date %}
@@ -176,8 +261,6 @@
             {% endif %}
             {% endfor %}
         ];
-
-        console.log('Gantt source data: ', demoSource);
 
         $("#gantt_here").gantt({
             source: demoSource,
@@ -200,7 +283,6 @@
         });
 
         // Initialize Project Management Tree
-        console.log('Initializing Project Management Tree');
         $('#project_tree').jstree({
             'core' : {
                 'data' : [
@@ -218,6 +300,83 @@
                     { "id" : "12", "parent" : "10", "text" : "Task 6" }
                 ]
             }
+        });
+
+        // Initialize DataTable for Task Grid
+        var table = $('#tasksTable').DataTable({
+            "ajax": {
+                "url": "{% url 'tasks_data' %}",
+                "dataSrc": "tasks"
+            },
+            "columns": [
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return '<input type="checkbox" class="task-complete" data-id="' + row.id + '"' + (row.completed ? ' checked' : '') + '>';
+                    }
+                },
+                { "data": "title" },
+                { "data": "status" },
+                { "data": "priority" },
+                {
+                    "data": "start_date",
+                    "render": function (data, type, row) {
+                        return data ? new Date(data).toISOString().split('T')[0] : '';
+                    }
+                },
+                {
+                    "data": "due_date",
+                    "render": function (data, type, row) {
+                        return data ? new Date(data).toISOString().split('T')[0] : '';
+                    }
+                },
+                { "data": "hours" },
+                { "data": "assigned_to__username" }
+            ],
+            "createdRow": function(row, data, dataIndex) {
+                // Apply strikethrough to completed tasks
+                if (data.completed) {
+                    $(row).addClass('strikethrough');
+                }
+
+                // Apply status class to the row
+                $(row).addClass('status-' + data.status.toLowerCase().replace(/\s/g, '_'));
+
+                // Apply priority class to the priority column
+                $(row).find('td:eq(3)').addClass('priority-' + data.priority.toLowerCase());
+            }
+        });
+
+        // Handle checkbox click
+        $('#tasksTable tbody').on('click', '.task-complete', function () {
+            var $checkbox = $(this);
+            var taskId = $checkbox.data('id');
+            var completed = $checkbox.is(':checked');
+            var $row = $checkbox.closest('tr');
+
+            // Apply or remove strikethrough
+            if (completed) {
+                $row.addClass('strikethrough');
+            } else {
+                $row.removeClass('strikethrough');
+            }
+
+            // Save the completion status to the server
+            $.ajax({
+                url: '{% url "update_task_status" %}',
+                method: 'POST',
+                data: {
+                    'id': taskId,
+                    'completed': completed,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    console.log('Task status updated successfully.');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to update task status:', error);
+                }
+            });
         });
     });
 </script>
