@@ -189,25 +189,34 @@
         </div>
         <div class="tab-pane fade" id="task-grid" role="tabpanel" aria-labelledby="task-grid-tab">
             <h2>Task Grid</h2>
-            <div class="task-grid-container">
-                <table id="tasksTable" class="display" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Title</th>
-                            <th>Status</th>
-                            <th>Priority</th>
-                            <th>Start Date</th>
-<th>Due Date</th>
-                            <th>Hours</th>
-                            <th>Assigned To</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Data will be populated by DataTables -->
-                    </tbody>
-                </table>
-            </div>
+<div class="task-grid-container">
+    <div class="form-inline mb-3">
+        <label for="categoryFilter" class="mr-2">Category:</label>
+        <select id="categoryFilter" class="form-control">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <table id="tasksTable" class="display" style="width: 100%;">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Start Date</th>
+                <th>Due Date</th>
+                <th>Hours</th>
+                <th>Assigned To</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated by DataTables -->
+        </tbody>
+    </table>
+</div>
         </div>
     </div>
 </div>
@@ -306,6 +315,9 @@
         var table = $('#tasksTable').DataTable({
             "ajax": {
                 "url": "{% url 'tasks_data' %}",
+                "data": function(d) {
+                    d.category = $('#categoryFilter').val();  // Pass category filter to server
+                },
                 "dataSrc": "tasks"
             },
             "columns": [
@@ -345,6 +357,11 @@
                 // Apply priority class to the priority column
                 $(row).find('td:eq(3)').addClass('priority-' + data.priority.toLowerCase());
             }
+        });
+
+        // Handle category filter change
+        $('#categoryFilter').on('change', function() {
+            table.ajax.reload();  // Reload the DataTable with the new category filter
         });
 
         // Handle checkbox click

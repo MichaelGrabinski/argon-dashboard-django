@@ -257,19 +257,24 @@ def task_list(request):
     query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     location_filter = request.GET.get('location', '')
+    category_filter = request.GET.get('category', '')  # Get category filter from request
+
     tasks = Task.objects.all()
 
     if query:
-        tasks = tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        tasks = tasks.filter(Q(title__icontains=query) | Q(description__icontains(query)))
     if status_filter:
         tasks = tasks.filter(status=status_filter)
     if location_filter:
         tasks = tasks.filter(location__name__icontains(location_filter))
+    if category_filter:
+        tasks = tasks.filter(category__icontains(category_filter))  # Filter by category
 
     open_tasks = tasks.filter(status='open')
     assigned_tasks = tasks.filter(assigned_to=request.user)
     closed_tasks = tasks.filter(status='closed')
     locations = Location.objects.all()
+    categories = Task.objects.values_list('category', flat=True).distinct()  # Get distinct categories
 
     context = {
         'open_tasks': open_tasks,
@@ -278,12 +283,14 @@ def task_list(request):
         'query': query,
         'status_filter': status_filter,
         'location_filter': location_filter,
+        'category_filter': category_filter,  # Pass category filter to context
         'locations': locations,
+        'categories': categories,  # Pass categories to context
         'assign_task_form': AssignTaskForm(),
         'tasks': tasks  # Ensure tasks are passed to the template
     }
     return render(request, 'home/task_list.html', context)
-    
+
     
 def task_detail(request, pk):
     task = get_object_or_404(Task, pk=pk)
@@ -687,16 +694,25 @@ def other_hub(request):
     })
     
     
+import logging
+
+logger = logging.getLogger(__name__)
+
 def tasks_data(request):
     project_id = request.GET.get('project_id')
+    category_filter = request.GET.get('category', '')  # Get category filter from request
+
     if project_id:
-        tasks = Task.objects.filter(phase__project_id=project_id).values(
-            'id', 'title', 'status', 'priority', 'due_date', 'start_date', 'hours', 'assigned_to__username', 'phase__name', 'completed', 'parent_task_id'
-        )
+        tasks = Task.objects.filter(phase__project_id=project_id)
     else:
-        tasks = Task.objects.all().values(
-            'id', 'title', 'status', 'priority', 'due_date', 'start_date', 'hours', 'assigned_to__username', 'phase__name', 'completed', 'parent_task_id'
-        )
+        tasks = Task.objects.all()
+
+    if category_filter:
+        tasks = tasks.filter(category__icontains=category_filter)  # Correct filter syntax
+
+    tasks = tasks.values(
+        'id', 'title', 'status', 'priority', 'due_date', 'start_date', 'hours', 'assigned_to__username', 'phase__name', 'completed', 'parent_task_id'
+    )
     
     tasks_list = list(tasks)
 
@@ -719,7 +735,8 @@ def tasks_data(request):
     return JsonResponse({
         'tasks': tasks_list,
         'phases': phase_data
-    })    
+    })
+
     
 @csrf_exempt
 def update_task_status(request):
