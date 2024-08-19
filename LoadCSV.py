@@ -128,7 +128,8 @@ locations = [
     'Warehouse', 'Toolbox', 'Workshop', 'Garage', 'Office', 'Electrical Toolbox', 
     'Spare Room', 'Bin Number Two Yellow Cap', 'Bin Number 1/I Grey Bin Left of Rack', 
     'Bin Number 1 Yellow Cap', 'Bin Number 4 Yellow Cap', 'Office - Pulaski',
-    'Construction Site', 'Unit 3 - Fl. 3 - 98 Pulaski St', '98 Pulaski St'
+    'Construction Site', 'Unit 3 - Fl. 3 - 98 Pulaski St', '98 Pulaski St',
+    'Office - Forest', 'Garage - Forest', 'Garage - Pulaski', 'Workshop - Pulaski'
 ]
 for location in locations:
     Location.objects.get_or_create(name=location)
@@ -183,11 +184,14 @@ def get_location(name):
 
 def get_property(name):
     try:
-        return Property.objects.get(name=name)
-    except Property.DoesNotExist:
-        print(f"Property {name} does not exist.")
-        return None
-
+        properties = Property.objects.filter(name=name)
+        if properties.exists():
+            return properties.first()  # Return the first matching property
+        else:
+            raise Property.DoesNotExist(f"No Property found with name: {name}")
+    except Property.MultipleObjectsReturned:
+        print(f"Multiple properties found with the name {name}. Returning the first one.")
+        return properties.first()
 def get_project(title):
     try:
         return Project.objects.get(title=title)
@@ -219,21 +223,32 @@ def get_vehicle(vin):
         print(f"Vehicle {vin} does not exist.")
         return None
 
-def get_task(title):
+def get_task(title, row=None):
     try:
-        return Task.objects.get(title=title)
-    except Task.DoesNotExist:
-        print(f"Task {title} does not exist.")
-        return None
+        tasks = Task.objects.filter(title=title)
+        if tasks.exists():
+            return tasks.first()  # Return the first matching task
+        else:
+            print(f"No Task found with title: {title}")
+            return None
+    except Task.MultipleObjectsReturned:
+        print(f"Multiple tasks found with the title {title}. Returning the first one.")
+        return tasks.first()
 
 def get_phase(name, project_title):
     try:
         project = get_project(project_title)
         if project:
             return ProjectPhase.objects.get(name=name, project=project)
+        else:
+            print(f"Project {project_title} does not exist.")
+            return None
     except ProjectPhase.DoesNotExist:
         print(f"Phase {name} for project {project_title} does not exist.")
         return None
+    except ProjectPhase.MultipleObjectsReturned:
+        print(f"Multiple phases found with the name {name} for project {project_title}. Returning the first one.")
+        return ProjectPhase.objects.filter(name=name, project=project).first()
 
 def load_csv(file_path, model, fields, related_fields={}):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
@@ -250,7 +265,7 @@ def load_csv(file_path, model, fields, related_fields={}):
                 if related_field in row:
                     if callable(related_func):
                         try:
-                            data[related_field] = related_func(row[related_field], row)
+                            data[related_field] = related_func(row[related_field], row)  # Call related_func with two arguments
                         except TypeError:
                             data[related_field] = related_func(row[related_field])
                     else:
@@ -418,11 +433,11 @@ def load_tag_houses():
 def load_attachments():
     fields = ['file', 'uploaded_at']
     related_fields = {
-        'task': get_task,
+        'task': lambda task_title, row: get_task(task_title, row) if 'task' in row else None,
     }
     file_path = 'sample_data/attachments.csv'
     load_csv(file_path, Attachment, fields, related_fields)
-
+    
 def load_comments():
     fields = ['content', 'created_at']
     related_fields = {
