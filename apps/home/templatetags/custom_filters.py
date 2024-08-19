@@ -4,7 +4,7 @@ register = template.Library()
 
 @register.filter(name='endswith')
 def endswith(value, arg):
-    return str(value).endswith(arg)\
+    return str(value).endswith(arg)
 
 register = template.Library()
 
