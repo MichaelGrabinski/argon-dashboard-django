@@ -79,16 +79,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 import os
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('humanfuturesserver'),
-            'USER': os.getenv('mkzjjytnyr'),
-            'PASSWORD': os.getenv('8NzclMf$oMQ3EG6L'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT', '5432'),  # Default to '5432' if not set
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('humanfuturesserver'),
+        'USER': os.getenv('mkzjjytnyr'),
+        'PASSWORD': os.getenv('8NzclMf$oMQ3EG6L'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '5432'),  # Default to '5432' if not set
     }
+}
 
 
 #DATABASES = {
