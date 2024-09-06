@@ -1,0 +1,47 @@
+name: Build and Deploy Django App to Azure Web App
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch as needed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v2
+
+      - name: Set up Python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Adjust the Python version as needed
+
+      - name: Install dependencies
+        run: |
+          python -m venv env
+          source env/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        run: |
+          source env/bin/activate
+          python manage.py migrate
+
+      - name: Collect static files
+        run: |
+          source env/bin/activate
+          python manage.py collectstatic --noinput
+
+      - name: Run tests
+        run: |
+          source env/bin/activate
+          python manage.py test
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'HumanFutures'  # Replace with your Azure App Service name
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
