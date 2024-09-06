@@ -11,7 +11,8 @@ CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_1122')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+#DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
 # load production server from .env
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'linux.krustykrew.org', 'humanfuturesco.com','humanfutures-djgch2ghdhaycshg.eastus2-01.azurewebsites.net' ,config('SERVER', default='127.0.0.1')]
@@ -77,8 +78,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 
-import os
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -90,13 +89,14 @@ DATABASES = {
     }
 }
 
-
+'''
 #DATABASES = {
 #   'default': {
 #        'ENGINE': 'django.db.backends.sqlite3',
 #        'NAME': 'db.sqlite3',
 #    }
 #}
+'''
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
