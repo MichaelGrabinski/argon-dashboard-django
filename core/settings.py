@@ -85,7 +85,7 @@ DATABASES = {
         'USER': os.getenv('mkzjjytnyr'),
         'PASSWORD': os.getenv('8NzclMf$oMQ3EG6L'),
         'HOST': os.getenv('postgres'),
-        'PORT': os.getenv('5432'),  # Default to '5432' if not set
+        'PORT': os.getenv('DATABASE_PORT', '5432'), 
     }
 }
 
