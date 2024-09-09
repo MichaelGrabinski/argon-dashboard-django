@@ -81,11 +81,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('humanfuturesserver'),
+        'NAME': os.getenv('humanfuturesserver.postgres.database.azure.com'),
         'USER': os.getenv('mkzjjytnyr'),
         'PASSWORD': os.getenv('8NzclMf$oMQ3EG6L'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '5432'),  # Default to '5432' if not set
+        'HOST': os.getenv('postgres'),
+        'PORT': os.getenv('5432'),  # Default to '5432' if not set
     }
 }
 
