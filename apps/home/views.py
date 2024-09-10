@@ -618,16 +618,13 @@ def data_list(request, offset):
 
 
 def public_home(request):
-
-    return render(request, 'public_home.html')
+    return render(request, 'home/public_home.html')
 
 def public_about(request):
-
-    return render(request, 'about.html')
+    return render(request, 'home/about.html')
 
 def public_services(request):
-
-    return render(request, 'services.html')
+    return render(request, 'home/services.html')
 
 
 def other_hub(request):
