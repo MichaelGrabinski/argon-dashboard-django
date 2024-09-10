@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="images/favicon.png" type="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <title>Human Futures, LLC</title>
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+
+  <!-- fonts style -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+  <!-- font awesome style -->
+  <link href="css/font-awesome.min.css" rel="stylesheet" />
+
+  <!-- Custom styles for this template -->
+  <link href="css/style.css" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="css/responsive.css" rel="stylesheet" />
+  <style>
+    #map {
+      height: 400px; /* Adjust the height as needed */
+      width: 100%; /* The width of the map */
+    }
+  </style>
+ <style> 
+  
+.team_container .box .img-box img {
+  width: 100%;
+  height: 50%; /* Ensures the image maintains its aspect ratio */
+  border-radius: 50%; /* Makes the images circular */
+  object-fit: cover; /* Ensures the image covers the entire area without distortion */
+  max-width: 120px; /* Optional: Set a max width to control the size */
+  max-height: 120px; /* Optional: Set a max height to control the size */
+}
+  </style>
+  
+
+</head>
+
+<body>
+
+  <div class="hero_area">
+
+    <div class="hero_bg_box">
+      <div class="bg_img_box">
+        <img src="images/hero-bg.png" alt="">
+      </div>
+    </div>
+
+    <!-- header section starts -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container ">
+          <a class="navbar-brand" href="index.html">
+            <span>
+              Human Futures, LLC
+            </span>
+          </a>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class=""> </span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav  ">
+              <li class="nav-item active">
+                <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="about.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="service.html">Services</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://humanfutures.atlassian.net/">Jira</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="why.html">Employee Login</a>
+              </li>
+              <!--
+              <li class="nav-item">
+                <a class="nav-link" href="#"> <i class="fa fa-user" aria-hidden="true"></i> Login</a>
+              </li>
+              <form class="form-inline">
+                <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+              </form>
+              -->
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <!-- end header section -->
+
+    <!-- slider section -->
+    <section class="slider_section">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Info Tech <br>
+                      Services
+                    </h1>
+                    <p>
+                      At Human Futures, LLC, we offer comprehensive IT services including data management, software development, app development, and hardware solutions. Our expert team is dedicated to providing innovative and efficient technology solutions tailored to meet your business needs in Connecticut.
+                    </p>
+                    <div class="btn-box">
+                      <a href="about.html" class="btn1">
+                        Read More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="img-box">
+                    <img src="images/slider-img.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item ">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Home <br>
+                      Improvement
+                    </h1>
+                    <p>
+                      Our home improvement services cover a range of small to medium-sized projects including window installations, house siding, minor roofing, and renovations. We are committed to enhancing the beauty and functionality of your home with quality craftsmanship and attention to detail.
+                    </p>
+                    <div class="btn-box">
+                      <a href="about.html" class="btn1">
+                        Read More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="img-box">
+                    <img src="images/slider-img.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-6 ">
+                  <div class="detail-box">
+                    <h1>
+                      Home <br>
+                      Construction
+                    </h1>
+                    <p>
+                      Human Futures, LLC is excited to announce our upcoming venture into new home construction. Starting next year, we will be building high-quality, energy-efficient homes designed to meet the modern needs of families in Connecticut. Stay tuned for more updates!
+                    </p>
+                    <div class="btn-box">
+                      <a href="about.html" class="btn1">
+                        Read More
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="img-box">
+                    <img src="images/slider-img.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end slider section -->
+  </div>
+
+  <!-- service section -->
+  <section class="service_section layout_padding">
+    <div class="service_container">
+      <div class="container ">
+        <div class="heading_container heading_center">
+          <h2>
+            Our <span>Service Area</span>
+          </h2>
+          <p>
+            The company is set to expand its offerings from private contracts to providing services in Torrington, CT and the surrounding areas.
+          </p>
+        </div>
+        <p> </p>
+        <div id="map"></div>
+
+        <div class="row">
+          <div class="col-md-4">
+            <div class="box">
+              <div class="img-box">
+                <img src="images/s1.png" alt="Window Installation">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  Window Installation
+                </h5>
+                <p>
+                  Enhance your home's energy efficiency and aesthetic appeal with our professional window installation services. Our team ensures precise fitting and high-quality materials for long-lasting performance.
+                </p>
+                <a href="about.html">
+                  Read More
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="box">
+              <div class="img-box">
+                <img src="images/s2.png" alt="Exterior Siding">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  Exterior Siding
+                </h5>
+                <p>
+                  Protect and beautify your home with our durable and stylish exterior siding solutions. We offer a variety of materials and colors to match your home's design and withstand the elements.
+                </p>
+                <a href="about.html">
+                  Read More
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="box">
+              <div class="img-box">
+                <img src="images/s3.png" alt="Database Architecture, Migration, and Setup">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  Database Architecture, Migration, and Setup
+                </h5>
+                <p>
+                  Optimize your data management with our expert database architecture, migration, and setup services. We ensure seamless transitions and robust systems tailored to your business needs.
+                </p>
+                <a href="about.html">
+                  Read More
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-box">
+          <a href="service.html">
+            View All
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end service section -->
+
+  <!-- about section -->
+  <section class="about_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          About <span>Us</span>
+        </h2>
+        <p>
+          Learn more about Human Futures, LLC and our commitment to excellence in IT services, home improvement, and new home construction.
+        </p>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="img-box">
+            <img src="images/about-img.png" alt="">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="detail-box">
+            <h3>
+              We Are Human Futures
+            </h3>
+            <p>
+              Human Futures, LLC is dedicated to providing top-notch IT services, home improvement solutions, and new home construction. Our team of experts is committed to delivering quality and innovation in every project we undertake.
+            </p>
+            <a href="about.html">
+              Read More
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end about section -->
+
+<!-- team section -->
+<section class="team_section layout_padding">
+  <div class="container-fluid">
+    <div class="heading_container heading_center">
+      <h2 class="">
+        Our <span>Team</span>
+      </h2>
+    </div>
+
+    <div class="team_container">
+      <div class="row justify-content-center">
+        <div class="col-lg-3 col-sm-6">
+          <div class="box">
+            <div class="img-box">
+              <img src="images/Michael.webp" class="img1" alt="Michael Grabinski, Ph.D.">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Michael Grabinski, Ph.D.
+              </h5>
+              <p>
+                CEO
+              </p>
+            </div>
+            <div class="social_box">
+              <a href="#">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-linkedin" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-youtube-play" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="box">
+            <div class="img-box">
+              <img src="images/Nicholas.webp" class="img1" alt="Nicholas Gordneer">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Nicholas Gordneer
+              </h5>
+              <p>
+                IT Services and Construction
+              </p>
+            </div>
+            <div class="social_box">
+              <a href="#">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-linkedin" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-youtube-play" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="box">
+            <div class="img-box">
+              <img src="images/Nick.webp" class="img1" alt="Nicholas Morin">
+            </div>
+            <div class="detail-box">
+              <h5>
+                Nicholas Morin
+              </h5>
+              <p>
+                IT Services and Construction
+              </p>
+            </div>
+            <div class="social_box">
+              <a href="#">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-linkedin" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="#">
+                <i class="fa fa-youtube-play" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- end team section -->
+
+
+  <!-- footer section -->
+  <section class="footer_section">
+    <div class="container">
+      <p>
+        &copy; <span id="displayYear"></span> All Rights Reserved By Human Futures, LLC
+      </p>
+    </div>
+  </section>
+  <!-- footer section -->
+
+  <!-- jQery -->
+  <script type="text/javascript" src="js/jquery-3.4.1.min.js"></script>
+  <!-- popper js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <!-- bootstrap js -->
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+  <!-- owl slider -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
+  </script>
+  <!-- custom js -->
+  <script type="text/javascript" src="js/custom.js"></script>
+  <!-- Leaflet Map -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    // Initialize the map and set its view to Torrington, CT
+    var map = L.map('map').setView([41.8006, -73.1212], 10);
+
+    // Add the OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Define the center and radius for the service area circle
+    var serviceAreaCenter = [41.8006, -73.1212];
+    var serviceAreaRadius = 15000; // Radius in meters (15 km)
+
+    // Create and add the circle to the map
+    var serviceArea = L.circle(serviceAreaCenter, {
+      color: 'blue',
+      fillColor: '#add8e6',
+      fillOpacity: 0.5,
+      radius: serviceAreaRadius
+    }).addTo(map);
+
+    // Optionally, add a popup to the circle
+    serviceArea.bindPopup("Service Area: Torrington and surrounding areas.");
+  </script>
+</body>
+
+</html>

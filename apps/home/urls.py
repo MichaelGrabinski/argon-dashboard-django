@@ -10,6 +10,12 @@ urlpatterns = [
     path('', views.index, name='home'),
     re_path(r'^data/(.*)$', views.data_list),
     
+    # Public Pages
+    path('public_home/', views.public_home, name='public_home'), 
+    path('public_about/', views.public_about, name='public_about'),
+    path('public_services/', views.public_services, name='public_services'),
+    
+    
     # Tool management
     path('tools/', views.tool_list, name='tool_list'),  # Changed to 'tools/' to avoid conflict with home
     path('tool/<int:pk>/', views.tool_detail, name='tool_detail'),
