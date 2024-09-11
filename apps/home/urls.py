@@ -6,9 +6,12 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 
 urlpatterns = [
-    # The home page
-    path('', views.index, name='home'),
+    # The default home page
+    path('', views.public_home, name='home'),  # Change this line to use public_home as the default page
+    # Original home page
+    path('original_home/', views.index, name='original_home'),  # Add this line to keep the original home page accessible
     re_path(r'^data/(.*)$', views.data_list),
+    
     
     # Public Pages
     path('public_home/', views.public_home, name='public_home'), 
