@@ -936,13 +936,10 @@ def get_gpt_response(messages, model_name):
     except Exception as e:
         # Handle exceptions, log errors as needed
         return "I'm sorry, but I'm unable to process that request right now."
-```
+
 
 #### **Update `conversation_detail` View**
 
-Pass the model name to the `get_gpt_response` function.
-
-```python
 @login_required
 def conversation_detail(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
