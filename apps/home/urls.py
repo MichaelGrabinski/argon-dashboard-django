@@ -54,6 +54,11 @@ urlpatterns = [
     path('budget-accounting/project/<int:project_id>/', views.budget_project_detail, name='budget_project_detail'),
     # Matches any HTML file
     re_path(r'^.*\.*', views.pages, name='pages'),
+    
+    
+    path('conversations/', views.conversation_list, name='conversation_list'),
+    path('conversations/new/', views.new_conversation, name='new_conversation'),
+    path('conversations/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

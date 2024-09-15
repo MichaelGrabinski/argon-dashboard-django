@@ -25,7 +25,10 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
-
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Conversation, Message
+from django.contrib.auth.decorators import login_required
+import openai
 
 @login_required(login_url="/login/")
 def index(request):
@@ -868,3 +871,98 @@ def update_link(request):
                 return JsonResponse({'status': 'error', 'message': 'Link not found'}, status=404)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+    
+    
+openai.api_key = 'key'
+
+@login_required
+def conversation_list(request):
+    conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'home/conversation_list.html', {'conversations': conversations})
+
+@login_required
+def conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    messages = conversation.messages.order_by('created_at')
+
+    if request.method == 'POST':
+        user_input = request.POST.get('message')
+
+        # Save user's message
+        Message.objects.create(conversation=conversation, sender='user', content=user_input)
+
+        # Get assistant's response from GPT-4
+        response = get_gpt4_response(messages)
+
+        # Save assistant's message
+        Message.objects.create(conversation=conversation, sender='assistant', content=response)
+
+        return redirect('conversation_detail', conversation_id=conversation.id)
+
+    return render(request, 'home/conversation_detail.html', {
+        'conversation': conversation,
+        'messages': messages
+    })
+
+@login_required
+def new_conversation(request):
+    if request.method == 'POST':
+        title = request.POST.get('title') or 'New Conversation'
+        model_name = request.POST.get('model_name') or 'gpt-4'
+        conversation = Conversation.objects.create(user=request.user, title=title, model_name=model_name)
+        return redirect('conversation_detail', conversation_id=conversation.id)
+    else:
+        return redirect('conversation_list')
+
+def get_gpt_response(messages, model_name):
+    # Prepare the message history for the API
+    conversation_history = [
+        {"role": msg.sender, "content": msg.content}
+        for msg in messages
+    ]
+
+    # Call OpenAI API with the selected model
+    try:
+        response = openai.ChatCompletion.create(
+            model=model_name,
+            messages=conversation_history,
+            max_tokens=150,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+        assistant_message = response['choices'][0]['message']['content']
+        return assistant_message.strip()
+    except Exception as e:
+        # Handle exceptions, log errors as needed
+        return "I'm sorry, but I'm unable to process that request right now."
+```
+
+#### **Update `conversation_detail` View**
+
+Pass the model name to the `get_gpt_response` function.
+
+```python
+@login_required
+def conversation_detail(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    messages = conversation.messages.order_by('created_at')
+
+    if request.method == 'POST':
+        user_input = request.POST.get('message')
+
+        # Save user's message
+        Message.objects.create(conversation=conversation, sender='user', content=user_input)
+
+        # Get assistant's response using the selected model
+        response = get_gpt_response(messages, conversation.model_name)
+
+        # Save assistant's message
+        Message.objects.create(conversation=conversation, sender='assistant', content=response)
+
+        return redirect('conversation_detail', conversation_id=conversation.id)
+
+    return render(request, 'home/conversation_detail.html', {
+        'conversation': conversation,
+        'messages': messages
+    })

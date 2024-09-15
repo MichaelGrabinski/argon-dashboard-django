@@ -1,0 +1,33 @@
+{% extends 'layouts/baseQK.html' %}
+{% extends 'chat/base.html' %}
+{% block content %}
+<div class="chat-container">
+    <div class="sidebar">
+        <h2>Conversations</h2>
+        <ul>
+            {% for conv in request.user.conversations.all %}
+                <li {% if conv.id == conversation.id %}class="active"{% endif %}>
+                    <a href="{% url 'conversation_detail' conv.id %}">{{ conv.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'conversation_list' %}">+ New Conversation</a>
+    </div>
+    <div class="chat-window">
+        <h2>{{ conversation.title }} (Model: {{ conversation.model_name }})</h2>
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.sender }}">
+                    <strong>{{ message.sender|capfirst }}:</strong>
+                    <p>{{ message.content }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="message" rows="3" placeholder="Type your message here..." required></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

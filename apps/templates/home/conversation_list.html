@@ -1,0 +1,32 @@
+{% extends 'layouts/baseQK.html' %}
+
+{% extends 'chat/base.html' %}
+{% block content %}
+<h1>Your Conversations</h1>
+
+<form method="post" action="{% url 'new_conversation' %}">
+    {% csrf_token %}
+    <label for="title">Conversation Title:</label>
+    <input type="text" name="title" id="title" placeholder="Enter title" required>
+
+    <label for="model_name">Select Model:</label>
+    <select name="model_name" id="model_name">
+        <option value="gpt-4">GPT-4</option>
+        <option value="gpt-o1">GPT-o1</option>
+        <!-- Add other models as needed -->
+    </select>
+
+    <button type="submit">Start New Conversation</button>
+</form>
+
+<ul>
+    {% for conversation in conversations %}
+        <li>
+            <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
+            <small>{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
+        </li>
+    {% empty %}
+        <li>No conversations yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
