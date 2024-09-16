@@ -36,7 +36,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
 import openai
-
+import io
+from openai import OpenAIError
 
 
 @login_required(login_url="/login/")
@@ -947,7 +948,7 @@ def get_gpt_response(messages, model_name, user_input, image_file=None):
             )
             assistant_message = response.choices[0].message.content
             return assistant_message.strip()
-        except openai.error.OpenAIError as e:
+        except openai.OpenAIError as e:
             logger.error(f"OpenAI API error: {e}")
             return "An error occurred while processing your request."
 
@@ -965,7 +966,7 @@ def get_gpt_response(messages, model_name, user_input, image_file=None):
             )
             image_url = response.data[0].url
             return image_url  # Return the image URL
-        except openai.error.OpenAIError as e:
+        except openai.OpenAIError as e:
             logger.error(f"Error generating image: {e}")
             return "An error occurred while generating the image."
 
@@ -1009,7 +1010,7 @@ def get_gpt_response(messages, model_name, user_input, image_file=None):
                 os.remove(temp_image_path)
 
                 return image_url  # Return the edited image URL
-            except openai.error.OpenAIError as e:
+            except openai.OpenAIError as e:
                 logger.error(f"Error editing image: {e}")
                 return "An error occurred while editing the image."
             except Exception as e:
