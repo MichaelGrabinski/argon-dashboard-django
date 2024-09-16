@@ -117,20 +117,33 @@
         <h2>{{ conversation.title }} (Model: {{ conversation.model_name }})</h2>
         <div class="messages" id="chat-messages">
             {% for message in messages %}
-                <div class="message {% if message.sender == 'user' %}user{% else %}assistant{% endif %}">
-                    <div class="message-content">
-                        <p>{{ message.content|markdownify|safe }}</p>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="message {% if message.sender == 'user' %}user{% else %}assistant{% endif %}">
+        <div class="message-content">
+            {% if message.message_type == 'text' %}
+                <p>{{ message.content|markdownify|safe }}</p>
+            {% elif message.message_type == 'image' %}
+                <img src="{{ message.content }}" alt="Generated Image" style="max-width: 100%; height: auto;">
+            {% elif message.message_type == 'audio' %}
+                <audio controls>
+                    <source src="{{ message.content }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            {% endif %}
         </div>
-        <form method="post" class="mt-auto">
-            {% csrf_token %}
-            <div class="form-group">
-                <textarea name="message" rows="3" class="form-control" placeholder="Type your message here..." required></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Send</button>
-        </form>
+    </div>
+{% endfor %}
+        </div>
+<form method="post" class="mt-auto" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        <textarea name="message" rows="3" class="form-control" placeholder="Type your message here..." required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="image">Upload an image (optional):</label>
+        <input type="file" name="image" accept="image/*" class="form-control-file">
+    </div>
+    <button type="submit" class="btn btn-success">Send</button>
+</form>
     </div>
 </div>
 {% endblock content %}

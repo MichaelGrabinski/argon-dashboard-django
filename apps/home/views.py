@@ -31,6 +31,11 @@ from django.contrib.auth.decorators import login_required
 from openai import OpenAI
 from django.template import Library
 #from apps.home.templatetags import markdown_extras
+import base64
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
+
 
 @login_required(login_url="/login/")
 def index(request):
@@ -874,6 +879,9 @@ def update_link(request):
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
     
+    
+    
+    
 from openai import OpenAI
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -896,25 +904,70 @@ def new_conversation(request):
 import logging
 logger = logging.getLogger(__name__)
 
-def get_gpt_response(messages, model_name):
-    conversation_history = [
-        {"role": msg.sender, "content": msg.content}
-        for msg in messages
-    ]
+def get_gpt_response(messages, model_name, user_input, image_file=None):
+    if model_name.startswith('gpt-4'):
+        # Handle GPT-4 and GPT-4 with Vision
+        conversation_history = [
+            {"role": msg.sender, "content": msg.content}
+            for msg in messages
+        ]
 
-    try:
+        if model_name == 'gpt-4-vision' and image_file:
+            # Encode the image file in base64
+            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+            conversation_history.append({
+                "role": "user",
+                "content": [{
+                    "type": "text",
+                    "text": user_input
+                }, {
+                    "type": "image",
+                    "image": {
+                        "data": image_base64
+                    }
+                }]
+            })
+        else:
+            conversation_history.append({"role": "user", "content": user_input})
+
         response = client.chat.completions.create(
             model=model_name,
             messages=conversation_history,
-           # max_completion_tokens=150,
-           # temperature=0.7,
         )
         assistant_message = response.choices[0].message.content
         return assistant_message.strip()
-    except Exception as e:
-        logger.exception("Error during OpenAI API call.")
-        return "I'm sorry, but I'm unable to process that request right now."
 
+    elif model_name.startswith('dall-e'):
+        # Handle DALL·E Image Generation
+        if model_name == 'dall-e-3':
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt=user_input,
+                size="1024x1024",
+                n=1,
+            )
+        elif model_name == 'dall-e-2':
+            response = client.images.generate(
+                model="dall-e-2",
+                prompt=user_input,
+                size="1024x1024",
+                n=1,
+            )
+        image_url = response.data[0].url
+        return image_url  # Return the image URL
+
+    elif model_name == 'tts-1':
+        # Handle Text-to-Speech
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="alloy",  # You can make voice selectable if needed
+            input=user_input
+        )
+        audio_url = response.data[0].url  # Assuming the response contains the audio URL
+        return audio_url  # Return the audio URL
+
+    else:
+        return "Selected model not supported."
 
 #### **Update `conversation_detail` View**
 
@@ -924,6 +977,7 @@ def conversation_detail(request, conversation_id):
 
     if request.method == 'POST':
         user_input = request.POST.get('message')
+        image_file = request.FILES.get('image')  # For image uploads
 
         # Save user's message
         Message.objects.create(conversation=conversation, sender='user', content=user_input)
@@ -932,10 +986,18 @@ def conversation_detail(request, conversation_id):
         messages = conversation.messages.order_by('created_at')
 
         # Get assistant's response using the selected model
-        response = get_gpt_response(messages, conversation.model_name)
+        response = get_gpt_response(messages, conversation.model_name, user_input, image_file)
 
         # Save assistant's message
-        Message.objects.create(conversation=conversation, sender='assistant', content=response)
+        if conversation.model_name.startswith('dall-e'):
+            # Save image URL as content
+            Message.objects.create(conversation=conversation, sender='assistant', content=response, message_type='image')
+        elif conversation.model_name == 'tts-1':
+            # Save audio URL as content
+            Message.objects.create(conversation=conversation, sender='assistant', content=response, message_type='audio')
+        else:
+            # Save text response
+            Message.objects.create(conversation=conversation, sender='assistant', content=response)
 
         return redirect('conversation_detail', conversation_id=conversation.id)
 

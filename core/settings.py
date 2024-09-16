@@ -20,9 +20,8 @@ DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'linux.krustykrew.org', 'humanfuturesco.com','humanfutures-djgch2ghdhaycshg.eastus2-01.azurewebsites.net' ,config('SERVER', default='127.0.0.1')]
 
 # Application definition
-ALLOWED_MODELS = ['chatgpt-4o-latest', 'o1-preview']
+ALLOWED_MODELS = ['gpt-4', 'gpt-4-vision', 'dall-e-2', 'dall-e-3', 'tts-1']
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
