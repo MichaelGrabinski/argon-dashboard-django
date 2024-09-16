@@ -875,10 +875,7 @@ def update_link(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
     
 from openai import OpenAI
-
-client = OpenAI(api_key='')
-
-
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 @login_required
 def conversation_list(request):
