@@ -1,32 +1,46 @@
-{% extends 'layouts/baseQK.html' %}
+{% extends 'layouts/base.html' %}
+{% block title %}Conversations{% endblock title %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pygments/2.7.2/styles/default.min.css">
+     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script>
+{% block stylesheets %}
+{% endblock stylesheets %}
 
-{% extends 'chat/base.html' %}
 {% block content %}
-<h1>Your Conversations</h1>
+<div class="container mt-4">
+    <h1 class="text-center">Your Conversations</h1>
 
-<form method="post" action="{% url 'new_conversation' %}">
-    {% csrf_token %}
-    <label for="title">Conversation Title:</label>
-    <input type="text" name="title" id="title" placeholder="Enter title" required>
+    <form method="post" action="{% url 'new_conversation' %}" class="mb-4">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Conversation Title:</label>
+            <input type="text" name="title" id="title" class="form-control" placeholder="Enter title" required>
+        </div>
+        <div class="form-group">
+            <label for="model_name">Select Model:</label>
+            <select name="model_name" id="model_name" class="form-control">
+                <option value="chatgpt-4o-latest">GPT-4</option>
+                <option value="o1-preview">GPT-o1</option>
+                <!-- Add other models as needed -->
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Start New Conversation</button>
+    </form>
 
-    <label for="model_name">Select Model:</label>
-    <select name="model_name" id="model_name">
-        <option value="gpt-4">GPT-4</option>
-        <option value="gpt-o1">GPT-o1</option>
-        <!-- Add other models as needed -->
-    </select>
+    <ul class="list-group">
+        {% for conversation in conversations %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
+                <small>{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No conversations yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock content %}
 
-    <button type="submit">Start New Conversation</button>
-</form>
-
-<ul>
-    {% for conversation in conversations %}
-        <li>
-            <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
-            <small>{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
-        </li>
-    {% empty %}
-        <li>No conversations yet.</li>
-    {% endfor %}
-</ul>
-{% endblock %}
+{% block javascripts %}
+<!-- Include any additional JavaScript -->
+{% endblock javascripts %}

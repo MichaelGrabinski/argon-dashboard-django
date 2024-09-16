@@ -3,6 +3,8 @@ import os
 from decouple import config
 from unipath import Path
 
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = Path(__file__).parent
 CORE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,7 +20,9 @@ DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'linux.krustykrew.org', 'humanfuturesco.com','humanfutures-djgch2ghdhaycshg.eastus2-01.azurewebsites.net' ,config('SERVER', default='127.0.0.1')]
 
 # Application definition
-ALLOWED_MODELS = ['gpt-4', 'gpt-o1']
+ALLOWED_MODELS = ['chatgpt-4o-latest', 'o1-preview']
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -157,3 +161,18 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

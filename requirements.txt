@@ -13,4 +13,8 @@ Unipath==1.1
 whitenoise==5.3.0
 Pillow
 psycopg2==2.9.1
-openai
+markdown
+bleach
+OpenAI
+Pygments
+bs4
