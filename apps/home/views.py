@@ -34,6 +34,8 @@ from django.template import Library
 import base64
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.conf import settings
+import openai
 
 
 
@@ -882,94 +884,155 @@ def update_link(request):
     
     
     
-from openai import OpenAI
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Conversation, Message
+from django.conf import settings
+import os
+import logging
+from gtts import gTTS
+import time
+from PIL import Image  # For image processing
+import openai
+
+logger = logging.getLogger(__name__)
+
+# Instantiate the OpenAI client
+openai_client = openai.OpenAI(
+    api_key=settings.OPENAI_API_KEY
+)
+
+# List of allowed models
+ALLOWED_MODELS = [
+    'gpt-4',
+    'gpt-4-vision',
+    'chatgpt-4o-latest',
+    'o1-preview',
+    'dall-e-generation',
+    'dall-e-edit',
+    'tts-1',
+]
 
 @login_required
 def conversation_list(request):
     conversations = Conversation.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'home/conversation_list.html', {'conversations': conversations})
 
-
 @login_required
 def new_conversation(request):
     if request.method == 'POST':
         title = request.POST.get('title') or 'New Conversation'
         model_name = request.POST.get('model_name') or 'gpt-4'
+        if model_name not in ALLOWED_MODELS:
+            model_name = 'gpt-4'  # Default to gpt-4 if invalid model is selected
         conversation = Conversation.objects.create(user=request.user, title=title, model_name=model_name)
         return redirect('conversation_detail', conversation_id=conversation.id)
     else:
         return redirect('conversation_list')
 
-import logging
-logger = logging.getLogger(__name__)
-
 def get_gpt_response(messages, model_name, user_input, image_file=None):
-    if model_name.startswith('gpt-4'):
-        # Handle GPT-4 and GPT-4 with Vision
+    if model_name in ['gpt-4', 'chatgpt-4o-latest', 'o1-preview']:
+        # Handle GPT models
         conversation_history = [
             {"role": msg.sender, "content": msg.content}
             for msg in messages
         ]
+        conversation_history.append({"role": "user", "content": user_input})
 
-        if model_name == 'gpt-4-vision' and image_file:
-            # Encode the image file in base64
-            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
-            conversation_history.append({
-                "role": "user",
-                "content": [{
-                    "type": "text",
-                    "text": user_input
-                }, {
-                    "type": "image",
-                    "image": {
-                        "data": image_base64
-                    }
-                }]
-            })
-        else:
-            conversation_history.append({"role": "user", "content": user_input})
+        try:
+            response = openai_client.chat.completions.create(
+                model=model_name,
+                messages=conversation_history,
+            )
+            assistant_message = response.choices[0].message.content
+            return assistant_message.strip()
+        except openai.error.OpenAIError as e:
+            logger.error(f"OpenAI API error: {e}")
+            return "An error occurred while processing your request."
 
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=conversation_history,
-        )
-        assistant_message = response.choices[0].message.content
-        return assistant_message.strip()
+    elif model_name == 'gpt-4-vision':
+        # GPT-4 Vision is not available via the API yet
+        return "GPT-4 Vision is not currently supported via the API."
 
-    elif model_name.startswith('dall-e'):
+    elif model_name == 'dall-e-generation':
         # Handle DALL·E Image Generation
-        if model_name == 'dall-e-3':
-            response = client.images.generate(
-                model="dall-e-3",
+        try:
+            response = openai_client.images.generate(
                 prompt=user_input,
-                size="1024x1024",
                 n=1,
-            )
-        elif model_name == 'dall-e-2':
-            response = client.images.generate(
-                model="dall-e-2",
-                prompt=user_input,
                 size="1024x1024",
-                n=1,
             )
-        image_url = response.data[0].url
-        return image_url  # Return the image URL
+            image_url = response.data[0].url
+            return image_url  # Return the image URL
+        except openai.error.OpenAIError as e:
+            logger.error(f"Error generating image: {e}")
+            return "An error occurred while generating the image."
+
+    elif model_name == 'dall-e-edit':
+        # Handle DALL·E Image Editing
+        if image_file:
+            try:
+                # Save the uploaded image temporarily
+                temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_image_path = os.path.join(temp_dir, f"input_{int(time.time())}.png")
+                with open(temp_image_path, 'wb') as f:
+                    for chunk in image_file.chunks():
+                        f.write(chunk)
+
+                # Open the image and ensure it's in RGBA mode with transparency
+                image = Image.open(temp_image_path).convert("RGBA")
+                # Create a mask image (currently empty - you can create a mask if needed)
+                mask = Image.new("RGBA", image.size, (0, 0, 0, 0))
+
+                # Save images to bytes
+                image_bytes = io.BytesIO()
+                image.save(image_bytes, format='PNG')
+                image_bytes.seek(0)
+
+                mask_bytes = io.BytesIO()
+                mask.save(mask_bytes, format='PNG')
+                mask_bytes.seek(0)
+
+                # Call the OpenAI API to edit the image
+                response = openai_client.images.edit(
+                    image=image_bytes,
+                    mask=mask_bytes,
+                    prompt=user_input,
+                    n=1,
+                    size="1024x1024",
+                )
+                image_url = response.data[0].url
+
+                # Remove the temporary image file
+                os.remove(temp_image_path)
+
+                return image_url  # Return the edited image URL
+            except openai.error.OpenAIError as e:
+                logger.error(f"Error editing image: {e}")
+                return "An error occurred while editing the image."
+            except Exception as e:
+                logger.error(f"Unexpected error editing image: {e}")
+                return "An unexpected error occurred while editing the image."
+        else:
+            return "Please upload an image to edit."
 
     elif model_name == 'tts-1':
-        # Handle Text-to-Speech
-        response = client.audio.speech.create(
-            model="tts-1",
-            voice="alloy",  # You can make voice selectable if needed
-            input=user_input
-        )
-        audio_url = response.data[0].url  # Assuming the response contains the audio URL
-        return audio_url  # Return the audio URL
+        # Handle Text-to-Speech using gTTS
+        try:
+            tts = gTTS(text=user_input, lang='en')
+            audio_filename = f"tts_output_{int(time.time())}.mp3"
+            audio_filepath = os.path.join(settings.MEDIA_ROOT, audio_filename)
+            tts.save(audio_filepath)
+            audio_url = settings.MEDIA_URL + audio_filename
+            return audio_url  # Return the URL to the audio file
+        except Exception as e:
+            logger.error(f"Error generating audio: {e}")
+            return "An error occurred while generating the audio."
 
     else:
         return "Selected model not supported."
-
-#### **Update `conversation_detail` View**
 
 @login_required
 def conversation_detail(request, conversation_id):
@@ -980,30 +1043,69 @@ def conversation_detail(request, conversation_id):
         image_file = request.FILES.get('image')  # For image uploads
 
         # Save user's message
-        Message.objects.create(conversation=conversation, sender='user', content=user_input)
+        Message.objects.create(
+            conversation=conversation,
+            sender='user',
+            content=user_input,
+            message_type='text'
+        )
 
         # Fetch updated messages including the new user message
         messages = conversation.messages.order_by('created_at')
 
         # Get assistant's response using the selected model
-        response = get_gpt_response(messages, conversation.model_name, user_input, image_file)
+        response = get_gpt_response(
+            messages, conversation.model_name, user_input, image_file
+        )
 
         # Save assistant's message
-        if conversation.model_name.startswith('dall-e'):
-            # Save image URL as content
-            Message.objects.create(conversation=conversation, sender='assistant', content=response, message_type='image')
+        if conversation.model_name in ['dall-e-generation', 'dall-e-edit']:
+            # Save the image URL returned by the API
+            if response.startswith('http'):
+                Message.objects.create(
+                    conversation=conversation,
+                    sender='assistant',
+                    content=response,
+                    message_type='image'
+                )
+            else:
+                # Handle errors returned as text
+                Message.objects.create(
+                    conversation=conversation,
+                    sender='assistant',
+                    content=response,
+                    message_type='text'
+                )
         elif conversation.model_name == 'tts-1':
-            # Save audio URL as content
-            Message.objects.create(conversation=conversation, sender='assistant', content=response, message_type='audio')
+            if response.startswith(settings.MEDIA_URL):
+                Message.objects.create(
+                    conversation=conversation,
+                    sender='assistant',
+                    content=response,
+                    message_type='audio'
+                )
+            else:
+                # Handle errors returned as text
+                Message.objects.create(
+                    conversation=conversation,
+                    sender='assistant',
+                    content=response,
+                    message_type='text'
+                )
         else:
-            # Save text response
-            Message.objects.create(conversation=conversation, sender='assistant', content=response)
+            Message.objects.create(
+                conversation=conversation,
+                sender='assistant',
+                content=response,
+                message_type='text'
+            )
 
         return redirect('conversation_detail', conversation_id=conversation.id)
 
     else:
         messages = conversation.messages.order_by('created_at')
-        return render(request, 'home/conversation_detail.html', {
-            'conversation': conversation,
-            'messages': messages
-        })
+        return render(
+            request,
+            'home/conversation_detail.html',
+            {'conversation': conversation, 'messages': messages}
+        )

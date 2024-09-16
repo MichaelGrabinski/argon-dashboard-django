@@ -359,21 +359,26 @@ class TaskLink(models.Model):
 class Conversation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='conversations')
     title = models.CharField(max_length=255)
-    model_name = models.CharField(max_length=50, default='gpt-4')  # Add this field
+    model_name = models.CharField(max_length=50, default='gpt-4')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title    
+        return self.title
 
 class Message(models.Model):
+    MESSAGE_TYPES = (
+        ('text', 'Text'),
+        ('image', 'Image'),
+        ('audio', 'Audio'),
+    )
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     sender = models.CharField(max_length=50)  # 'user' or 'assistant'
     content = models.TextField()
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.sender}: {self.content[:50]}"
-        
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
