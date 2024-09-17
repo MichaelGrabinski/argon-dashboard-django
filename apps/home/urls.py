@@ -53,12 +53,15 @@ urlpatterns = [
     path('budget-accounting/', views.budget_accounting_hub, name='budget_accounting_hub'),
     path('budget-accounting/project/<int:project_id>/', views.budget_project_detail, name='budget_project_detail'),
     # Matches any HTML file
-   
-
+ 
     path('conversations/', views.conversation_list, name='conversation_list'),
     path('conversations/new/', views.new_conversation, name='new_conversation'),
     path('conversations/<int:conversation_id>/', views.conversation_detail, name='conversation_detail'), 
-
+    path('conversation/<int:conversation_id>/delete/', views.delete_conversation, name='delete_conversation'),
+    path('conversation/<int:conversation_id>/clear/', views.clear_conversation, name='clear_conversation'),
+    path('message/<int:message_id>/delete/', views.delete_message, name='delete_message'),
+    
+    
     re_path(r'^.*\.*', views.pages, name='pages'),
     
 ]

@@ -26,16 +26,23 @@
         <button type="submit" class="btn btn-primary">Start New Conversation</button>
     </form>
 
-    <ul class="list-group">
-        {% for conversation in conversations %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
+<ul class="list-group">
+    {% for conversation in conversations %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
+            <div>
                 <small>{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
-            </li>
-        {% empty %}
-            <li class="list-group-item">No conversations yet.</li>
-        {% endfor %}
-    </ul>
+                <!-- Delete Button -->
+                <form action="{% url 'delete_conversation' conversation.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No conversations yet.</li>
+    {% endfor %}
+</ul>
 </div>
 {% endblock content %}
 

@@ -932,17 +932,20 @@ def new_conversation(request):
     else:
         return redirect('conversation_list')
 
-def get_gpt_response(messages, model_name, user_input, image_file=None):
+def get_gpt_response(messages, model_name, user_input, image_file=None, include_context=True, max_context_messages=10):
     if model_name in ['gpt-4', 'chatgpt-4o-latest', 'o1-preview']:
-        # Handle GPT models
-        conversation_history = [
-            {"role": msg.sender, "content": msg.content}
-            for msg in messages
-        ]
-        conversation_history.append({"role": "user", "content": user_input})
+        conversation_history = []
+        if include_context:
+            conversation_history = [
+                {"role": msg.sender, "content": msg.content}
+                for msg in messages
+            ]
+            # Limit to the last N messages
+            conversation_history = conversation_history[-max_context_messages:]
+            conversation_history.append({"role": "user", "content": user_input})
 
         try:
-            response = openai_client.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model=model_name,
                 messages=conversation_history,
             )
@@ -1042,6 +1045,7 @@ def conversation_detail(request, conversation_id):
     if request.method == 'POST':
         user_input = request.POST.get('message')
         image_file = request.FILES.get('image')  # For image uploads
+        include_context = not request.POST.get('clear_context')
 
         # Save user's message
         Message.objects.create(
@@ -1056,7 +1060,7 @@ def conversation_detail(request, conversation_id):
 
         # Get assistant's response using the selected model
         response = get_gpt_response(
-            messages, conversation.model_name, user_input, image_file
+            messages, conversation.model_name, user_input, image_file, include_context=include_context
         )
 
         # Save assistant's message
@@ -1110,3 +1114,36 @@ def conversation_detail(request, conversation_id):
             'home/conversation_detail.html',
             {'conversation': conversation, 'messages': messages}
         )
+        
+@login_required
+def delete_conversation(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    if request.method == 'POST':
+        conversation.delete()
+        return redirect('conversation_list')
+    else:
+        return render(request, 'home/confirm_delete.html', {'conversation': conversation})
+        
+@login_required
+def clear_conversation(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    if request.method == 'POST':
+        # Delete all messages in the conversation
+        conversation.messages.all().delete()
+        return redirect('conversation_detail', conversation_id=conversation.id)
+    else:
+        return redirect('conversation_detail', conversation_id=conversation.id)
+        
+        
+@login_required
+def delete_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+    conversation = message.conversation
+    if conversation.user != request.user:
+        return redirect('conversation_detail', conversation_id=conversation.id)
+
+    if request.method == 'POST':
+        message.delete()
+        return redirect('conversation_detail', conversation_id=conversation.id)
+    else:
+        return redirect('conversation_detail', conversation_id=conversation.id)

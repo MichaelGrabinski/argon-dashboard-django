@@ -1,0 +1,13 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Delete Conversation{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Are you sure you want to delete the conversation "{{ conversation.title }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete it</button>
+        <a href="{% url 'conversation_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock content %}
