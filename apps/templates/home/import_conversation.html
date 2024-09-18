@@ -1,0 +1,17 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block title %}Import Conversation{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Import Conversation</h2>
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Import</button>
+    </form>
+</div>
+{% endblock content %}

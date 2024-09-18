@@ -60,7 +60,9 @@ urlpatterns = [
     path('conversation/<int:conversation_id>/delete/', views.delete_conversation, name='delete_conversation'),
     path('conversation/<int:conversation_id>/clear/', views.clear_conversation, name='clear_conversation'),
     path('message/<int:message_id>/delete/', views.delete_message, name='delete_message'),
-    
+    path('conversation/export/', views.export_conversation, name='export_conversation'),
+    path('conversation/<int:conversation_id>/export/', views.export_conversation, name='export_conversation'),
+    path('conversation/import/', views.import_conversation, name='import_conversation'),
     
     re_path(r'^.*\.*', views.pages, name='pages'),
     

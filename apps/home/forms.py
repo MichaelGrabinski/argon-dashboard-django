@@ -63,3 +63,9 @@ class ReferenceMaterialForm(forms.ModelForm):
         widgets = {
             'type': forms.Select(choices=ReferenceMaterial.PROJECT_REFERENCE_TYPE_CHOICES),
         }
+        
+class ImportConversationForm(forms.Form):
+    conversations_file = forms.FileField(
+        label='Select a JSON file to import',
+        help_text='Max. 5 megabytes'
+      )

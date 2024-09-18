@@ -38,6 +38,9 @@ from django.conf import settings
 import openai
 import io
 from openai import OpenAIError
+from .models import Conversation, Message
+import json
+from .forms import ImportConversationForm
 
 
 @login_required(login_url="/login/")
@@ -896,6 +899,7 @@ from gtts import gTTS
 import time
 from PIL import Image  # For image processing
 import openai
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 logger = logging.getLogger(__name__)
 
@@ -945,7 +949,7 @@ def get_gpt_response(messages, model_name, user_input, image_file=None, include_
             conversation_history.append({"role": "user", "content": user_input})
 
         try:
-            response = openai.ChatCompletion.create(
+            response = openai_client.chat.completions.create(
                 model=model_name,
                 messages=conversation_history,
             )
@@ -1044,14 +1048,38 @@ def conversation_detail(request, conversation_id):
 
     if request.method == 'POST':
         user_input = request.POST.get('message')
-        image_file = request.FILES.get('image')  # For image uploads
         include_context = not request.POST.get('clear_context')
+
+        # Handle multiple file uploads
+        uploaded_files = request.FILES.getlist('files')
+
+        # Initialize a variable to hold combined file contents
+        files_content = ""
+
+        for uploaded_file in uploaded_files:
+            # Security check: Validate file size (e.g., max 2MB)
+            if uploaded_file.size > 2 * 1024 * 1024:  # 2 MB limit per file
+                continue  # Skip files that are too large
+
+            # Read file content
+            try:
+                file_content = uploaded_file.read().decode('utf-8', errors='ignore')
+                # Append file name and content to files_content
+                files_content += f"\n### File: {uploaded_file.name}\n{file_content}\n"
+            except Exception as e:
+                logger.error(f"Error reading file {uploaded_file.name}: {e}")
+                continue  # Skip files that can't be read
+
+        # Construct the full user input including files
+        full_user_input = user_input
+        if files_content:
+            full_user_input += f"\n\nPlease consider the following files:\n{files_content}"
 
         # Save user's message
         Message.objects.create(
             conversation=conversation,
             sender='user',
-            content=user_input,
+            content=full_user_input,
             message_type='text'
         )
 
@@ -1060,50 +1088,16 @@ def conversation_detail(request, conversation_id):
 
         # Get assistant's response using the selected model
         response = get_gpt_response(
-            messages, conversation.model_name, user_input, image_file, include_context=include_context
+            messages, conversation.model_name, full_user_input, include_context=include_context
         )
 
         # Save assistant's message
-        if conversation.model_name in ['dall-e-generation', 'dall-e-edit']:
-            # Save the image URL returned by the API
-            if response.startswith('http'):
-                Message.objects.create(
-                    conversation=conversation,
-                    sender='assistant',
-                    content=response,
-                    message_type='image'
-                )
-            else:
-                # Handle errors returned as text
-                Message.objects.create(
-                    conversation=conversation,
-                    sender='assistant',
-                    content=response,
-                    message_type='text'
-                )
-        elif conversation.model_name == 'tts-1':
-            if response.startswith(settings.MEDIA_URL):
-                Message.objects.create(
-                    conversation=conversation,
-                    sender='assistant',
-                    content=response,
-                    message_type='audio'
-                )
-            else:
-                # Handle errors returned as text
-                Message.objects.create(
-                    conversation=conversation,
-                    sender='assistant',
-                    content=response,
-                    message_type='text'
-                )
-        else:
-            Message.objects.create(
-                conversation=conversation,
-                sender='assistant',
-                content=response,
-                message_type='text'
-            )
+        Message.objects.create(
+            conversation=conversation,
+            sender='assistant',
+            content=response,
+            message_type='text'
+        )
 
         return redirect('conversation_detail', conversation_id=conversation.id)
 
@@ -1147,3 +1141,72 @@ def delete_message(request, message_id):
         return redirect('conversation_detail', conversation_id=conversation.id)
     else:
         return redirect('conversation_detail', conversation_id=conversation.id)
+
+@login_required
+def export_conversation(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    messages = conversation.messages.order_by('created_at')
+
+    # Prepare data for export
+    conversation_data = {
+        'title': conversation.title,
+        'model_name': conversation.model_name,
+        'messages': [
+            {
+                'sender': msg.sender,
+                'content': msg.content,
+                'message_type': msg.message_type,
+                'created_at': msg.created_at.isoformat(),
+            }
+            for msg in messages
+        ],
+    }
+
+    # Convert data to JSON and create the response
+    response = HttpResponse(json.dumps(conversation_data), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="{conversation.title}.json"'
+    return response
+    
+@login_required
+def import_conversation(request):
+    if request.method == 'POST':
+        form = ImportConversationForm(request.POST, request.FILES)
+        if form.is_valid():
+            conversation_file = request.FILES['conversations_file']
+            try:
+                # Read the file and parse JSON
+                data = json.load(conversation_file)
+
+                # Create a new conversation
+                conversation = Conversation.objects.create(
+                    user=request.user,
+                    title=data.get('title', 'Imported Conversation'),
+                    model_name=data.get('model_name', 'gpt-4'),
+                )
+
+                # Create messages
+                for msg_data in data['messages']:
+                    Message.objects.create(
+                        conversation=conversation,
+                        sender=msg_data['sender'],
+                        content=msg_data['content'],
+                        message_type=msg_data.get('message_type', 'text'),
+                        # Optionally set created_at if you trust the data
+                        # created_at=msg_data.get('created_at', timezone.now()),
+                    )
+
+                return redirect('conversation_detail', conversation_id=conversation.id)
+
+            except Exception as e:
+                logger.error(f"Error importing conversation: {e}")
+                # Handle error (e.g., show a message to the user)
+                return render(request, 'home/import_conversation.html', {
+                    'form': form,
+                    'error_message': 'An error occurred while importing the conversation.',
+                })
+        else:
+            # Form is not valid
+            return render(request, 'home/import_conversation.html', {'form': form})
+    else:
+        form = ImportConversationForm()
+        return render(request, 'home/import_conversation.html', {'form': form})

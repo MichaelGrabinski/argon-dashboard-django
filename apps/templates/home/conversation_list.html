@@ -5,6 +5,12 @@
 <div class="container mt-4">
     <h1 class="text-center">Your Conversations</h1>
 
+    <!-- Export and Import Buttons -->
+    <div class="mb-4">
+        <a href="{% url 'import_conversation' %}" class="btn btn-secondary">Import Conversations</a>
+    </div>
+
+    <!-- New Conversation Form -->
     <form method="post" action="{% url 'new_conversation' %}" class="mb-4">
         {% csrf_token %}
         <div class="form-group">
@@ -14,35 +20,33 @@
         <div class="form-group">
             <label for="model_name">Select Model:</label>
             <select name="model_name" class="form-control">
-                <option value="chatgpt-4o-latest">ChatGPT 4o Latest</option>
-                <option value="o1-preview">GPT-o1 Preview</option>
-                <option value="gpt-4">GPT-4</option>
-                <option value="gpt-4-vision">GPT-4 with Vision</option>
-                <option value="dall-e-generation">DALL·E Image Generation</option>
-                <option value="dall-e-edit">DALL·E Image Editing</option>
-                <option value="tts-1">Text-to-Speech</option>
+                <!-- ... existing options ... -->
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Start New Conversation</button>
     </form>
 
-<ul class="list-group">
-    {% for conversation in conversations %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a href="{% url 'conversation_detail' conversation.id %}">{{ conversation.title }}</a>
-            <div>
-                <small>{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
-                <!-- Delete Button -->
-                <form action="{% url 'delete_conversation' conversation.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </div>
-        </li>
-    {% empty %}
-        <li class="list-group-item">No conversations yet.</li>
-    {% endfor %}
-</ul>
+    <!-- Conversation List -->
+    <ul class="list-group">
+        {% for conversation in conversations %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'conversation_detail' conversation.id %}" style="color: var(--text-color);">{{ conversation.title }}</a>
+                    <br>
+                    <small style="color: var(--text-color);">{{ conversation.created_at }} - Model: {{ conversation.model_name }}</small>
+                </div>
+                <div>
+                    <!-- Delete Button -->
+                    <form action="{% url 'delete_conversation' conversation.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </li>
+        {% empty %}
+            <li class="list-group-item">No conversations yet.</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock content %}
 
