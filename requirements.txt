@@ -19,3 +19,4 @@ OpenAI
 Pygments
 bs4
 gtts
+pdfminer

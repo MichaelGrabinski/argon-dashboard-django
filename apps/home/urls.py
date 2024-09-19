@@ -52,6 +52,7 @@ urlpatterns = [
     path('game-studio/project/<int:project_id>/', views.game_project_detail, name='game_project_detail'),
     path('budget-accounting/', views.budget_accounting_hub, name='budget_accounting_hub'),
     path('budget-accounting/project/<int:project_id>/', views.budget_project_detail, name='budget_project_detail'),
+    path('upload-statement/', views.upload_statement, name='upload_statement'),
     # Matches any HTML file
  
     path('conversations/', views.conversation_list, name='conversation_list'),

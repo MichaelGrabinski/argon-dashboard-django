@@ -69,3 +69,20 @@ class ImportConversationForm(forms.Form):
         label='Select a JSON file to import',
         help_text='Max. 5 megabytes'
       )
+      
+from django import forms
+from .models import Project
+
+class StatementUploadForm(forms.Form):
+    project_id = forms.ModelChoiceField(queryset=Project.objects.all())
+    statement_file = forms.FileField(label='Select PDF Bank Statement')
+    
+class BankStatementUploadForm(forms.Form):
+    project = forms.ModelChoiceField(queryset=Project.objects.all())
+    bank_statement_file = forms.FileField(label='Bank Statement (PDF)')
+
+    def clean_bank_statement_file(self):
+        file = self.cleaned_data['bank_statement_file']
+        if not file.name.endswith('.pdf'):
+            raise forms.ValidationError('Please upload a PDF file.')
+        return file
