@@ -41,11 +41,12 @@ from openai import OpenAIError
 from .models import Conversation, Message
 import json
 from .forms import ImportConversationForm
-
-
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def is_michael(user):
     return user.username == 'Michael'
+
 
 @login_required(login_url="/login/")
 def index(request):
