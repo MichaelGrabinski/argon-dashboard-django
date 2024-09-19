@@ -43,6 +43,10 @@ import json
 from .forms import ImportConversationForm
 
 
+
+def is_michael(user):
+    return user.username == 'Michael'
+
 @login_required(login_url="/login/")
 def index(request):
     # Metrics for construction projects
@@ -572,10 +576,15 @@ def game_project_detail(request, project_id):
         'tasks': tasks,
     })
 
+
+@login_required
+@user_passes_test(is_michael)
 def budget_accounting_hub(request):
     projects = Project.objects.all()
     return render(request, 'home/budget_accounting.html', {'projects': projects})
 
+@login_required
+@user_passes_test(is_michael)
 def budget_project_detail(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     budgets = project.budgets.all()
@@ -587,6 +596,66 @@ def budget_project_detail(request, project_id):
         'expenses': expenses,
         'reports': reports,
     })
+    
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Transaction, Project
+from .forms import StatementUploadForm
+from .parsers import parse_bank_statement_pdf
+
+def is_michael(user):
+    return user.username == 'Michael'
+
+@login_required
+@user_passes_test(is_michael)
+def upload_statement(request):
+    if request.method == 'POST':
+        form = StatementUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['statement_file']
+            transactions = parse_bank_statement_pdf(file)
+            # Assuming transactions relate to a specific project
+            project = Project.objects.get(id=form.cleaned_data['project_id'])
+            for transaction in transactions:
+                Transaction.objects.create(
+                    project=project,
+                    date=transaction['date'],
+                    description=transaction['description'],
+                    amount=transaction['amount'],
+                    # Add other fields if necessary
+                )
+            return redirect('budget_project_detail', project_id=project.id)
+    else:
+        form = StatementUploadForm()
+    return render(request, 'home/upload_statement.html', {'form': form})
+
+from pdfminer.high_level import extract_text
+import re
+from datetime import datetime
+
+def parse_bank_statement_pdf(file):
+    text = extract_text(file)
+    transactions = []
+
+    # Adjust the regex pattern based on your bank statement's format
+    pattern = re.compile(r'(\d{2}/\d{2}/\d{4})\s+([\w\s]+)\s+(-?\d+[\.,]\d{2})')
+    for match in pattern.finditer(text):
+        date_str = match.group(1)
+        description = match.group(2).strip()
+        amount_str = match.group(3).replace(',', '.')
+
+        date = datetime.strptime(date_str, '%d/%m/%Y').date()
+        amount = float(amount_str)
+
+        transactions.append({
+            'date': date,
+            'description': description,
+            'amount': amount,
+            'category': 'Imported Bank Statement',
+        })
+
+    return transactions
+    
     
 def get_project_progress(project, is_game_project=False):
     if is_game_project:
@@ -1210,3 +1279,8 @@ def import_conversation(request):
     else:
         form = ImportConversationForm()
         return render(request, 'home/import_conversation.html', {'form': form})
+        
+        
+        
+        
+        
