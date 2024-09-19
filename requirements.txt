@@ -18,3 +18,4 @@ bleach
 OpenAI
 Pygments
 bs4
+gtts
