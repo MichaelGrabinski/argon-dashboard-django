@@ -20,3 +20,4 @@ Pygments
 bs4
 gtts
 pdfminer
+pdfminer.six
