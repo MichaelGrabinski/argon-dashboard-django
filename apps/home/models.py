@@ -331,6 +331,18 @@ class FinancialReport(models.Model):
     report_file = models.FileField(upload_to='financial_reports/')
     created_at = models.DateTimeField(auto_now_add=True)
     
+class Transaction(models.Model):
+    # Define your fields here
+    project = models.ForeignKey('Project', related_name='transactions', on_delete=models.CASCADE)
+    date = models.DateField()
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=255, default='Imported Bank Statement')
+
+    def __str__(self):
+        return f"{self.date} - {self.description} - {self.amount}"   
+    
+    
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture = models.ImageField(upload_to='profile_pictures/', storage=StaticFileSystemStorage(), null=True, blank=True)

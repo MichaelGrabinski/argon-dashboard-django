@@ -41,11 +41,15 @@ from openai import OpenAIError
 from .models import Conversation, Message
 import json
 from .forms import ImportConversationForm
-
-
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from pdfminer.high_level import extract_text
+import re
+from datetime import datetime
 
 def is_michael(user):
     return user.username == 'Michael'
+
 
 @login_required(login_url="/login/")
 def index(request):
@@ -629,9 +633,6 @@ def upload_statement(request):
         form = StatementUploadForm()
     return render(request, 'home/upload_statement.html', {'form': form})
 
-from pdfminer.high_level import extract_text
-import re
-from datetime import datetime
 
 def parse_bank_statement_pdf(file):
     text = extract_text(file)
