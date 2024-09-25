@@ -1,7 +1,7 @@
 from django import forms
 from .models import Tool
 from .models import Tag
-from .models import Task, Comment, Attachment, Unit 
+from .models import Task, Comment, Attachment, Unit, Material, LaborEntry, ProjectNote, ProjectAttachment 
 from django.contrib.auth.models import User 
 from .models import ReferenceMaterial
 
@@ -86,3 +86,31 @@ class BankStatementUploadForm(forms.Form):
         if not file.name.endswith('.pdf'):
             raise forms.ValidationError('Please upload a PDF file.')
         return file
+
+from django import forms
+from .models import ProjectImage
+
+class ProjectImageForm(forms.ModelForm):
+    class Meta:
+        model = ProjectImage
+        fields = ['image']
+        
+class MaterialForm(forms.ModelForm):
+    class Meta:
+        model = Material
+        fields = ['category', 'description', 'unit_cost', 'quantity']
+
+class LaborEntryForm(forms.ModelForm):
+    class Meta:
+        model = LaborEntry
+        fields = ['user', 'hours_worked', 'pay_rate', 'date']
+
+class ProjectNoteForm(forms.ModelForm):
+    class Meta:
+        model = ProjectNote
+        fields = ['content']
+
+class ProjectAttachmentForm(forms.ModelForm):
+    class Meta:
+        model = ProjectAttachment
+        fields = ['file']

@@ -6,7 +6,7 @@ from django.template import loader
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect 
 from .forms import ToolSearchForm
-from apps.home.models import Tool, TaskLink, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
+from apps.home.models import Tool, Material, TaskLink, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
@@ -1281,7 +1281,129 @@ def import_conversation(request):
         form = ImportConversationForm()
         return render(request, 'home/import_conversation.html', {'form': form})
         
+def export_projects(request):
+    projects = Project.objects.all()
+    data = []
+    for project in projects:
+        data.append({
+            'title': project.title,
+            'description': project.description,
+            'start_date': project.start_date.strftime('%Y-%m-%d'),
+            'end_date': project.end_date.strftime('%Y-%m-%d'),
+            # Include other fields as needed
+        })
+    response = HttpResponse(json.dumps(data), content_type='application/json')
+    response['Content-Disposition'] = 'attachment; filename="projects.json"'
+    return response
+
+def import_projects(request):
+    if request.method == 'POST':
+        file = request.FILES['file']
+        data = json.load(file)
+        for item in data:
+            project, created = Project.objects.get_or_create(
+                title=item['title'],
+                defaults={
+                    'description': item['description'],
+                    'start_date': item['start_date'],
+                    'end_date': item['end_date'],
+                    # Set other fields as needed
+                }
+            )
+        return redirect('construction_hub')
+    return render(request, 'home/import_projects.html')
         
-        
-        
-        
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Project, ProjectImage
+from .forms import ProjectImageForm
+
+def upload_project_image(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if request.method == 'POST':
+        form = ProjectImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            project_image = form.save(commit=False)
+            project_image.project = project
+            project_image.save()
+            return redirect('construction_hub')
+    else:
+        form = ProjectImageForm()
+    return render(request, 'home/upload_project_image.html', {'form': form, 'project': project})
+
+def budget_page(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    materials = project.materials.select_related('category')
+    labor_entries = project.labor_entries.select_related('user')
+
+    material_form = MaterialForm()
+    labor_form = LaborEntryForm()
+
+    if request.method == 'POST':
+        if 'add_material' in request.POST:
+            material_form = MaterialForm(request.POST)
+            if material_form.is_valid():
+                material = material_form.save(commit=False)
+                material.project = project
+                material.save()
+                return redirect('budget_page', project_id=project.id)
+        elif 'add_labor' in request.POST:
+            labor_form = LaborEntryForm(request.POST)
+            if labor_form.is_valid():
+                labor_entry = labor_form.save(commit=False)
+                labor_entry.project = project
+                labor_entry.save()
+                return redirect('budget_page', project_id=project.id)
+
+    total_material_cost = sum(m.total_cost for m in materials)
+    total_labor_cost = sum(l.total_pay for l in labor_entries)
+    total_cost = total_material_cost + total_labor_cost
+    cost_per_sqft = total_cost / project.square_footage if project.square_footage else 0
+
+    context = {
+        'project': project,
+        'materials': materials,
+        'labor_entries': labor_entries,
+        'material_form': material_form,
+        'labor_form': labor_form,
+        'total_material_cost': total_material_cost,
+        'total_labor_cost': total_labor_cost,
+        'total_cost': total_cost,
+        'cost_per_sqft': cost_per_sqft,
+    }
+    return render(request, 'home/budget_page.html', context)
+    
+def project_main(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    notes = project.project_notes.all()
+    attachments = project.attachments.all()
+
+    note_form = ProjectNoteForm()
+    attachment_form = ProjectAttachmentForm()
+
+    if request.method == 'POST':
+        if 'add_note' in request.POST:
+            note_form = ProjectNoteForm(request.POST)
+            if note_form.is_valid():
+                note = note_form.save(commit=False)
+                note.project = project
+                note.created_by = request.user
+                note.save()
+                return redirect('project_main', project_id=project.id)
+        elif 'add_attachment' in request.POST:
+            attachment_form = ProjectAttachmentForm(request.POST, request.FILES)
+            if attachment_form.is_valid():
+                attachment = attachment_form.save(commit=False)
+                attachment.project = project
+                attachment.uploaded_by = request.user
+                attachment.save()
+                return redirect('project_main', project_id=project.id)
+
+    context = {
+        'project': project,
+        'notes': notes,
+        'attachments': attachments,
+        'note_form': note_form,
+        'attachment_form': attachment_form,
+    }
+    return render(request, 'home/project_main.html', context)
+    

@@ -1,0 +1,40 @@
+
+{% block content %}
+<h2>Main - {{ project.title }}</h2>
+
+<!-- Attachments Section -->
+<h3>Attachments</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ attachment_form.as_p }}
+    <button type="submit" name="add_attachment" class="btn btn-primary">Upload Attachment</button>
+</form>
+<ul class="list-group mt-3">
+    {% for attachment in attachments %}
+    <li class="list-group-item">
+        <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a> (Uploaded by {{ attachment.uploaded_by }}, {{ attachment.uploaded_at|date:"Y-m-d H:i" }})
+    </li>
+    {% empty %}
+    <li class="list-group-item">No attachments yet.</li>
+    {% endfor %}
+</ul>
+
+<!-- Notes Section -->
+<h3>Notes</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ note_form.as_p }}
+    <button type="submit" name="add_note" class="btn btn-primary">Add Note</button>
+</form>
+<ul class="list-group mt-3">
+    {% for note in project.project_notes.all %}
+    <li class="list-group-item">
+        {{ note.content }} (Added by {{ note.created_by }}, {{ note.created_at|date:"Y-m-d H:i" }})
+        <!-- Add Edit and Delete options if needed -->
+    </li>
+    {% empty %}
+    <li class="list-group-item">No notes yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+

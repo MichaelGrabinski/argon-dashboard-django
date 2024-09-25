@@ -46,6 +46,11 @@ urlpatterns = [
     path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
     
     path('projects/', views.other_hub, name='other_hub'),
+    path('projects/export/', views.export_projects, name='export_projects'),
+    path('projects/import/', views.import_projects, name='import_projects'),
+    path('projects/<int:project_id>/upload_image/', views.upload_project_image, name='upload_project_image'),
+    path('projects/<int:project_id>/budget/', views.budget_page, name='budget_page'),
+    path('projects/<int:project_id>/main/', views.project_main, name='project_main'),
     #path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
     
     path('game-studio/', views.game_studio_hub, name='game_studio_hub'),

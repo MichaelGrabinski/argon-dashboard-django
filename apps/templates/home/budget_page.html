@@ -1,0 +1,67 @@
+
+{% block content %}
+<h2>Budget for {{ project.title }}</h2>
+<h3>Allotted Budget: ${{ project.allotted_budget }}</h3>
+<h3>Total Cost: ${{ total_cost }}</h3>
+<h3>Cost per Sq Ft: ${{ cost_per_sqft|floatformat:2 }}</h3>
+
+<!-- Materials Section -->
+<h4>Materials</h4>
+<form method="post">
+    {% csrf_token %}
+    {{ material_form.as_p }}
+    <button type="submit" name="add_material" class="btn btn-primary">Add Material</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Unit Cost</th>
+            <th>Quantity</th>
+            <th>Total Cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for material in materials %}
+        <tr>
+            <td>{{ material.category.name }}</td>
+            <td>{{ material.description }}</td>
+            <td>${{ material.unit_cost }}</td>
+            <td>{{ material.quantity }}</td>
+            <td>${{ material.total_cost }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Labor Section -->
+<h4>Labor</h4>
+<form method="post">
+    {% csrf_token %}
+    {{ labor_form.as_p }}
+    <button type="submit" name="add_labor" class="btn btn-primary">Add Labor Entry</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Date</th>
+            <th>Hours Worked</th>
+            <th>Pay Rate</th>
+            <th>Total Pay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for labor in labor_entries %}
+        <tr>
+            <td>{{ labor.user.username }}</td>
+            <td>{{ labor.date }}</td>
+            <td>{{ labor.hours_worked }}</td>
+            <td>${{ labor.pay_rate }}</td>
+            <td>${{ labor.total_pay }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -67,7 +67,9 @@ class Project(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, default='construction')
-
+    square_footage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    allotted_budget = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    
 class Property(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
@@ -391,6 +393,63 @@ class Message(models.Model):
 
     def __str__(self):
         return f"{self.sender}: {self.content[:50]}"
+        
+class ProjectImage(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='project_images/', storage=StaticFileSystemStorage(),)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.project.title}"
+
+class MaterialCategory(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class Material(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='materials')
+    category = models.ForeignKey(MaterialCategory, on_delete=models.CASCADE)
+    description = models.CharField(max_length=255)
+    unit_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
+    def save(self, *args, **kwargs):
+        self.total_cost = self.unit_cost * self.quantity
+        super().save(*args, **kwargs)
+
+class LaborEntry(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='labor_entries')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    hours_worked = models.DecimalField(max_digits=10, decimal_places=2)
+    pay_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    total_pay = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
+    def save(self, *args, **kwargs):
+        self.total_pay = self.hours_worked * self.pay_rate
+        super().save(*args, **kwargs)
+        
+class ProjectNote(models.Model): 
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_notes') 
+    content = models.TextField() 
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True) 
+    created_at = models.DateTimeField(auto_now_add=True) 
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Note for {self.project.title}"
+
+class ProjectAttachment(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='project_attachments/', storage=StaticFileSystemStorage())
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)   
+        
+        
+        
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
