@@ -9,7 +9,7 @@ from .forms import ToolSearchForm
 from apps.home.models import Tool, Material, TaskLink, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
-from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm
+from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm, ProjectImageForm, MaterialForm, LaborEntryForm, ProjectNoteForm,ProjectAttachmentForm
 from django.contrib.auth.models import User
 from django import forms
 from .forms import ReferenceMaterialForm
@@ -1330,29 +1330,33 @@ def upload_project_image(request, project_id):
         form = ProjectImageForm()
     return render(request, 'home/upload_project_image.html', {'form': form, 'project': project})
 
+from .forms import MaterialForm, LaborEntryForm
+
 def budget_page(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     materials = project.materials.select_related('category')
     labor_entries = project.labor_entries.select_related('user')
 
-    material_form = MaterialForm()
-    labor_form = LaborEntryForm()
-
     if request.method == 'POST':
         if 'add_material' in request.POST:
             material_form = MaterialForm(request.POST)
+            labor_form = LaborEntryForm()  # Empty form
             if material_form.is_valid():
                 material = material_form.save(commit=False)
                 material.project = project
                 material.save()
                 return redirect('budget_page', project_id=project.id)
         elif 'add_labor' in request.POST:
+            material_form = MaterialForm()  # Empty form
             labor_form = LaborEntryForm(request.POST)
             if labor_form.is_valid():
                 labor_entry = labor_form.save(commit=False)
                 labor_entry.project = project
                 labor_entry.save()
                 return redirect('budget_page', project_id=project.id)
+    else:
+        material_form = MaterialForm()
+        labor_form = LaborEntryForm()
 
     total_material_cost = sum(m.total_cost for m in materials)
     total_labor_cost = sum(l.total_pay for l in labor_entries)
@@ -1372,17 +1376,17 @@ def budget_page(request, project_id):
     }
     return render(request, 'home/budget_page.html', context)
     
+from .forms import ProjectNoteForm, ProjectAttachmentForm
+
 def project_main(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     notes = project.project_notes.all()
     attachments = project.attachments.all()
 
-    note_form = ProjectNoteForm()
-    attachment_form = ProjectAttachmentForm()
-
     if request.method == 'POST':
         if 'add_note' in request.POST:
             note_form = ProjectNoteForm(request.POST)
+            attachment_form = ProjectAttachmentForm()  # Empty form
             if note_form.is_valid():
                 note = note_form.save(commit=False)
                 note.project = project
@@ -1390,6 +1394,7 @@ def project_main(request, project_id):
                 note.save()
                 return redirect('project_main', project_id=project.id)
         elif 'add_attachment' in request.POST:
+            note_form = ProjectNoteForm()  # Empty form
             attachment_form = ProjectAttachmentForm(request.POST, request.FILES)
             if attachment_form.is_valid():
                 attachment = attachment_form.save(commit=False)
@@ -1397,6 +1402,9 @@ def project_main(request, project_id):
                 attachment.uploaded_by = request.user
                 attachment.save()
                 return redirect('project_main', project_id=project.id)
+    else:
+        note_form = ProjectNoteForm()
+        attachment_form = ProjectAttachmentForm()
 
     context = {
         'project': project,
@@ -1406,4 +1414,3 @@ def project_main(request, project_id):
         'attachment_form': attachment_form,
     }
     return render(request, 'home/project_main.html', context)
-    

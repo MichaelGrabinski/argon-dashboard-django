@@ -1,12 +1,8 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 {% load custom_filters %}
-
 {% block stylesheets %}
-<!-- Include any additional stylesheets or inline CSS here -->
 <style>
-/* Styles for the tabs, tables, and other elements */
-
 .status-open {
     border-left: 5px solid #007bff; /* Blue */
     background-color: #e7f3ff; /* Light Blue */
@@ -41,18 +37,62 @@
     padding-left: 20px;
 }
 
-/* Additional styles for priority, assigned-to, and other classes */
-/* ... (Include your existing styles here) ... */
+.priority-high {
+    border-left: 5px solid #dc3545; /* Red */
+    background-color: #f8d7da; /* Light red */
+}
 
+.priority-medium {
+    border-left: 5px solid #ffc107; /* Yellow */
+    background-color: #fff8e1; /* Light Yellow */
+}
+
+.priority-low {
+    border-left: 5px solid #28a745; /* Green */
+    background-color: #e6f9e6; /* Light Green */
+}
+
+.assigned-to-michael {
+    border-left: 5px solid #007bff; /* Blue */
+    background-color: #e7f3ff; /* Light Blue */
+}
+
+.assigned-to-nicholas {
+    border-left: 5px solid #28a745; /* Green */
+    background-color: #e6f9e6; /* Light Green */
+}
+
+.assigned-to-nick {
+    border-left: 5px solid #dc3545; /* Red */
+    background-color: #f8d7da; /* Light Red */
+}
+
+.assigned-to-other {
+    border-left: 5px solid #17a2b8; /* Teal */
+    background-color: #e0f7f9; /* Light Teal */
+}
+
+.dataTables_wrapper {
+    width: 100%;
+}
+
+.task-grid-container {
+    width: 100%;
+    overflow-x: auto;
+}
 </style>
-<!-- Include Bootstrap, jQuery, and any other required CSS libraries -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<!-- Include any additional CSS libraries if needed -->
+<link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css">
+<link rel="stylesheet" href="https://cdn.daypilot.org/daypilot-lite.min.css">
 {% endblock stylesheets %}
-
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Projects Hub</h1>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
 
     <!-- Dropdown to select project -->
     <div class="dropdown mb-3">
@@ -60,24 +100,32 @@
             Select Project
         </button>
         <div class="dropdown-menu" aria-labelledby="projectDropdown">
-            <!-- Loop through projects and create dropdown items -->
+            <a class="dropdown-item" href="#hub" data-toggle="tab">Hub</a>
             {% for project_info in project_data %}
             <a class="dropdown-item" href="#project-{{ project_info.project.id }}" data-toggle="tab">{{ project_info.project.title }}</a>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Tab content for each project -->
-    <div class="tab-content" id="projectTabsContent">
+    <!-- Tab content -->
+    <div class="tab-content mt-5" id="projectTabsContent">
+        <!-- Hub Tab Content -->
+        <div class="tab-pane fade show active" id="hub" role="tabpanel">
+            <!-- Include your hub content here -->
+            <h2>Welcome to the Projects Hub</h2>
+            <!-- You can add content or remove this section if not needed -->
+        </div>
+
+        <!-- Project Tabs Content -->
         {% for project_info in project_data %}
-        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="project-{{ project_info.project.id }}" role="tabpanel">
+        <div class="tab-pane fade" id="project-{{ project_info.project.id }}" role="tabpanel">
             <!-- Tab navigation for project details -->
             <ul class="nav nav-tabs" id="projectDetailTabs-{{ project_info.project.id }}" role="tablist">
                 <!-- Main Tab -->
                 <li class="nav-item">
                     <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}">Main</a>
                 </li>
-                <!-- Phases Tab (Renamed from Main) -->
+                <!-- Phases Tab -->
                 <li class="nav-item">
                     <a class="nav-link" id="phases-tab-{{ project_info.project.id }}" data-toggle="tab" href="#phases-{{ project_info.project.id }}" role="tab" aria-controls="phases-{{ project_info.project.id }}">Phases</a>
                 </li>
@@ -93,22 +141,16 @@
                 <li class="nav-item">
                     <a class="nav-link" id="tasks-tab-{{ project_info.project.id }}" data-toggle="tab" href="#tasks-{{ project_info.project.id }}" role="tab" aria-controls="tasks-{{ project_info.project.id }}">Tasks</a>
                 </li>
-                <!-- Hide Reference Tab (Commented out) -->
-                <!--
-                <li class="nav-item">
-                    <a class="nav-link" id="reference-tab-{{ project_info.project.id }}" data-toggle="tab" href="#reference-{{ project_info.project.id }}" role="tab" aria-controls="reference-{{ project_info.project.id }}">Reference</a>
-                </li>
-                -->
             </ul>
 
             <!-- Tab content for project details -->
             <div class="tab-content" id="projectDetailTabsContent-{{ project_info.project.id }}">
                 <!-- Main Tab Content -->
                 <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
-                    {% include 'home/project_main.html' with project=project_info.project %}
+                    {% include 'home/project_main.html' with project=project_info.project attachment_form=attachment_form attachments=attachments note_form=note_form notes=notes %}
                 </div>
 
-                <!-- Phases Tab Content (Renamed from Main) -->
+                <!-- Phases Tab Content -->
                 <div class="tab-pane fade" id="phases-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="phases-tab-{{ project_info.project.id }}">
                     <h2 class="mt-4">{{ project_info.project.title }} - Phases</h2>
                     <!-- Include your existing code for phases here -->
@@ -176,6 +218,7 @@
                 <!-- Budget Tab Content -->
                 <div class="tab-pane fade" id="budget-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="budget-tab-{{ project_info.project.id }}">
                     {% include 'home/budget_page.html' with project=project_info.project %}
+					
                 </div>
 
                 <!-- Gallery Tab Content -->
@@ -190,13 +233,15 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Upload</button>
                     </form>
-                    <!-- Image Slideshow -->
+                    <!-- Image Carousel with Lightbox -->
                     {% if project_info.project.images.all %}
                     <div id="carousel-{{ project_info.project.id }}" class="carousel slide mt-4" data-ride="carousel">
                         <div class="carousel-inner">
                             {% for image in project_info.project.images.all %}
                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <img src="{{ image.image.url }}" class="d-block w-100" alt="Project Image">
+                                <a href="{{ image.image.url }}" data-lightbox="gallery-{{ project_info.project.id }}">
+                                    <img src="{{ image.image.url }}" class="d-block mx-auto" style="max-height: 400px; width: auto;" alt="Project Image">
+                                </a>
                             </div>
                             {% endfor %}
                         </div>
@@ -236,20 +281,12 @@
                     </div>
                 </div>
 
-                <!-- Reference Tab Content (Hidden/Commented Out) -->
-                <!--
-                <div class="tab-pane fade" id="reference-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="reference-tab-{{ project_info.project.id }}">
-                    <!-- Include reference content if needed -->
-                <!--</div>
-                -->
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endblock %}
-
-
 
 {% block javascripts %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded first -->
@@ -259,9 +296,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 <script src="https://cdn.daypilot.org/daypilot-lite.min.js"></script>
 {% load custom_filters %}
-
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-<!-- Your existing JavaScript code for handling tasks, DataTables, etc. -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

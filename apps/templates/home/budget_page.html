@@ -1,5 +1,5 @@
+{% load static %}
 
-{% block content %}
 <h2>Budget for {{ project.title }}</h2>
 <h3>Allotted Budget: ${{ project.allotted_budget }}</h3>
 <h3>Total Cost: ${{ total_cost }}</h3>
@@ -12,6 +12,14 @@
     {{ material_form.as_p }}
     <button type="submit" name="add_material" class="btn btn-primary">Add Material</button>
 </form>
+
+<!-- Display Material Form Errors -->
+{% if material_form.errors %}
+    <div class="alert alert-danger">
+        {{ material_form.errors }}
+    </div>
+{% endif %}
+
 <table class="table">
     <thead>
         <tr>
@@ -31,6 +39,10 @@
             <td>{{ material.quantity }}</td>
             <td>${{ material.total_cost }}</td>
         </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No materials added yet.</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
@@ -42,6 +54,14 @@
     {{ labor_form.as_p }}
     <button type="submit" name="add_labor" class="btn btn-primary">Add Labor Entry</button>
 </form>
+
+<!-- Display Labor Form Errors -->
+{% if labor_form.errors %}
+    <div class="alert alert-danger">
+        {{ labor_form.errors }}
+    </div>
+{% endif %}
+
 <table class="table">
     <thead>
         <tr>
@@ -61,7 +81,10 @@
             <td>${{ labor.pay_rate }}</td>
             <td>${{ labor.total_pay }}</td>
         </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No labor entries added yet.</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
-{% endblock %}

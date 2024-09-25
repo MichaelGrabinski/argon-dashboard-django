@@ -1,5 +1,5 @@
+{% load static %}
 
-{% block content %}
 <h2>Main - {{ project.title }}</h2>
 
 <!-- Attachments Section -->
@@ -9,13 +9,21 @@
     {{ attachment_form.as_p }}
     <button type="submit" name="add_attachment" class="btn btn-primary">Upload Attachment</button>
 </form>
-<ul class="list-group mt-3">
+
+<!-- Display Attachment Form Errors -->
+{% if attachment_form.errors %}
+    <div class="alert alert-danger">
+        {{ attachment_form.errors }}
+    </div>
+{% endif %}
+
+<ul>
     {% for attachment in attachments %}
-    <li class="list-group-item">
-        <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a> (Uploaded by {{ attachment.uploaded_by }}, {{ attachment.uploaded_at|date:"Y-m-d H:i" }})
+    <li>
+        <a href="{{ attachment.file.url }}">{{ attachment.file.name }}</a> (Uploaded by {{ attachment.uploaded_by.username }}, {{ attachment.uploaded_at|date:"Y-m-d H:i" }})
     </li>
     {% empty %}
-    <li class="list-group-item">No attachments yet.</li>
+    <li>No attachments yet.</li>
     {% endfor %}
 </ul>
 
@@ -26,15 +34,20 @@
     {{ note_form.as_p }}
     <button type="submit" name="add_note" class="btn btn-primary">Add Note</button>
 </form>
-<ul class="list-group mt-3">
-    {% for note in project.project_notes.all %}
-    <li class="list-group-item">
-        {{ note.content }} (Added by {{ note.created_by }}, {{ note.created_at|date:"Y-m-d H:i" }})
-        <!-- Add Edit and Delete options if needed -->
+
+<!-- Display Note Form Errors -->
+{% if note_form.errors %}
+    <div class="alert alert-danger">
+        {{ note_form.errors }}
+    </div>
+{% endif %}
+
+<ul>
+    {% for note in notes %}
+    <li>
+        {{ note.content }} (Added by {{ note.created_by.username }}, {{ note.created_at|date:"Y-m-d H:i" }})
     </li>
     {% empty %}
-    <li class="list-group-item">No notes yet.</li>
+    <li>No notes yet.</li>
     {% endfor %}
 </ul>
-{% endblock %}
-

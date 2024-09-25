@@ -1,8 +1,6 @@
 from django.contrib import admin
 from .models import Tool
-from apps.home.models import Tool, Profile, MaintenanceRecord, Property, Unit, Vehicle, VehicleImage, Repair, MaintenanceHistory, ScheduledMaintenance, TagHouse, Location, PropertyLocation, PropertyInfo, Location
-from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, Tag, OpenRepair, RentPayment, ProjectDocument
-
+from apps.home.models import *
 
 # Register your models here.
 admin.site.register(Task)
@@ -40,3 +38,11 @@ admin.site.register(FinancialReport)
 
 
 
+admin.site.register(ProjectImage)
+admin.site.register(MaterialCategory)
+admin.site.register(Material)
+admin.site.register(LaborEntry)
+admin.site.register(ProjectNote)
+admin.site.register(ProjectAttachment)
+        
+        
