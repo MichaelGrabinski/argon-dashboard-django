@@ -713,34 +713,84 @@ def public_services(request):
     return render(request, 'home/services.html')
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Project, ProjectDocument
+from .forms import ReferenceMaterialForm, ProjectNoteForm, ProjectAttachmentForm, MaterialForm, LaborEntryForm
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Project, ProjectDocument
+from .forms import ReferenceMaterialForm, ProjectNoteForm, ProjectAttachmentForm, MaterialForm, LaborEntryForm
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
 def other_hub(request):
-    # Set default project_type to 'construction'
     project_type = request.GET.get('project_type', 'construction')
-    
-    # Filter projects by the specified or default project type
     projects = Project.objects.filter(project_type=project_type)
 
     if request.method == 'POST':
-        if 'document' in request.FILES:
-            project_id = request.POST.get('project_id')
+        project_id = request.POST.get('project_id')
+        print(f"Received project_id: {project_id}")  # Debugging: print project_id
+
+        if project_id:
             try:
-                project = get_object_or_404(Project, pk=project_id)
+                project = get_object_or_404(Project, id=project_id)
             except Project.DoesNotExist:
+                print(f"Project with id {project_id} not found")  # Debugging: print error message
                 return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
-            file = request.FILES['document']
-            is_model = request.POST.get('is_model', 'off') == 'on'
-            ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
-            return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-        elif 'file' in request.FILES:
-            form = ReferenceMaterialForm(request.POST, request.FILES)
-            if form.is_valid():
-                reference_material = form.save(commit=False)
-                project_id = form.cleaned_data['project'].id
-                reference_material.project = get_object_or_404(Project, pk=project_id)
-                reference_material.save()
+
+            if 'document' in request.FILES:
+                file = request.FILES['document']
+                is_model = request.POST.get('is_model', 'off') == 'on'
+                ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
                 return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            else:
-                return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
+            
+            elif 'file' in request.FILES:
+                form = ReferenceMaterialForm(request.POST, request.FILES)
+                if form.is_valid():
+                    reference_material = form.save(commit=False)
+                    reference_material.project = project
+                    reference_material.save()
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+                else:
+                    return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
+
+            elif 'add_attachment' in request.POST:
+                attachment_form = ProjectAttachmentForm(request.POST, request.FILES)
+                if attachment_form.is_valid():
+                    attachment = attachment_form.save(commit=False)
+                    attachment.project = project
+                    attachment.uploaded_by = request.user
+                    attachment.save()
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+            
+            elif 'add_note' in request.POST:
+                note_form = ProjectNoteForm(request.POST)
+                if note_form.is_valid():
+                    note = note_form.save(commit=False)
+                    note.project = project
+                    note.created_by = request.user
+                    note.save()
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+            
+            elif 'add_material' in request.POST:
+                material_form = MaterialForm(request.POST)
+                if material_form.is_valid():
+                    material = material_form.save(commit=False)
+                    material.project = project
+                    material.save()
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+            
+            elif 'add_labor' in request.POST:
+                labor_form = LaborEntryForm(request.POST)
+                if labor_form.is_valid():
+                    labor_entry = labor_form.save(commit=False)
+                    labor_entry.project = project
+                    labor_entry.save()
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+        else:
+            print("Error: project_id not found in POST data")
 
     reference_form = ReferenceMaterialForm()
     project_data = []
@@ -766,21 +816,47 @@ def other_hub(request):
                         completed_hours += task.hours
         remaining_hours = total_hours - completed_hours
         completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
+
+        notes = project.project_notes.all()
+        attachments = project.attachments.all()
+        note_form = ProjectNoteForm()
+        attachment_form = ProjectAttachmentForm()
+
+        materials = project.materials.select_related('category')
+        labor_entries = project.labor_entries.select_related('user')
+        material_form = MaterialForm()
+        labor_form = LaborEntryForm()
+        total_material_cost = sum(m.total_cost for m in materials)
+        total_labor_cost = sum(l.total_pay for l in labor_entries)
+        total_cost = total_material_cost + total_labor_cost
+        cost_per_sqft = total_cost / project.square_footage if project.square_footage else 0
+
         project_data.append({
             'project': project,
             'phases': phase_data,
             'total_hours': total_hours,
             'completed_hours': completed_hours,
             'remaining_hours': remaining_hours,
-            'completion_percentage': completion_percentage
+            'completion_percentage': completion_percentage,
+            'notes': notes,
+            'attachments': attachments,
+            'note_form': note_form,
+            'attachment_form': attachment_form,
+            'materials': materials,
+            'labor_entries': labor_entries,
+            'material_form': material_form,
+            'labor_form': labor_form,
+            'total_material_cost': total_material_cost,
+            'total_labor_cost': total_labor_cost,
+            'total_cost': total_cost,
+            'cost_per_sqft': cost_per_sqft,
         })
 
     return render(request, 'home/OtherProjects.html', {
         'project_data': project_data,
         'reference_form': reference_form,
-        'project_type': project_type  # Pass the project_type to the template
+        'project_type': project_type
     })
-    
     
 import logging
 

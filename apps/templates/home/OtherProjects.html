@@ -80,16 +80,36 @@
     width: 100%;
     overflow-x: auto;
 }
+
+/* Customize carousel control icons */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-size: 100%, 100%;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+/* Adjust the position of the arrows */
+.carousel-control-prev,
+.carousel-control-next {
+    width: auto;
+}
 </style>
 <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css">
 <link rel="stylesheet" href="https://cdn.daypilot.org/daypilot-lite.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+
 {% endblock stylesheets %}
+
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">Projects Hub</h1>
+
     {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
@@ -111,9 +131,7 @@
     <div class="tab-content mt-5" id="projectTabsContent">
         <!-- Hub Tab Content -->
         <div class="tab-pane fade show active" id="hub" role="tabpanel">
-            <!-- Include your hub content here -->
             <h2>Welcome to the Projects Hub</h2>
-            <!-- You can add content or remove this section if not needed -->
         </div>
 
         <!-- Project Tabs Content -->
@@ -121,23 +139,19 @@
         <div class="tab-pane fade" id="project-{{ project_info.project.id }}" role="tabpanel">
             <!-- Tab navigation for project details -->
             <ul class="nav nav-tabs" id="projectDetailTabs-{{ project_info.project.id }}" role="tablist">
-                <!-- Main Tab -->
+                <!-- Tabs -->
                 <li class="nav-item">
                     <a class="nav-link active" id="main-tab-{{ project_info.project.id }}" data-toggle="tab" href="#main-{{ project_info.project.id }}" role="tab" aria-controls="main-{{ project_info.project.id }}">Main</a>
                 </li>
-                <!-- Phases Tab -->
                 <li class="nav-item">
                     <a class="nav-link" id="phases-tab-{{ project_info.project.id }}" data-toggle="tab" href="#phases-{{ project_info.project.id }}" role="tab" aria-controls="phases-{{ project_info.project.id }}">Phases</a>
                 </li>
-                <!-- Budget Tab -->
                 <li class="nav-item">
                     <a class="nav-link" id="budget-tab-{{ project_info.project.id }}" data-toggle="tab" href="#budget-{{ project_info.project.id }}" role="tab" aria-controls="budget-{{ project_info.project.id }}">Budget</a>
                 </li>
-                <!-- Gallery Tab -->
                 <li class="nav-item">
                     <a class="nav-link" id="gallery-tab-{{ project_info.project.id }}" data-toggle="tab" href="#gallery-{{ project_info.project.id }}" role="tab" aria-controls="gallery-{{ project_info.project.id }}">Gallery</a>
                 </li>
-                <!-- Tasks Tab -->
                 <li class="nav-item">
                     <a class="nav-link" id="tasks-tab-{{ project_info.project.id }}" data-toggle="tab" href="#tasks-{{ project_info.project.id }}" role="tab" aria-controls="tasks-{{ project_info.project.id }}">Tasks</a>
                 </li>
@@ -147,13 +161,12 @@
             <div class="tab-content" id="projectDetailTabsContent-{{ project_info.project.id }}">
                 <!-- Main Tab Content -->
                 <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
-                    {% include 'home/project_main.html' with project=project_info.project attachment_form=attachment_form attachments=attachments note_form=note_form notes=notes %}
+                    {% include 'home/project_main.html' with project=project_info.project attachment_form=project_info.attachment_form attachments=project_info.attachments note_form=project_info.note_form notes=project_info.notes %}
                 </div>
 
                 <!-- Phases Tab Content -->
                 <div class="tab-pane fade" id="phases-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="phases-tab-{{ project_info.project.id }}">
                     <h2 class="mt-4">{{ project_info.project.title }} - Phases</h2>
-                    <!-- Include your existing code for phases here -->
                     <div class="accordion" id="phasesAccordion-{{ project_info.project.id }}">
                         {% for phase_info in project_info.phases %}
                         <div class="card">
@@ -217,45 +230,36 @@
 
                 <!-- Budget Tab Content -->
                 <div class="tab-pane fade" id="budget-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="budget-tab-{{ project_info.project.id }}">
-                    {% include 'home/budget_page.html' with project=project_info.project %}
-					
+                    {% include 'home/budget_page.html' with project=project_info.project materials=project_info.materials labor_entries=project_info.labor_entries material_form=project_info.material_form labor_form=project_info.labor_form total_material_cost=project_info.total_material_cost total_labor_cost=project_info.total_labor_cost total_cost=project_info.total_cost cost_per_sqft=project_info.cost_per_sqft %}
                 </div>
 
-                <!-- Gallery Tab Content -->
-                <div class="tab-pane fade" id="gallery-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gallery-tab-{{ project_info.project.id }}">
-                    <h3>Gallery</h3>
-                    <!-- Image Upload Form -->
-                    <form action="{% url 'upload_project_image' project_info.project.id %}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="image">Upload Image</label>
-                            <input type="file" class="form-control" id="image" name="image" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </form>
-                    <!-- Image Carousel with Lightbox -->
-                    {% if project_info.project.images.all %}
-                    <div id="carousel-{{ project_info.project.id }}" class="carousel slide mt-4" data-ride="carousel">
-                        <div class="carousel-inner">
-                            {% for image in project_info.project.images.all %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <a href="{{ image.image.url }}" data-lightbox="gallery-{{ project_info.project.id }}">
-                                    <img src="{{ image.image.url }}" class="d-block mx-auto" style="max-height: 400px; width: auto;" alt="Project Image">
-                                </a>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <a class="carousel-control-prev" href="#carousel-{{ project_info.project.id }}" role="button" data-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        </a>
-                        <a class="carousel-control-next" href="#carousel-{{ project_info.project.id }}" role="button" data-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        </a>
-                    </div>
-                    {% else %}
-                    <p>No images uploaded yet.</p>
-                    {% endif %}
-                </div>
+<!-- Gallery Tab Content -->
+<div class="tab-pane fade" id="gallery-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="gallery-tab-{{ project_info.project.id }}">
+    <h3>Gallery</h3>
+    <!-- Image Upload Form -->
+    <form action="{% url 'upload_project_image' project_info.project.id %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="image-{{ project_info.project.id }}">Upload Image</label>
+            <input type="file" class="form-control" id="image-{{ project_info.project.id }}" name="image" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    <!-- Image Gallery with Lightbox -->
+    {% if project_info.project.images.all %}
+    <div class="row mt-4">
+        {% for image in project_info.project.images.all %}
+        <div class="col-md-4 col-sm-6 mb-3">
+            <a href="{{ image.image.url }}" data-lightbox="gallery-{{ project_info.project.id }}" data-title="{{ image.caption }}">
+                <img src="{{ image.image.url }}" class="img-fluid" alt="Project Image">
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No images uploaded yet.</p>
+    {% endif %}
+</div>
 
                 <!-- Tasks Tab Content -->
                 <div class="tab-pane fade" id="tasks-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="tasks-tab-{{ project_info.project.id }}">
@@ -280,13 +284,15 @@
                         </table>
                     </div>
                 </div>
-
-            </div>
-        </div>
+            </div> <!-- End of tab content for project details -->
+        </div> <!-- End of tab-pane for project -->
         {% endfor %}
-    </div>
-</div>
+    </div> <!-- End of tab-content -->
+</div> <!-- End of container -->
 {% endblock %}
+
+
+
 
 {% block javascripts %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded first -->
@@ -295,7 +301,9 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 <script src="https://cdn.daypilot.org/daypilot-lite.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
 {% load custom_filters %}
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -735,127 +743,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log("Link deleted:", id, link);
                     updateLink(id, link, 'delete');
                 });
-
-                // Initialize breakdown tree
-                initializeBreakdownTree(projectId);
-
-            } catch (error) {
-                console.error("Error initializing Gantt chart for project", projectId, ":", error);
-            }
-        } else {
-            console.error("Gantt container not found for project:", projectId);
-        }
-    })({{ project_info.project.id }});
-    {% endfor %}
-});
-
-// Function to initialize breakdown tree
-function initializeBreakdownTree(projectId) {
-    const breakdownContainer = document.getElementById("breakdown_tree_" + projectId);
-    if (!breakdownContainer) {
-        console.error("Breakdown container not found for project:", projectId);
-        return;
-    }
-
-    const phases = {% for project_info in project_data %}{{ project_info.project.id }} == projectId ? {{ project_info.phases|safe }} : null{% if not forloop.last %} || {% endif %}{% endfor %};
-    if (!phases) {
-        console.error("Phases not found for project:", projectId);
-        return;
-    }
-
-    const treeData = phases.map(phaseInfo => {
-        return {
-            text: phaseInfo.phase.name,
-            nodes: phaseInfo.tasks.map(task => ({
-                text: task.title
-            }))
-        };
-    });
-
-    $(breakdownContainer).treeview({
-        data: treeData,
-        levels: 1,
-        expandIcon: "fa fa-plus",
-        collapseIcon: "fa fa-minus",
-        nodeIcon: "fa fa-folder"
-    });
-}
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    {% for project_info in project_data %}
-    (function(projectId) {
-        console.log("Initializing Gantt chart for project:", projectId);
-
-        const tasks = [
-            {% for phase_info in project_info.phases %}
-                {% for task in phase_info.tasks %}
-                {
-                    id: "{{ task.id }}",
-                    text: "{{ task.title }}",
-                    start_date: "{{ task.start_date|default_if_none:task.created_at|date:'%Y-%m-%d %H:%M' }}",
-                    duration: {{ task.hours|default:1 }},
-                    parent: "{{ task|parent_id }}", // Use custom filter
-                    progress: {{ task.progress|default:0 }},
-                    phase: "{{ phase_info.phase.id }}", // Include phase ID
-                    open: true
-                },
-                {% endfor %}
-            {% endfor %}
-        ];
-        console.log("Tasks for project", projectId, ":", tasks);
-
-        const ganttContainer = document.getElementById("gantt_here_" + projectId);
-        console.log("Gantt container for project", projectId, ":", ganttContainer);
-
-        if (ganttContainer) {
-            try {
-                gantt.config.date_format = "%Y-%m-%d %H:%M";
-                gantt.init(ganttContainer);
-                gantt.clearAll(); // Clear any existing data
-                gantt.parse({ data: tasks });
-                console.log("Gantt chart initialized for project", projectId);
-
-                // Event listener for task updates
-                gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
-                    console.log("Task updated:", id, item);
-                    updateTask(id, item);
-                });
-
-                // Event listener for task progress changes
-                gantt.attachEvent("onTaskProgressChanged", function(id, progress) {
-                    console.log("Task progress updated:", id, progress);
-                    updateTask(id, gantt.getTask(id));
-                });
-
-                // Event listener for adding new tasks
-                gantt.attachEvent("onAfterTaskAdd", function(id, item) {
-                    console.log("Task added:", id, item);
-                    addTask(id, item, projectId);
-                });
-
-                // Event listener for task status changes
-                gantt.attachEvent("onTaskClick", function(id, e) {
-                    const task = gantt.getTask(id);
-                    const completed = task.progress === 1;
-                    updateTaskStatus(id, completed);
-                });
-
-                // Event listener for adding links
-                gantt.attachEvent("onAfterLinkAdd", function(id, link) {
-                    console.log("Link added:", id, link);
-                    updateLink(id, link, 'add');
-                });
-
-                // Event listener for deleting links
-                gantt.attachEvent("onAfterLinkDelete", function(id, link) {
-                    console.log("Link deleted:", id, link);
-                    updateLink(id, link, 'delete');
-                });
-
-                // Initialize DayPilot calendar
-                initializeDayPilotCalendar(projectId, tasks);
 
             } catch (error) {
                 console.error("Error initializing Gantt chart for project", projectId, ":", error);

@@ -3,51 +3,63 @@
 <h2>Main - {{ project.title }}</h2>
 
 <!-- Attachments Section -->
-<h3>Attachments</h3>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ attachment_form.as_p }}
-    <button type="submit" name="add_attachment" class="btn btn-primary">Upload Attachment</button>
-</form>
-
-<!-- Display Attachment Form Errors -->
-{% if attachment_form.errors %}
-    <div class="alert alert-danger">
-        {{ attachment_form.errors }}
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Attachments</h3>
     </div>
-{% endif %}
-
-<ul>
-    {% for attachment in attachments %}
-    <li>
-        <a href="{{ attachment.file.url }}">{{ attachment.file.name }}</a> (Uploaded by {{ attachment.uploaded_by.username }}, {{ attachment.uploaded_at|date:"Y-m-d H:i" }})
-    </li>
-    {% empty %}
-    <li>No attachments yet.</li>
-    {% endfor %}
-</ul>
+    <div class="card-body">
+        {% if attachments %}
+        <ul class="list-group list-group-flush">
+            {% for attachment in attachments %}
+            <li class="list-group-item">
+                <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.filename }}</a>
+                <span class="text-muted">Uploaded by {{ attachment.uploaded_by.username }} on {{ attachment.uploaded_at|date:"M d, Y" }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No attachments available.</p>
+        {% endif %}
+        <!-- Divider -->
+        <hr>
+        <!-- Upload Attachment Form -->
+        <h5>Add New Attachment</h5>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="project_id" value="{{ project.id }}">
+            {{ attachment_form.as_p }}
+            <button type="submit" name="add_attachment" class="btn btn-primary">Upload Attachment</button>
+        </form>
+    </div>
+</div>
 
 <!-- Notes Section -->
-<h3>Notes</h3>
-<form method="post">
-    {% csrf_token %}
-    {{ note_form.as_p }}
-    <button type="submit" name="add_note" class="btn btn-primary">Add Note</button>
-</form>
-
-<!-- Display Note Form Errors -->
-{% if note_form.errors %}
-    <div class="alert alert-danger">
-        {{ note_form.errors }}
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Notes</h3>
     </div>
-{% endif %}
-
-<ul>
-    {% for note in notes %}
-    <li>
-        {{ note.content }} (Added by {{ note.created_by.username }}, {{ note.created_at|date:"Y-m-d H:i" }})
-    </li>
-    {% empty %}
-    <li>No notes yet.</li>
-    {% endfor %}
-</ul>
+    <div class="card-body">
+        {% if notes %}
+        <ul class="list-group list-group-flush">
+            {% for note in notes %}
+            <li class="list-group-item">
+                <p>{{ note.content }}</p>
+                <small class="text-muted">By {{ note.created_by.username }} on {{ note.created_at|date:"M d, Y" }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No notes available.</p>
+        {% endif %}
+        <!-- Divider -->
+        <hr>
+        <!-- Add Note Form -->
+        <h5>Add New Note</h5>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="project_id" value="{{ project.id }}">
+            {{ note_form.as_p }}
+            <button type="submit" name="add_note" class="btn btn-primary">Add Note</button>
+        </form>
+    </div>
+</div>
