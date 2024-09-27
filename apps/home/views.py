@@ -725,9 +725,28 @@ from .forms import ReferenceMaterialForm, ProjectNoteForm, ProjectAttachmentForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+from django.http import HttpResponseRedirect, HttpResponse
+from django.core import serializers
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Project, ProjectDocument, LaborEntry, Material
+from .forms import (
+    ReferenceMaterialForm, ProjectNoteForm, ProjectAttachmentForm,
+    MaterialForm, LaborEntryForm, ImportProjectForm
+)
+from django.core.exceptions import ObjectDoesNotExist
+from decimal import Decimal
+
+@login_required
 def other_hub(request):
     project_type = request.GET.get('project_type', 'construction')
     projects = Project.objects.filter(project_type=project_type)
+
+    # Get parameters to determine which project and tab to display
+    selected_project_id = request.GET.get('project_id')
+    selected_tab = request.GET.get('tab', 'main')  # Default to 'main' tab
 
     if request.method == 'POST':
         project_id = request.POST.get('project_id')
@@ -736,7 +755,7 @@ def other_hub(request):
         if project_id:
             try:
                 project = get_object_or_404(Project, id=project_id)
-            except Project.DoesNotExist:
+            except ObjectDoesNotExist:
                 print(f"Project with id {project_id} not found")  # Debugging: print error message
                 return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
 
@@ -744,15 +763,15 @@ def other_hub(request):
                 file = request.FILES['document']
                 is_model = request.POST.get('is_model', 'off') == 'on'
                 ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
-                return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            
+                return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=documents')
+
             elif 'file' in request.FILES:
                 form = ReferenceMaterialForm(request.POST, request.FILES)
                 if form.is_valid():
                     reference_material = form.save(commit=False)
                     reference_material.project = project
                     reference_material.save()
-                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=reference')
                 else:
                     return render(request, 'home/OtherProjects.html', {'error': 'Invalid form submission', 'projects': projects})
 
@@ -763,8 +782,10 @@ def other_hub(request):
                     attachment.project = project
                     attachment.uploaded_by = request.user
                     attachment.save()
-                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            
+                    return HttpResponseRedirect(
+                        reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=main'
+                    )
+
             elif 'add_note' in request.POST:
                 note_form = ProjectNoteForm(request.POST)
                 if note_form.is_valid():
@@ -772,27 +793,47 @@ def other_hub(request):
                     note.project = project
                     note.created_by = request.user
                     note.save()
-                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            
+                    return HttpResponseRedirect(
+                        reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=main'
+                    )
+
             elif 'add_material' in request.POST:
                 material_form = MaterialForm(request.POST)
                 if material_form.is_valid():
                     material = material_form.save(commit=False)
                     material.project = project
                     material.save()
-                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
-            
+                    return HttpResponseRedirect(
+                        reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=budget'
+                    )
+
             elif 'add_labor' in request.POST:
                 labor_form = LaborEntryForm(request.POST)
                 if labor_form.is_valid():
                     labor_entry = labor_form.save(commit=False)
                     labor_entry.project = project
                     labor_entry.save()
-                    return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}')
+                    return HttpResponseRedirect(
+                        reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=budget'
+                    )
+                else:
+                    print(labor_form.errors)  # Debugging: print form errors
+
+            elif 'import_project' in request.POST:
+                import_form = ImportProjectForm(request.POST, request.FILES)
+                if import_form.is_valid():
+                    data = import_form.cleaned_data['file'].read().decode('utf-8')
+                    for obj in serializers.deserialize('json', data):
+                        obj.save()
+                    messages.success(request, 'Project imported successfully.')
+                    return redirect('other_hub')
+            else:
+                print("Unknown POST action.")
         else:
             print("Error: project_id not found in POST data")
 
     reference_form = ReferenceMaterialForm()
+    import_form = ImportProjectForm()
     project_data = []
     for project in projects:
         phases = project.phases.all()
@@ -826,10 +867,12 @@ def other_hub(request):
         labor_entries = project.labor_entries.select_related('user')
         material_form = MaterialForm()
         labor_form = LaborEntryForm()
-        total_material_cost = sum(m.total_cost for m in materials)
-        total_labor_cost = sum(l.total_pay for l in labor_entries)
+        total_material_cost = sum(Decimal(m.total_cost or 0) for m in materials)
+        total_labor_cost = sum(Decimal(l.total_pay or 0) for l in labor_entries)
         total_cost = total_material_cost + total_labor_cost
-        cost_per_sqft = total_cost / project.square_footage if project.square_footage else 0
+        cost_per_sqft = (total_cost / Decimal(project.square_footage)) if project.square_footage else Decimal('0')
+        total_labor_hours = sum(Decimal(entry.hours_worked or 0) for entry in labor_entries)
+        print(f"Total labor hours for project {project.id}: {total_labor_hours}")  # Debugging
 
         project_data.append({
             'project': project,
@@ -850,13 +893,42 @@ def other_hub(request):
             'total_labor_cost': total_labor_cost,
             'total_cost': total_cost,
             'cost_per_sqft': cost_per_sqft,
+            'total_labor_hours': total_labor_hours,
         })
 
     return render(request, 'home/OtherProjects.html', {
         'project_data': project_data,
         'reference_form': reference_form,
-        'project_type': project_type
+        'import_form': import_form,
+        'project_type': project_type,
+        'selected_project_id': selected_project_id,
+        'selected_tab': selected_tab,
     })
+
+@login_required
+def export_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    data = serializers.serialize('json', [project], use_natural_foreign_keys=True, use_natural_primary_keys=True)
+    response = HttpResponse(data, content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename=project_{project_id}.json'
+    return response
+
+@login_required
+def import_project(request):
+    if request.method == 'POST':
+        import_form = ImportProjectForm(request.POST, request.FILES)
+        if import_form.is_valid():
+            data = import_form.cleaned_data['file'].read().decode('utf-8')
+            for obj in serializers.deserialize('json', data):
+                obj.save()
+            messages.success(request, 'Project imported successfully.')
+            return redirect('other_hub')
+        else:
+            messages.error(request, 'Failed to import project.')
+    else:
+        import_form = ImportProjectForm()
+    return render(request, 'home/import_project.html', {'import_form': import_form})
+
     
 import logging
 
@@ -1490,3 +1562,28 @@ def project_main(request, project_id):
         'attachment_form': attachment_form,
     }
     return render(request, 'home/project_main.html', context)
+    
+from django.http import HttpResponse
+from django.core import serializers
+
+def export_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    data = serializers.serialize('json', [project], use_natural_foreign_keys=True, use_natural_primary_keys=True)
+    response = HttpResponse(data, content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename=project_{project_id}.json'
+    return response
+       
+from django.contrib import messages
+
+def import_project(request):
+    if request.method == 'POST':
+        form = ImportProjectForm(request.POST, request.FILES)
+        if form.is_valid():
+            data = form.cleaned_data['file'].read().decode('utf-8')
+            for obj in serializers.deserialize('json', data):
+                obj.save()
+            messages.success(request, 'Project imported successfully.')
+            return redirect('projects_list')  # Redirect to your projects list
+    else:
+        form = ImportProjectForm()
+    return render(request, 'home/import_project.html', {'form': form})

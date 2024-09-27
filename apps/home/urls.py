@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path, re_path
 from apps.home import views
 from rest_framework.urlpatterns import format_suffix_patterns
-
+from apps.home.views import export_project, import_project
 
 urlpatterns = [
     # The default home page
@@ -51,6 +51,8 @@ urlpatterns = [
     path('projects/<int:project_id>/upload_image/', views.upload_project_image, name='upload_project_image'),
     path('projects/<int:project_id>/budget/', views.budget_page, name='budget_page'),
     path('projects/<int:project_id>/main/', views.project_main, name='project_main'),
+    path('projects/export/<int:project_id>/', export_project, name='export_project'),
+    path('projects/import/', import_project, name='import_project'),
     #path('construction/project/<int:project_id>/', views.project_detail, name='project_detail'),
     
     path('game-studio/', views.game_studio_hub, name='game_studio_hub'),

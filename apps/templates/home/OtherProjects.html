@@ -96,6 +96,25 @@
 .carousel-control-next {
     width: auto;
 }
+/* Customize carousel control icons */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-size: 50%, 50%;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+.carousel-control-prev-icon {
+    background-image: url('data:image/svg+xml;charset=UTF8,%3Csvg xmlns%3D%22http://www.w3.org/2000/svg%22 fill%3D%22%23fff%22 viewBox%3D%220 0 8 8%22%3E%3Cpath d%3D%22M5.5 0L7 1.5l-3 3 3 3L5.5 8l-4-4 4-4z%22/%3E%3C/svg%3E');
+}
+.carousel-control-next-icon {
+    background-image: url('data:image/svg+xml;charset=UTF8,%3Csvg xmlns%3D%22http://www.w3.org/2000/svg%22 fill%3D%22%23fff%22 viewBox%3D%220 0 8 8%22%3E%3Cpath d%3D%22M2.5 0L1 1.5l3 3-3 3L2.5 8l4-4-4-4z%22/%3E%3C/svg%3E');
+}
+.carousel-control-prev,
+.carousel-control-next {
+    width: auto;
+}
 </style>
 <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
@@ -103,7 +122,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css">
 <link rel="stylesheet" href="https://cdn.daypilot.org/daypilot-lite.min.css">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
-
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -162,7 +181,9 @@
                 <!-- Main Tab Content -->
                 <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
                     {% include 'home/project_main.html' with project=project_info.project attachment_form=project_info.attachment_form attachments=project_info.attachments note_form=project_info.note_form notes=project_info.notes %}
-                </div>
+                 		<a href="{% url 'export_project' project_info.project.id %}" class="btn btn-secondary">Export Project</a><a href="{% url 'import_project' %}" class="btn btn-secondary">Import Project</a>
+				</div>
+				
 
                 <!-- Phases Tab Content -->
                 <div class="tab-pane fade" id="phases-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="phases-tab-{{ project_info.project.id }}">
@@ -176,6 +197,7 @@
                                         {{ phase_info.phase.name }}
                                     </button>
                                 </h2>
+						
                             </div>
 
                             <div id="collapse-{{ phase_info.phase.id }}" class="collapse" aria-labelledby="heading-{{ phase_info.phase.id }}" data-parent="#phasesAccordion-{{ project_info.project.id }}">
@@ -230,7 +252,7 @@
 
                 <!-- Budget Tab Content -->
                 <div class="tab-pane fade" id="budget-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="budget-tab-{{ project_info.project.id }}">
-                    {% include 'home/budget_page.html' with project=project_info.project materials=project_info.materials labor_entries=project_info.labor_entries material_form=project_info.material_form labor_form=project_info.labor_form total_material_cost=project_info.total_material_cost total_labor_cost=project_info.total_labor_cost total_cost=project_info.total_cost cost_per_sqft=project_info.cost_per_sqft %}
+                    {% include 'home/budget_page.html' with project=project_info.project materials=project_info.materials labor_entries=project_info.labor_entries material_form=project_info.material_form labor_form=project_info.labor_form total_material_cost=project_info.total_material_cost total_labor_cost=project_info.total_labor_cost total_cost=project_info.total_cost cost_per_sqft=project_info.cost_per_sqft  total_labor_hours=project_info.total_labor_hours %}
                 </div>
 
 <!-- Gallery Tab Content -->
@@ -245,16 +267,35 @@
         </div>
         <button type="submit" class="btn btn-primary">Upload</button>
     </form>
-    <!-- Image Gallery with Lightbox -->
+    <!-- Image Carousel -->
     {% if project_info.project.images.all %}
-    <div class="row mt-4">
-        {% for image in project_info.project.images.all %}
-        <div class="col-md-4 col-sm-6 mb-3">
-            <a href="{{ image.image.url }}" data-lightbox="gallery-{{ project_info.project.id }}" data-title="{{ image.caption }}">
-                <img src="{{ image.image.url }}" class="img-fluid" alt="Project Image">
-            </a>
+    <div id="carousel-{{ project_info.project.id }}" class="carousel slide mt-4" data-ride="carousel" data-interval="5000">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            {% for image in project_info.project.images.all %}
+            <li data-target="#carousel-{{ project_info.project.id }}" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"></li>
+            {% endfor %}
+        </ol>
+        <!-- Slides -->
+        <div class="carousel-inner">
+            {% for image in project_info.project.images.all %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ image.image.url }}" class="d-block w-100" alt="Project Image">
+                {% if image.caption %}
+                <div class="carousel-caption d-none d-md-block">
+                    <p>{{ image.caption }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        <!-- Controls -->
+        <a class="carousel-control-prev" href="#carousel-{{ project_info.project.id }}" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </a>
+        <a class="carousel-control-next" href="#carousel-{{ project_info.project.id }}" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </a>
     </div>
     {% else %}
     <p>No images uploaded yet.</p>
@@ -302,7 +343,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 <script src="https://cdn.daypilot.org/daypilot-lite.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
-{% load custom_filters %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+  {% load custom_filters %}
 
 
 <script>
@@ -528,7 +570,25 @@ function updateLink(id, link, action) {
     });
 }
 </script>
-
+   <script>
+   $(document).ready(function() {
+       // Initialize datepicker for all date input fields
+       $('input[type="date"]').datepicker({
+           format: 'yyyy-mm-dd',
+           autoclose: true,
+           todayHighlight: true,
+       });
+   });
+   </script>
+   <script>
+$(document).ready(function() {
+    $('.datepicker').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayHighlight: true,
+    });
+});
+</script>
 <script>
 $(document).ready(function() {
     {% for project_info in project_data %}

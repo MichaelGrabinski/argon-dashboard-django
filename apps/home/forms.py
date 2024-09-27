@@ -92,10 +92,19 @@ class MaterialForm(forms.ModelForm):
         model = Material
         fields = ['category', 'description', 'unit_cost', 'quantity']
 
+from django import forms
+from .models import LaborEntry
+
 class LaborEntryForm(forms.ModelForm):
     class Meta:
         model = LaborEntry
-        fields = ['user', 'hours_worked', 'pay_rate', 'date']
+        fields = ['user', 'date', 'hours_worked', 'pay_rate']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'user': forms.Select(attrs={'class': 'form-control'}),
+            'hours_worked': forms.NumberInput(attrs={'class': 'form-control'}),
+            'pay_rate': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
 
 class ProjectNoteForm(forms.ModelForm):
     class Meta:
@@ -106,3 +115,6 @@ class ProjectAttachmentForm(forms.ModelForm):
     class Meta:
         model = ProjectAttachment
         fields = ['file']
+    
+class ImportProjectForm(forms.Form):
+    file = forms.FileField()
