@@ -732,10 +732,7 @@ from django.core import serializers
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Project, ProjectDocument, LaborEntry, Material
-from .forms import (
-    ReferenceMaterialForm, ProjectNoteForm, ProjectAttachmentForm,
-    MaterialForm, LaborEntryForm, ImportProjectForm
-)
+from .forms import *
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
 
@@ -1587,3 +1584,25 @@ def import_project(request):
     else:
         form = ImportProjectForm()
     return render(request, 'home/import_project.html', {'form': form})
+    
+    
+def create_project(request):
+    if request.method == 'POST':
+        form = ProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save()
+            return redirect('project_detail', project_id=project.id)
+    else:
+        form = ProjectForm()
+    return render(request, 'project_form.html', {'form': form})
+
+def edit_project(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+    if request.method == 'POST':
+        form = ProjectForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+            return redirect('project_detail', project_id=project.id)
+    else:
+        form = ProjectForm(instance=project)
+    return render(request, 'project_form.html', {'form': form})

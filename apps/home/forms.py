@@ -118,3 +118,43 @@ class ProjectAttachmentForm(forms.ModelForm):
     
 class ImportProjectForm(forms.Form):
     file = forms.FileField()
+    
+from django import forms
+from .models import Project
+
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = [
+            'title', 'description', 'manager', 'team_members',
+            'start_date', 'end_date', 'project_type',
+            'square_footage', 'cost_per_square_foot',
+            'allotted_budget',
+            'item_name', 'number_of_items', 'cost_per_item',
+        ]
+        widgets = {
+            'team_members': forms.CheckboxSelectMultiple(),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'project_type': forms.Select(attrs={'id': 'id_project_type'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        project_type = cleaned_data.get('project_type')
+
+        if project_type == 'construction':
+            square_footage = cleaned_data.get('square_footage')
+            cost_per_square_foot = cleaned_data.get('cost_per_square_foot')
+            if not square_footage or not cost_per_square_foot:
+                raise forms.ValidationError('Please provide square footage and cost per square foot for construction projects.')
+        elif project_type == 'game':
+            allotted_budget = cleaned_data.get('allotted_budget')
+            if not allotted_budget:
+                raise forms.ValidationError('Please provide the total cost (allotted budget) for game projects.')
+        elif project_type == 'other':
+            item_name = cleaned_data.get('item_name')
+            number_of_items = cleaned_data.get('number_of_items')
+            cost_per_item = cleaned_data.get('cost_per_item')
+            if not all([item_name, number_of_items, cost_per_item]):
+                raise forms.ValidationError('Please provide item details and costs for other projects.')

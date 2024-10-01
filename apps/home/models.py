@@ -69,7 +69,33 @@ class Project(models.Model):
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, default='construction')
     square_footage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     allotted_budget = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    
+
+    # Additional fields for cost calculations
+    # For construction projects
+    cost_per_square_foot = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # For 'other' projects (per item)
+    item_name = models.CharField(max_length=100, null=True, blank=True)
+    number_of_items = models.PositiveIntegerField(null=True, blank=True)
+    cost_per_item = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # For game projects, we can use 'allotted_budget' as the total cost
+
+    def calculate_total_cost(self):
+        if self.project_type == 'construction':
+            if self.square_footage and self.cost_per_square_foot:
+                return self.square_footage * self.cost_per_square_foot
+        elif self.project_type == 'game':
+            if self.allotted_budget:
+                return self.allotted_budget
+        elif self.project_type == 'other':
+            if self.number_of_items and self.cost_per_item:
+                return self.number_of_items * self.cost_per_item
+        return 0  # Default to zero if not enough data
+
+    def __str__(self):
+        return self.title
+        
 class Property(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)

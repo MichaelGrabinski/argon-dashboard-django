@@ -1,0 +1,109 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Project</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="form-group">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+        <div class="form-group">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+        </div>
+        <div class="form-group">
+            {{ form.manager.label_tag }}
+            {{ form.manager }}
+        </div>
+        <div class="form-group">
+            {{ form.team_members.label_tag }}
+            {{ form.team_members }}
+        </div>
+        <div class="form-group">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="form-group">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <div class="form-group">
+            {{ form.project_type.label_tag }}
+            {{ form.project_type }}
+        </div>
+
+        <!-- Construction Fields -->
+        <div class="conditional-fields construction-fields">
+            <div class="form-group">
+                {{ form.square_footage.label_tag }}
+                {{ form.square_footage }}
+            </div>
+            <div class="form-group">
+                {{ form.cost_per_square_foot.label_tag }}
+                {{ form.cost_per_square_foot }}
+            </div>
+        </div>
+
+        <!-- Game Fields -->
+        <div class="conditional-fields game-fields">
+            <div class="form-group">
+                {{ form.allotted_budget.label_tag }}
+                {{ form.allotted_budget }}
+            </div>
+        </div>
+
+        <!-- Other Fields -->
+        <div class="conditional-fields other-fields">
+            <div class="form-group">
+                {{ form.item_name.label_tag }}
+                {{ form.item_name }}
+            </div>
+            <div class="form-group">
+                {{ form.number_of_items.label_tag }}
+                {{ form.number_of_items }}
+            </div>
+            <div class="form-group">
+                {{ form.cost_per_item.label_tag }}
+                {{ form.cost_per_item }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Project</button>
+    </form>
+</div>
+
+<script>
+    (function() {
+        const projectTypeSelect = document.getElementById('id_project_type');
+        const constructionsFields = document.querySelector('.construction-fields');
+        const gameFields = document.querySelector('.game-fields');
+        const otherFields = document.querySelector('.other-fields');
+
+        function updateFields() {
+            const projectType = projectTypeSelect.value;
+
+            // Hide all conditional fields
+            constructionsFields.style.display = 'none';
+            gameFields.style.display = 'none';
+            otherFields.style.display = 'none';
+
+            // Show fields based on project type
+            if (projectType === 'construction') {
+                constructionsFields.style.display = 'block';
+            } else if (projectType === 'game') {
+                gameFields.style.display = 'block';
+            } else if (projectType === 'other') {
+                otherFields.style.display = 'block';
+            }
+        }
+
+        // Initial update
+        updateFields();
+
+        // Add event listener
+        projectTypeSelect.addEventListener('change', updateFields);
+    })();
+</script>
+{% endblock %}
