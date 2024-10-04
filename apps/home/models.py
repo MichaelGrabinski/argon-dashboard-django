@@ -469,7 +469,7 @@ class ProjectNote(models.Model):
         return f"Note for {self.project.title}"
 
 class ProjectAttachment(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='attachments')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_attachments')
     file = models.FileField(upload_to='project_attachments/', storage=StaticFileSystemStorage())
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)   

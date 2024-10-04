@@ -151,6 +151,7 @@
         <!-- Hub Tab Content -->
         <div class="tab-pane fade show active" id="hub" role="tabpanel">
             <h2>Welcome to the Projects Hub</h2>
+			<a href="{% url 'import_project' %}" class="btn btn-secondary">Import Project</a>
         </div>
 
         <!-- Project Tabs Content -->
@@ -181,7 +182,7 @@
                 <!-- Main Tab Content -->
                 <div class="tab-pane fade show active" id="main-{{ project_info.project.id }}" role="tabpanel" aria-labelledby="main-tab-{{ project_info.project.id }}">
                     {% include 'home/project_main.html' with project=project_info.project attachment_form=project_info.attachment_form attachments=project_info.attachments note_form=project_info.note_form notes=project_info.notes %}
-                 		<a href="{% url 'export_project' project_info.project.id %}" class="btn btn-secondary">Export Project</a><a href="{% url 'import_project' %}" class="btn btn-secondary">Import Project</a>
+                 		<a href="{% url 'export_project' project_info.project.id %}" class="btn btn-secondary">Export Project</a>
 				</div>
 				
 

@@ -902,30 +902,184 @@ def other_hub(request):
         'selected_tab': selected_tab,
     })
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.core import serializers
+import json
+
 @login_required
 def export_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
-    data = serializers.serialize('json', [project], use_natural_foreign_keys=True, use_natural_primary_keys=True)
-    response = HttpResponse(data, content_type='application/json')
+
+    # Serialize the Project instance
+    project_data = serializers.serialize(
+        'json', [project], use_natural_foreign_keys=True, use_natural_primary_keys=True
+    )
+    project_json = json.loads(project_data)[0]  # Get the first (and only) element
+
+    # Serialize Manager (if exists)
+    if project.manager:
+        manager_data = serializers.serialize(
+            'json', [project.manager], use_natural_foreign_keys=True, use_natural_primary_keys=True
+        )
+        project_json['manager'] = json.loads(manager_data)[0]
+    else:
+        project_json['manager'] = None
+
+    # Serialize Team Members
+    team_members = project.team_members.all()
+    team_members_data = serializers.serialize(
+        'json', team_members, use_natural_foreign_keys=True, use_natural_primary_keys=True
+    )
+    project_json['team_members'] = json.loads(team_members_data)
+
+    # Serialize Tasks
+    tasks = project.tasks.all()  # Use the correct related_name 'tasks'
+    tasks_data = serializers.serialize(
+        'json', tasks, use_natural_foreign_keys=True, use_natural_primary_keys=True
+    )
+    project_json['tasks'] = json.loads(tasks_data)
+
+    # Serialize Budgets
+    budgets = project.budgets.all()  # Use the correct related_name 'budgets'
+    budgets_data = serializers.serialize(
+        'json', budgets, use_natural_foreign_keys=True, use_natural_primary_keys=True
+    )
+    project_json['budgets'] = json.loads(budgets_data)
+
+    # Serialize Project Attachments
+    attachments = project.attachments.all()  # Use the correct related_name 'attachments'
+    attachments_data = serializers.serialize(
+        'json', attachments, use_natural_foreign_keys=True, use_natural_primary_keys=True
+    )
+    project_json['attachments'] = json.loads(attachments_data)
+
+    # Convert the final project data back to JSON string
+    final_data = json.dumps(project_json, indent=4)
+
+    # Return as JSON file download
+    response = HttpResponse(final_data, content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename=project_{project_id}.json'
     return response
+    
+import json
+import datetime
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .models import Project
 
-@login_required
-def import_project(request):
+def import_projects(request):
     if request.method == 'POST':
-        import_form = ImportProjectForm(request.POST, request.FILES)
-        if import_form.is_valid():
-            data = import_form.cleaned_data['file'].read().decode('utf-8')
-            for obj in serializers.deserialize('json', data):
-                obj.save()
-            messages.success(request, 'Project imported successfully.')
-            return redirect('other_hub')
-        else:
-            messages.error(request, 'Failed to import project.')
-    else:
-        import_form = ImportProjectForm()
-    return render(request, 'home/import_project.html', {'import_form': import_form})
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            messages.error(request, "No file was uploaded. Please select a JSON file to import.")
+            return render(request, 'home/import_projects.html')
 
+        try:
+            data = json.load(uploaded_file)
+
+            # Ensure data is a list
+            if isinstance(data, dict):
+                data = [data]
+            elif isinstance(data, list):
+                pass
+            else:
+                messages.error(request, "Invalid JSON structure.")
+                return render(request, 'home/import_projects.html')
+
+            for item in data:
+                # Access the 'fields' dictionary containing the project data
+                fields = item.get('fields', {})
+                if not fields:
+                    messages.error(request, "Missing 'fields' in the JSON data.")
+                    continue  # Skip this item
+
+                # Extract project fields
+                title = fields.get('title')
+                if not title:
+                    messages.error(request, "Title is missing in the project data.")
+                    continue  # Skip this item
+
+                description = fields.get('description', '')
+
+                # Manager is a list containing usernames
+                manager_usernames = fields.get('manager', [])
+                manager = None
+                if manager_usernames:
+                    manager_username = manager_usernames[0]  # Assuming the first one is the manager
+                    try:
+                        manager = User.objects.get(username=manager_username)
+                    except User.DoesNotExist:
+                        messages.warning(request, f"Manager '{manager_username}' does not exist.")
+                else:
+                    messages.warning(request, f"No manager specified for project '{title}'.")
+
+                # Parse dates
+                start_date_str = fields.get('start_date')
+                end_date_str = fields.get('end_date')
+                date_format = '%Y-%m-%d'
+
+                start_date = None
+                end_date = None
+
+                if start_date_str:
+                    try:
+                        start_date = datetime.datetime.strptime(start_date_str, date_format).date()
+                    except ValueError:
+                        messages.warning(request, f"Invalid start date '{start_date_str}' for project '{title}'.")
+
+                if end_date_str:
+                    try:
+                        end_date = datetime.datetime.strptime(end_date_str, date_format).date()
+                    except ValueError:
+                        messages.warning(request, f"Invalid end date '{end_date_str}' for project '{title}'.")
+
+                project_type = fields.get('project_type', 'other').lower()
+
+                # Parse numeric fields
+                square_footage_str = fields.get('square_footage', '0')
+                allotted_budget_str = fields.get('allotted_budget', '0.0')
+
+                square_footage = float(square_footage_str) if square_footage_str else 0
+                allotted_budget = float(allotted_budget_str) if allotted_budget_str else 0.0
+
+                # Create or update the Project instance
+                project, created = Project.objects.update_or_create(
+                    title=title,
+                    defaults={
+                        'description': description,
+                        'manager': manager,
+                        'start_date': start_date,
+                        'end_date': end_date,
+                        'project_type': project_type,
+                        'square_footage': square_footage,
+                        'allotted_budget': allotted_budget,
+                        # Add other fields if needed
+                    }
+                )
+
+                # Handle team members
+                team_members_data = fields.get('team_members', [])
+                for member_username_list in team_members_data:
+                    member_username = member_username_list[0]  # Extract username from list
+                    try:
+                        team_member = User.objects.get(username=member_username)
+                        # Assuming you have a ManyToManyField `team_members` on the Project model
+                        project.team_members.add(team_member)
+                    except User.DoesNotExist:
+                        messages.warning(request, f"Team member '{member_username}' does not exist.")
+                # Save the project to persist team member additions
+                project.save()
+
+            messages.success(request, "Projects imported successfully from JSON.")
+        except json.JSONDecodeError as e:
+            messages.error(request, f"Invalid JSON file: {e}")
+        except Exception as e:
+            messages.error(request, f"An error occurred while processing the file: {e}")
+        return render(request, 'home/import_projects.html')
+    else:
+        return render(request, 'home/import_projects.html')
     
 import logging
 
@@ -1425,21 +1579,6 @@ def import_conversation(request):
     else:
         form = ImportConversationForm()
         return render(request, 'home/import_conversation.html', {'form': form})
-        
-def export_projects(request):
-    projects = Project.objects.all()
-    data = []
-    for project in projects:
-        data.append({
-            'title': project.title,
-            'description': project.description,
-            'start_date': project.start_date.strftime('%Y-%m-%d'),
-            'end_date': project.end_date.strftime('%Y-%m-%d'),
-            # Include other fields as needed
-        })
-    response = HttpResponse(json.dumps(data), content_type='application/json')
-    response['Content-Disposition'] = 'attachment; filename="projects.json"'
-    return response
 
 def import_projects(request):
     if request.method == 'POST':
@@ -1560,16 +1699,6 @@ def project_main(request, project_id):
     }
     return render(request, 'home/project_main.html', context)
     
-from django.http import HttpResponse
-from django.core import serializers
-
-def export_project(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    data = serializers.serialize('json', [project], use_natural_foreign_keys=True, use_natural_primary_keys=True)
-    response = HttpResponse(data, content_type='application/json')
-    response['Content-Disposition'] = f'attachment; filename=project_{project_id}.json'
-    return response
-       
 from django.contrib import messages
 
 def import_project(request):
