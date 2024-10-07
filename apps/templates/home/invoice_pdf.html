@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice {{ invoice.id }}</title>
+    <style>
+        /* Style for the PDF */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            font-size: 14px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header img {
+            max-width: 200px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+        }
+        .invoice-details, .customer-details {
+            margin-bottom: 20px;
+        }
+        .line-items {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .line-items th, .line-items td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+        .totals {
+            margin-top: 20px;
+            width: 100%;
+            text-align: right;
+        }
+        .totals td {
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="{{ logo_url }}" alt="Company Logo">
+    <!-- Alternative: Replace with your company name if you don't have a logo image -->
+    <!-- <h2>Your Company Name</h2> -->
+</header>
+
+<h1>Invoice #{{ invoice.id }}</h1>
+
+<div class="invoice-details">
+    <strong>Date:</strong> {{ invoice.creation_date|date:"F j, Y" }}<br>
+    <strong>Valid Until:</strong> {{ invoice.valid_until|date:"F j, Y" }}
+</div>
+
+<div class="customer-details">
+    <strong>Customer:</strong><br>
+    {{ invoice.customer_name }}<br>
+    {{ invoice.customer_email }}
+</div>
+
+<table class="line-items">
+    <thead>
+        <tr>
+            <th>Service</th>
+            <th>Description</th>
+            <th>Quantity (sq ft)</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in line_items %}
+        <tr>
+            <td>{{ item.service.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.unit_price }}</td>
+            <td>${{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="totals">
+    <tr>
+        <td><strong>Total Amount:</strong></td>
+        <td><strong>${{ invoice.total_amount }}</strong></td>
+    </tr>
+</table>
+
+<!-- Footer with company address or any other info -->
+<footer>
+    <p>
+        Human Futures LLC<br>
+        98 Pulaski Street<br>
+        Torrington, CT 06790<br>
+        Phone: (123) 456-7890<br>
+        Email: humanfuturesco@gmail.com
+    </p>
+</footer>
+
+</body>
+</html>

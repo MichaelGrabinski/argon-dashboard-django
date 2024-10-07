@@ -476,16 +476,36 @@ class ProjectAttachment(models.Model):
         
 class Service(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    base_rate = models.DecimalField(max_digits=10, decimal_places=2)  # Base rate per unit (e.g., per sqft)
-    unit = models.CharField(max_length=50, default='sqft')  # Unit of measurement
-    materials = models.ManyToManyField(Material, blank=True)
-    labor_entries = models.ManyToManyField(LaborEntry, blank=True)
-    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name='services')
+    description = models.TextField()
+    base_rate = models.DecimalField(max_digits=10, decimal_places=2)
+    labor_cost_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
+    material_cost_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
+    minimum_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # Add fields for overhead and profit percentages if they vary by service
+    overhead_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=10)  # Default to 10%
+    profit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=15)    # Default to 15%
 
     def __str__(self):
-        return self.name        
-
+        return self.name  
+        
+    def calculate_cost(self, quantity):
+        labor_cost = self.labor_cost_per_unit * quantity
+        materials_cost = self.material_cost_per_unit * quantity
+        base_cost = labor_cost + materials_cost
+        if base_cost < self.minimum_charge:
+            base_cost = self.minimum_charge
+        overhead = base_cost * (self.overhead_percentage / 100)
+        profit = base_cost * (self.profit_percentage / 100)
+        total_cost = base_cost + overhead + profit
+        return {
+            'labor_cost': labor_cost,
+            'materials_cost': materials_cost,
+            'base_cost': base_cost,
+            'overhead': overhead,
+            'profit': profit,
+            'total_cost': total_cost
+            
+        }
 class Invoice(models.Model):
     customer_name = models.CharField(max_length=100)
     customer_email = models.EmailField(blank=True)
@@ -503,17 +523,17 @@ class Invoice(models.Model):
 class LineItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)  # e.g., area in sqft
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def save(self, *args, **kwargs):
-        self.total_price = self.unit_price * self.quantity
-        super().save(*args, **kwargs)
+    description = models.TextField()
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, help_text="Area in square feet")
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    labor_cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    materials_cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    overhead = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    profit = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def __str__(self):
-        return f"{self.service.name} ({self.quantity} {self.service.unit})"
+        return f"{self.service.name} - {self.description}"
 
         
 '''        

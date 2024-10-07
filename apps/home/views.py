@@ -10,6 +10,9 @@ from apps.home.models import Tool, Material, TaskLink, Profile, MaintenanceRecor
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm, ProjectImageForm, MaterialForm, LaborEntryForm, ProjectNoteForm,ProjectAttachmentForm
+
+from apps.home.models import *
+from .forms import *
 from django.contrib.auth.models import User
 from django import forms
 from .forms import ReferenceMaterialForm
@@ -1750,6 +1753,8 @@ def invoice_list(request):
     invoices = Invoice.objects.all()
     return render(request, 'home/invoice_list.html', {'invoices': invoices})
 
+from decimal import Decimal
+
 @login_required
 def invoice_create(request):
     LineItemFormSet = inlineformset_factory(Invoice, LineItem, form=LineItemForm, extra=1, can_delete=True)
@@ -1763,21 +1768,23 @@ def invoice_create(request):
             invoice.save()
             formset.instance = invoice
 
-            total_amount = 0
+            total_amount = Decimal('0.00')
             line_items = formset.save(commit=False)
             for item_form, line_item in zip(formset.forms, line_items):
                 service = line_item.service
-                area = item_form.cleaned_data.get('area') or line_item.quantity
-                quality = item_form.cleaned_data.get('quality')
+                quantity = line_item.quantity
 
-                # Calculate unit_price based on service and inputs
-                base_rate = service.base_rate
-                if quality == 'premium':
-                    base_rate *= 1.2  # Premium multiplier
+                # Perform calculations using the Service's method
+                cost_data = service.calculate_cost(quantity)
 
-                line_item.unit_price = base_rate
-                line_item.quantity = area
-                line_item.total_price = line_item.unit_price * line_item.quantity
+                # Update LineItem fields
+                line_item.labor_cost = cost_data['labor_cost']
+                line_item.materials_cost = cost_data['materials_cost']
+                line_item.overhead = cost_data['overhead']
+                line_item.profit = cost_data['profit']
+                line_item.total_price = cost_data['total_cost']
+                line_item.unit_price = line_item.total_price / quantity
+
                 line_item.save()
                 total_amount += line_item.total_price
 
@@ -1789,7 +1796,7 @@ def invoice_create(request):
         form = InvoiceForm()
         formset = LineItemFormSet()
     return render(request, 'home/invoice_form.html', {'form': form, 'formset': formset})
-
+    
 @login_required
 def invoice_detail(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
@@ -1827,3 +1834,77 @@ def service_edit(request, service_id):
     else:
         form = ServiceForm(instance=service)
     return render(request, 'home/service_form.html', {'form': form})
+    
+    
+from django.conf import settings
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from django.contrib.staticfiles import finders
+
+@login_required
+def invoice_pdf_view(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    line_items = invoice.lineitem_set.all()
+
+    # Get the logo image path
+    logo_path = finders.find('images/logo.png')  # Adjust the path to your logo
+    logo_url = request.build_absolute_uri(settings.STATIC_URL + 'images/logo.png') if logo_path else ''
+
+    # Render HTML content
+    html_string = render_to_string('home/invoice_pdf.html', {
+        'invoice': invoice,
+        'line_items': line_items,
+        'logo_url': logo_url,
+    })
+
+    # Generate PDF
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+
+    # Create HTTP response
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="invoice_{invoice.id}.pdf"'
+    return response
+
+from django.core.mail import EmailMessage
+from io import BytesIO
+
+@login_required
+def send_invoice_email(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    line_items = invoice.lineitem_set.all()
+
+    # Generate the PDF
+    logo_path = finders.find('images/logo.png')  # Adjust as necessary
+    logo_url = request.build_absolute_uri(settings.STATIC_URL + 'images/logo.png') if logo_path else ''
+    html_string = render_to_string('home/invoice_pdf.html', {
+        'invoice': invoice,
+        'line_items': line_items,
+        'logo_url': logo_url,
+    })
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+
+    # Write PDF to BytesIO buffer
+    pdf_file = html.write_pdf()
+    pdf_buffer = BytesIO(pdf_file)
+
+    # Create the email
+    subject = f"Invoice #{invoice.id} from Your Company"
+    message = f"Dear {invoice.customer_name},\n\nPlease find attached your invoice.\n\nBest regards,\nYour Company"
+    email = EmailMessage(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [invoice.customer_email],
+    )
+
+    # Attach the PDF
+    email.attach(f"invoice_{invoice.id}.pdf", pdf_buffer.getvalue(), 'application/pdf')
+
+    # Send the email
+    email.send(fail_silently=False)
+
+    messages.success(request, f'Invoice emailed to {invoice.customer_email}.')
+
+    return redirect('invoice_detail', invoice_id=invoice.id)

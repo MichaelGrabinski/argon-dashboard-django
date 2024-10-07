@@ -45,4 +45,6 @@ admin.site.register(LaborEntry)
 admin.site.register(ProjectNote)
 admin.site.register(ProjectAttachment)
         
-        
+admin.site.register(Invoice)
+admin.site.register(LineItem)
+admin.site.register(Service)

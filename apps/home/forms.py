@@ -1,10 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User 
-from .models import (
-    Tool, Tag, Task, Comment, Attachment, Unit, Material,
-    LaborEntry, ProjectNote, ProjectAttachment, ReferenceMaterial,
-    Project, ProjectImage
-)
+from .models import *
+
 
 class ToolSearchForm(forms.Form):
     search = forms.CharField(required=False, label='Search')
@@ -168,9 +165,16 @@ class InvoiceForm(forms.ModelForm):
         fields = ['customer_name', 'customer_email', 'customer_address', 'valid_until', 'notes']
 
 class LineItemForm(forms.ModelForm):
-    area = forms.DecimalField(max_digits=10, decimal_places=2, required=False, label='Area (sqft)')
-    quality = forms.ChoiceField(choices=[('standard', 'Standard'), ('premium', 'Premium')], required=False)
+    class Meta:
+        model = LineItem
+        fields = ['service', 'description', 'quantity']
 
+    def clean_quantity(self):
+        quantity = self.cleaned_data.get('quantity')
+        if quantity <= 0:
+            raise forms.ValidationError("Quantity must be greater than zero.")
+        return quantity
+        
     class Meta:
         model = LineItem
         fields = ['service', 'description', 'quantity']
@@ -178,8 +182,16 @@ class LineItemForm(forms.ModelForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['name', 'description', 'base_rate', 'unit', 'materials', 'labor_entries', 'project']
-
+        fields = [
+            'name',
+            'description',
+            'base_rate',
+            'labor_cost_per_unit',
+            'material_cost_per_unit',
+            'minimum_charge',
+            'overhead_percentage',
+            'profit_percentage',
+        ]
 class MaterialForm(forms.ModelForm):
     class Meta:
         model = Material

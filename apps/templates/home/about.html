@@ -58,40 +58,62 @@
             <span class=""> </span>
           </button>
 
-     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-  <ul class="navbar-nav">
-    <li class="nav-item active">
-      <a class="nav-link {% if 'public_home' in segment %} active {% endif %}" href="/public_home/">
-        <i class="ni ni-ruler-pencil text-orange"></i>
-        <span class="nav-link-text">Home</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link {% if 'about' in segment %} active {% endif %}" href="/about/">
-        <i class="ni ni-ruler-pencil text-orange"></i>
-        <span class="nav-link-text">About</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link {% if 'services' in segment %} active {% endif %}" href="/service/">
-        <i class="ni ni-ruler-pencil text-orange"></i>
-        <span class="nav-link-text">Services</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a href="https://humanfutures.atlassian.net/">
-        <i class="ni ni-ruler-pencil text-orange"></i>
-        <span class="nav-link-text">Jira</span>
-      </a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link {% if 'home' in segment %} active {% endif %}" href="/home/">
-        <i class="ni ni-ruler-pencil text-orange"></i>
-        <span class="nav-link-text">Employee Login</span>
-      </a>
-    </li>
-  </ul>
-</div>
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav">
+        <li class="nav-item active">
+            <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'public_about' %}">About</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'public_services' %}">Services</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="https://humanfutures.atlassian.net/">Jira</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'original_home' %}">Employee Login</a> <!-- Assuming 'why.html' is handled by the 'pages' view -->
+        </li>
+ 
+<!--
+
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav  ">
+              <li class="nav-item active">
+                <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
+              </li>
+			  
+			  
+              <li class="nav-item">
+                <a class="nav-link" href="about.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="service.html">Services</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="https://humanfutures.atlassian.net/">Jira</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="why.html">Employee Login</a>
+              </li>
+              <!--
+              <li class="nav-item">
+                <a class="nav-link" href="#"> <i class="fa fa-user" aria-hidden="true"></i> Login</a>
+              </li>
+              <form class="form-inline">
+                <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+              </form>
+              -->
+            </ul>
+          </div>
+		  
+		  -->
+        </nav>
+      </div>
         </nav>
       </div>
     </header>

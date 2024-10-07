@@ -1,0 +1,45 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Invoice Detail</h1>
+    <p><strong>Customer:</strong> {{ invoice.customer_name }}</p>
+    <p><strong>Creation Date:</strong> {{ invoice.creation_date }}</p>
+    <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
+
+    <!-- Add Download PDF button -->
+    <a href="{% url 'invoice_pdf' invoice.id %}" class="btn btn-primary">Download PDF</a>
+    <!-- Add Send Email button -->
+    <a href="{% url 'send_invoice_email' invoice.id %}" class="btn btn-secondary">Send via Email</a>
+
+
+    <h2>Line Items</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Description</th>
+                <th>Quantity (sq ft)</th>
+                <th>Labor Cost</th>
+                <th>Materials Cost</th>
+                <th>Overhead</th>
+                <th>Profit</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in line_items %}
+            <tr>
+                <td>{{ item.service.name }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.labor_cost }}</td>
+                <td>${{ item.materials_cost }}</td>
+                <td>${{ item.overhead }}</td>
+                <td>${{ item.profit }}</td>
+                <td>${{ item.total_price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

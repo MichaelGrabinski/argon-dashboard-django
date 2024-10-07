@@ -78,6 +78,8 @@ urlpatterns = [
     path('services/', views.service_list, name='service_list'),
     path('services/create/', views.service_create, name='service_create'),
     path('services/<int:service_id>/edit/', views.service_edit, name='service_edit'),
+    path('invoices/<int:invoice_id>/pdf/', views.invoice_pdf_view, name='invoice_pdf'),
+    path('send-invoice-email/<int:invoice_id>/', views.send_invoice_email, name='send_invoice_email'),
     
     re_path(r'^.*\.*', views.pages, name='pages'),
     

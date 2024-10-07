@@ -16,10 +16,10 @@
                 {{ formset.management_form }}
                 {% for form in formset.forms %}
                     <div class="row line-item-form" id="line-item-form-{{ forloop.counter0 }}">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             {{ form.service.label_tag }} {{ form.service }}
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             {{ form.description.label_tag }} {{ form.description }}
                         </div>
                         <div class="col-md-2">
@@ -32,43 +32,62 @@
                     <hr>
                 {% endfor %}
             </div>
-            <a href="#" class="btn btn-secondary" id="add-item">Add another item</a>
+            <button type="button" class="btn btn-secondary" id="add-item">Add another item</button>
         </div>
         <button type="submit" class="btn btn-success">Create Invoice</button>
     </form>
 </div>
+
+<!-- Empty form template for JavaScript dynamic form addition -->
+<div id="empty-form" style="display: none;">
+    <div class="row line-item-form" id="line-item-form-__prefix__">
+        <div class="col-md-3">
+            {{ formset.empty_form.service.label_tag }} {{ formset.empty_form.service }}
+        </div>
+        <div class="col-md-3">
+            {{ formset.empty_form.description.label_tag }} {{ formset.empty_form.description }}
+        </div>
+        <div class="col-md-2">
+            {{ formset.empty_form.quantity.label_tag }} {{ formset.empty_form.quantity }}
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-danger remove-line-item">Remove</button>
+        </div>
+    </div>
+    <hr>
+</div>
 {% endblock %}
 
- {% block javascripts %}
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let addItemButton = document.getElementById('add-item');
-        let totalForms = document.getElementById('id_form-TOTAL_FORMS');
-        let lineItemsContainer = document.getElementById('line-items');
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let addItemButton = document.getElementById('add-item');
+    let totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    let lineItemsContainer = document.getElementById('line-items');
+    let emptyFormTemplate = document.getElementById('empty-form').innerHTML.replace(/__prefix__/g, '{{ formset.total_form_count }}');
 
-        addItemButton.addEventListener('click', function(e) {
+    addItemButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        let currentFormCount = parseInt(totalForms.value);
+        let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+        lineItemsContainer.insertAdjacentHTML('beforeend', newFormHtml);
+        totalForms.value = currentFormCount + 1;
+    });
+
+    // Event delegation for removing line items
+    lineItemsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-line-item')) {
             e.preventDefault();
-            let currentFormCount = parseInt(totalForms.value);
-            let emptyFormTemplate = document.getElementById('empty-form').innerHTML;
-            let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
-            lineItemsContainer.insertAdjacentHTML('beforeend', newFormHtml);
-            totalForms.value = currentFormCount + 1;
-        });
-
-        // Event delegation for removing line items
-        lineItemsContainer.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-line-item')) {
-                e.preventDefault();
-                let formRow = e.target.closest('.line-item-form');
-                formRow.remove();
-                updateTotalForms();
-            }
-        });
-
-        function updateTotalForms() {
-            let formCount = lineItemsContainer.querySelectorAll('.line-item-form').length;
-            totalForms.value = formCount;
+            let formRow = e.target.closest('.line-item-form');
+            formRow.remove();
+            updateTotalForms();
         }
     });
-    </script>
+
+    function updateTotalForms() {
+        let formCount = lineItemsContainer.querySelectorAll('.line-item-form').length;
+        totalForms.value = formCount;
+    }
+});
+</script>
 {% endblock %}
