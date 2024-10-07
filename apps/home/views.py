@@ -1735,3 +1735,95 @@ def edit_project(request, project_id):
     else:
         form = ProjectForm(instance=project)
     return render(request, 'project_form.html', {'form': form})
+    
+    
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Invoice, LineItem, Service, Material, LaborEntry
+from .forms import InvoiceForm, LineItemForm, ServiceForm, MaterialForm, LaborEntryForm
+from django.forms import inlineformset_factory
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+
+@login_required
+def invoice_list(request):
+    invoices = Invoice.objects.all()
+    return render(request, 'home/invoice_list.html', {'invoices': invoices})
+
+@login_required
+def invoice_create(request):
+    LineItemFormSet = inlineformset_factory(Invoice, LineItem, form=LineItemForm, extra=1, can_delete=True)
+    if request.method == 'POST':
+        form = InvoiceForm(request.POST)
+        formset = LineItemFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            invoice = form.save(commit=False)
+            invoice.created_by = request.user
+            invoice.creation_date = timezone.now()
+            invoice.save()
+            formset.instance = invoice
+
+            total_amount = 0
+            line_items = formset.save(commit=False)
+            for item_form, line_item in zip(formset.forms, line_items):
+                service = line_item.service
+                area = item_form.cleaned_data.get('area') or line_item.quantity
+                quality = item_form.cleaned_data.get('quality')
+
+                # Calculate unit_price based on service and inputs
+                base_rate = service.base_rate
+                if quality == 'premium':
+                    base_rate *= 1.2  # Premium multiplier
+
+                line_item.unit_price = base_rate
+                line_item.quantity = area
+                line_item.total_price = line_item.unit_price * line_item.quantity
+                line_item.save()
+                total_amount += line_item.total_price
+
+            invoice.total_amount = total_amount
+            invoice.save()
+            messages.success(request, 'Invoice created successfully.')
+            return redirect('invoice_detail', invoice_id=invoice.id)
+    else:
+        form = InvoiceForm()
+        formset = LineItemFormSet()
+    return render(request, 'home/invoice_form.html', {'form': form, 'formset': formset})
+
+@login_required
+def invoice_detail(request, invoice_id):
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    line_items = invoice.lineitem_set.all()
+    return render(request, 'home/invoice_detail.html', {'invoice': invoice, 'line_items': line_items})
+
+# ... existing views ...
+
+@login_required
+def service_list(request):
+    services = Service.objects.all()
+    return render(request, 'home/service_list.html', {'services': services})
+
+@login_required
+def service_create(request):
+    if request.method == 'POST':
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Service added successfully.')
+            return redirect('service_list')
+    else:
+        form = ServiceForm()
+    return render(request, 'home/service_form.html', {'form': form})
+
+@login_required
+def service_edit(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    if request.method == 'POST':
+        form = ServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Service updated successfully.')
+            return redirect('service_list')
+    else:
+        form = ServiceForm(instance=service)
+    return render(request, 'home/service_form.html', {'form': form})

@@ -72,6 +72,13 @@ urlpatterns = [
     path('conversation/<int:conversation_id>/export/', views.export_conversation, name='export_conversation'),
     path('conversation/import/', views.import_conversation, name='import_conversation'),
     
+    path('invoices/', views.invoice_list, name='invoice_list'),
+    path('invoices/create/', views.invoice_create, name='invoice_create'),
+    path('invoices/<int:invoice_id>/', views.invoice_detail, name='invoice_detail'),
+    path('services/', views.service_list, name='service_list'),
+    path('services/create/', views.service_create, name='service_create'),
+    path('services/<int:service_id>/edit/', views.service_edit, name='service_edit'),
+    
     re_path(r'^.*\.*', views.pages, name='pages'),
     
 ]

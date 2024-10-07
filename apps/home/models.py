@@ -474,7 +474,47 @@ class ProjectAttachment(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)   
         
-        
+class Service(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    base_rate = models.DecimalField(max_digits=10, decimal_places=2)  # Base rate per unit (e.g., per sqft)
+    unit = models.CharField(max_length=50, default='sqft')  # Unit of measurement
+    materials = models.ManyToManyField(Material, blank=True)
+    labor_entries = models.ManyToManyField(LaborEntry, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name='services')
+
+    def __str__(self):
+        return self.name        
+
+class Invoice(models.Model):
+    customer_name = models.CharField(max_length=100)
+    customer_email = models.EmailField(blank=True)
+    customer_address = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    creation_date = models.DateField(auto_now_add=True)
+    valid_until = models.DateField(default=timezone.now() + timezone.timedelta(days=60))
+    services = models.ManyToManyField(Service, through='LineItem')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Invoice {self.id} for {self.customer_name}"
+
+class LineItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)  # e.g., area in sqft
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.unit_price * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.service.name} ({self.quantity} {self.service.unit})"
+
         
 '''        
 @receiver(post_save, sender=User)

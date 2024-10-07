@@ -1,0 +1,37 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Invoices</h1>
+    <a href="{% url 'invoice_create' %}" class="btn btn-primary mb-3">Create New Invoice</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Invoice ID</th>
+                <th>Customer</th>
+                <th>Creation Date</th>
+                <th>Valid Until</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.customer_name }}</td>
+                <td>{{ invoice.creation_date }}</td>
+                <td>{{ invoice.valid_until }}</td>
+                <td>${{ invoice.total_amount }}</td>
+                <td>
+                    <a href="{% url 'invoice_detail' invoice.id %}" class="btn btn-info btn-sm">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No invoices found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -158,3 +158,34 @@ class ProjectForm(forms.ModelForm):
             cost_per_item = cleaned_data.get('cost_per_item')
             if not all([item_name, number_of_items, cost_per_item]):
                 raise forms.ValidationError('Please provide item details and costs for other projects.')
+
+from django import forms
+from .models import Invoice, LineItem, Service, Material, LaborEntry
+
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ['customer_name', 'customer_email', 'customer_address', 'valid_until', 'notes']
+
+class LineItemForm(forms.ModelForm):
+    area = forms.DecimalField(max_digits=10, decimal_places=2, required=False, label='Area (sqft)')
+    quality = forms.ChoiceField(choices=[('standard', 'Standard'), ('premium', 'Premium')], required=False)
+
+    class Meta:
+        model = LineItem
+        fields = ['service', 'description', 'quantity']
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['name', 'description', 'base_rate', 'unit', 'materials', 'labor_entries', 'project']
+
+class MaterialForm(forms.ModelForm):
+    class Meta:
+        model = Material
+        fields = ['project', 'category', 'description', 'unit_cost', 'quantity']
+
+class LaborEntryForm(forms.ModelForm):
+    class Meta:
+        model = LaborEntry
+        fields = ['project', 'user', 'hours_worked', 'pay_rate', 'date']
