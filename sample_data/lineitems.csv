@@ -1,0 +1,6 @@
+invoice_id,service_name,description,quantity,unit_price,labor_cost,materials_cost,overhead,profit,total_price
+1,Floor Installation,"Install hardwood flooring in living room",200.00,100.00,10000.00,4000.00,1680.00,2016.00,17776.00
+1,Wall Painting,"Paint walls in kitchen",150.00,50.00,4500.00,1500.00,600.00,720.00,7320.00
+2,Roof Repair,"Repair leak in main roof",1.00,150.00,80.00,40.00,18.00,24.00,262.00
+3,Plumbing Fix,"Fix leaking sink in bathroom",1.00,80.00,45.00,25.00,7.00,10.50,167.50
+3,Electrical Wiring,"Rewire kitchen lighting",1.00,120.00,70.00,30.00,12.00,18.00,250.00

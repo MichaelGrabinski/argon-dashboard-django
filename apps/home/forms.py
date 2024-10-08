@@ -201,3 +201,15 @@ class LaborEntryForm(forms.ModelForm):
     class Meta:
         model = LaborEntry
         fields = ['project', 'user', 'hours_worked', 'pay_rate', 'date']
+        
+        
+from django import forms
+from .models import Unit, Panorama
+from django.forms import inlineformset_factory
+
+class UnitForm(forms.ModelForm):
+    class Meta:
+        model = Unit
+        fields = '__all__'
+
+PanoramaFormSet = inlineformset_factory(Unit, Panorama, fields=('image', 'name', 'description', 'initial_view_parameters'), extra=1, can_delete=True)

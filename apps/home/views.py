@@ -263,10 +263,10 @@ def unit_detail(request, property_pk, unit_pk):
     maintenance_records = MaintenanceRecord.objects.filter(location=unit.unit_number)
     open_repairs = unit.open_repairs.all()
     rent_payments = unit.rent_payments.all()
-    open_tickets = Task.objects.filter(location=unit.location, status='open')  # Update this line
-
-    # Debugging
-    print(documents)
+    open_tickets = Task.objects.filter(location=unit.location, status='open')
+    
+    # Define 'panoramas' variable
+    panoramas = unit.panoramas.prefetch_related('hotspots__target_panorama')
 
     context = {
         'property': property,
@@ -276,9 +276,10 @@ def unit_detail(request, property_pk, unit_pk):
         'open_repairs': open_repairs,
         'rent_payments': rent_payments,
         'open_tickets': open_tickets,
+        'panoramas': panoramas,
     }
     return render(request, 'home/unit_detail.html', context)
-
+    
 @login_required(login_url="/login/")
 def task_list(request):
     query = request.GET.get('search', '')
@@ -741,6 +742,7 @@ from decimal import Decimal
 
 @login_required
 def other_hub(request):
+    # Set default project_type to 'construction'
     project_type = request.GET.get('project_type', 'construction')
     projects = Project.objects.filter(project_type=project_type)
 
@@ -750,13 +752,10 @@ def other_hub(request):
 
     if request.method == 'POST':
         project_id = request.POST.get('project_id')
-        print(f"Received project_id: {project_id}")  # Debugging: print project_id
-
         if project_id:
             try:
                 project = get_object_or_404(Project, id=project_id)
             except ObjectDoesNotExist:
-                print(f"Project with id {project_id} not found")  # Debugging: print error message
                 return render(request, 'home/OtherProjects.html', {'error': 'Project not found', 'projects': projects})
 
             if 'document' in request.FILES:
@@ -859,7 +858,8 @@ def other_hub(request):
         completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
 
         notes = project.project_notes.all()
-        attachments = project.attachments.all()
+        # Access attachments using the corrected related_name
+        attachments = project.project_attachments.all()
         note_form = ProjectNoteForm()
         attachment_form = ProjectAttachmentForm()
 
@@ -872,7 +872,6 @@ def other_hub(request):
         total_cost = total_material_cost + total_labor_cost
         cost_per_sqft = (total_cost / Decimal(project.square_footage)) if project.square_footage else Decimal('0')
         total_labor_hours = sum(Decimal(entry.hours_worked or 0) for entry in labor_entries)
-        print(f"Total labor hours for project {project.id}: {total_labor_hours}")  # Debugging
 
         project_data.append({
             'project': project,

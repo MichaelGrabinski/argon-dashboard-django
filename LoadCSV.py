@@ -1,5 +1,6 @@
 import os
 import django
+from apps.home.models import Service, Invoice, LineItem  # Add Service, Invoice, and LineItem imports
 
 # Set the environment variable to point to your Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
@@ -192,6 +193,25 @@ def get_property(name):
     except Property.MultipleObjectsReturned:
         print(f"Multiple properties found with the name {name}. Returning the first one.")
         return properties.first()
+        
+def get_service(name):
+    try:
+        return Service.objects.get(name=name)
+    except Service.DoesNotExist:
+        print(f"Service {name} does not exist.")
+        return None
+
+def get_invoice(invoice_id):
+    try:
+        invoice_id = int(invoice_id)
+        return Invoice.objects.get(id=invoice_id)
+    except Invoice.DoesNotExist:
+        print(f"Invoice with id {invoice_id} does not exist.")
+        return None
+    except ValueError:
+        print(f"Invalid invoice id: {invoice_id}")
+        return None
+        
 def get_project(title):
     try:
         return Project.objects.get(title=title)
@@ -250,7 +270,7 @@ def get_phase(name, project_title):
         print(f"Multiple phases found with the name {name} for project {project_title}. Returning the first one.")
         return ProjectPhase.objects.filter(name=name, project=project).first()
 
-def load_csv(file_path, model, fields, related_fields={}):
+def load_csv(file_path, model, fields, related_fields={}, field_parsers={}, lookup_fields=None):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -258,19 +278,31 @@ def load_csv(file_path, model, fields, related_fields={}):
             for key in row:
                 if isinstance(row[key], str):
                     row[key] = row[key].replace('\\n', '\n')
-            
+
             # Only include specified fields in the data
             data = {field: row[field] if row[field] != '' else None for field in fields if field in row}
-            for related_field, related_func in related_fields.items():
-                if related_field in row:
+
+            # Process fields that need parsing
+            for field, parser in field_parsers.items():
+                if field in data and data[field] is not None:
+                    data[field] = parser(data[field])
+
+            # Process related fields
+            for field_name, field_info in related_fields.items():
+                if isinstance(field_info, tuple):
+                    csv_column_name, related_func = field_info
+                else:
+                    csv_column_name, related_func = field_name, field_info
+
+                if csv_column_name in row:
                     if callable(related_func):
                         try:
-                            data[related_field] = related_func(row[related_field], row)  # Call related_func with two arguments
+                            data[field_name] = related_func(row[csv_column_name], row)
                         except TypeError:
-                            data[related_field] = related_func(row[related_field])
+                            data[field_name] = related_func(row[csv_column_name])
                     else:
-                        data[related_field] = related_func[row[related_field]]
-                    if data[related_field] is None:
+                        data[field_name] = related_func[row[csv_column_name]]
+                    if data[field_name] is None:
                         print(f"Skipping row due to missing related data: {row}")
                         break
             else:
@@ -278,22 +310,75 @@ def load_csv(file_path, model, fields, related_fields={}):
                 print(f"Processing data for {model.__name__}: {data}")
 
                 # Ensure no unexpected fields are included
-                data = {key: value for key, value in data.items() if key in fields or key in related_fields}
+                all_fields = fields + list(related_fields.keys())
+                data = {key: value for key, value in data.items() if key in all_fields}
 
                 # Provide default values for required fields if they are missing
                 if 'owner_name' in data and data['owner_name'] is None:
                     data['owner_name'] = 'Unknown Owner'
-                
-                # Convert is_critical field to boolean if it exists
-                if 'is_critical' in data:
-                    data['is_critical'] = data['is_critical'].lower() in ('true', '1', 't')
-                
-                obj, created = model.objects.update_or_create(**data)
+
+                # Use lookup fields if provided
+                if lookup_fields:
+                    lookup_data = {key: data[key] for key in lookup_fields}
+                    defaults = {key: value for key, value in data.items() if key not in lookup_fields}
+                    obj, created = model.objects.update_or_create(defaults=defaults, **lookup_data)
+                else:
+                    obj, created = model.objects.update_or_create(**data)
                 if created:
                     print(f"Created {model.__name__}: {obj}")
                 else:
                     print(f"Updated {model.__name__}: {obj}")
 
+def load_services():
+    fields = ['name', 'description', 'base_rate', 'labor_cost_per_unit', 'material_cost_per_unit',
+              'minimum_charge', 'overhead_percentage', 'profit_percentage']
+    field_parsers = {
+        'base_rate': parse_decimal,
+        'labor_cost_per_unit': parse_decimal,
+        'material_cost_per_unit': parse_decimal,
+        'minimum_charge': parse_decimal,
+        'overhead_percentage': parse_decimal,
+        'profit_percentage': parse_decimal,
+    }
+    lookup_fields = ['name']
+    file_path = 'sample_data/services.csv'
+    load_csv(file_path, Service, fields, field_parsers=field_parsers, lookup_fields=lookup_fields)
+
+def load_invoices():
+    fields = ['id', 'customer_name', 'customer_email', 'customer_address', 'creation_date', 'valid_until',
+              'total_amount', 'notes']
+    related_fields = {
+        'created_by': ('created_by_username', get_user),
+    }
+    field_parsers = {
+        'id': int,  # Parse 'id' to int
+        'creation_date': parse_date,
+        'valid_until': parse_date,
+        'total_amount': parse_decimal,
+    }
+    lookup_fields = ['id']
+    file_path = 'sample_data/invoices.csv'
+    load_csv(file_path, Invoice, fields, related_fields, field_parsers, lookup_fields)
+
+def load_lineitems():
+    fields = ['description', 'quantity', 'unit_price', 'labor_cost', 'materials_cost', 'overhead',
+              'profit', 'total_price']
+    related_fields = {
+        'invoice': ('invoice_id', get_invoice),
+        'service': ('service_name', get_service),
+    }
+    field_parsers = {
+        'quantity': parse_decimal,
+        'unit_price': parse_decimal,
+        'labor_cost': parse_decimal,
+        'materials_cost': parse_decimal,
+        'overhead': parse_decimal,
+        'profit': parse_decimal,
+        'total_price': parse_decimal,
+    }
+    lookup_fields = ['invoice', 'description']
+    file_path = 'sample_data/lineitems.csv'
+    load_csv(file_path, LineItem, fields, related_fields, field_parsers, lookup_fields)
 
 def load_tasks():
     fields = ['title', 'description', 'status', 'due_date', 'priority', 'category', 'hours', 'created_at', 'updated_at']
@@ -521,6 +606,9 @@ def load_project_phases():
     load_csv(file_path, ProjectPhase, fields, related_fields)
 
 # Call the functions to load data from CSV files
+load_services()
+load_invoices()
+load_lineitems()
 load_projects()
 load_project_phases()
 load_tasks()

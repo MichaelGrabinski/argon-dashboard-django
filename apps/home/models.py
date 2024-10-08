@@ -117,10 +117,11 @@ class Unit(models.Model):
     image_or_video = models.FileField(upload_to='unit_media/', storage=StaticFileSystemStorage(), null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
-
+    tour_image = models.ImageField(upload_to='tour_images/', storage=StaticFileSystemStorage() , null=True, blank=True)
+    
     def __str__(self):
         return f"Unit {self.unit_number} - {self.property}"
-
+        
 class Document(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='documents')
     file = models.FileField(upload_to='unit_documents/', storage=StaticFileSystemStorage())
@@ -534,8 +535,26 @@ class LineItem(models.Model):
 
     def __str__(self):
         return f"{self.service.name} - {self.description}"
-
         
+class Panorama(models.Model):
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='panoramas')
+    image = models.ImageField(upload_to='tour_images/')
+    name = models.CharField(max_length=100, help_text="Name of the panorama (e.g., 'Living Room')")
+    description = models.TextField(blank=True, null=True)
+    initial_view_parameters = models.JSONField(blank=True, null=True, help_text="JSON configuration for initial pitch and yaw")
+    
+    def __str__(self):
+        return f"{self.name} - {self.unit}"
+
+class Hotspot(models.Model):
+    panorama = models.ForeignKey(Panorama, on_delete=models.CASCADE, related_name='hotspots')
+    target_panorama = models.ForeignKey(Panorama, on_delete=models.CASCADE, related_name='incoming_hotspots')
+    pitch = models.FloatField(help_text="Vertical angle in degrees")
+    yaw = models.FloatField(help_text="Horizontal angle in degrees")
+    text = models.CharField(max_length=100, help_text="Text to display on hover")
+
+    def __str__(self):
+        return f"Hotspot from {self.panorama.name} to {self.target_panorama.name}"
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -546,3 +565,4 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
     '''
+    

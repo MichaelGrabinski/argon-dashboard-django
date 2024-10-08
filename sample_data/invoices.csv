@@ -1,0 +1,4 @@
+id,customer_name,customer_email,customer_address,creation_date,valid_until,total_amount,notes,created_by_username
+1,John Doe,john.doe@example.com,"123 Maple Street\nAnytown, USA",2023-10-01,2023-12-01,0.00,"","johndoe"
+2,Jane Smith,jane.smith@example.com,"456 Oak Avenue\nAnytown, USA",2023-10-05,2023-12-05,0.00,"Please complete by end of month","janedoe"
+3,Bob Johnson,bob.johnson@example.com,"789 Pine Road\nAnytown, USA",2023-10-10,2023-12-10,0.00,"Urgent repair needed","emilyj"

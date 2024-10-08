@@ -2,13 +2,43 @@ from django.contrib import admin
 from .models import Tool
 from apps.home.models import *
 
+from django.contrib import admin
+from .models import Unit, Panorama
+
+class PanoramaInline(admin.TabularInline):
+    model = Panorama
+    extra = 1  # Number of extra forms to display
+
+class UnitAdmin(admin.ModelAdmin):
+    list_display = ('unit_number', 'property', 'tenant_name')
+    inlines = [PanoramaInline]
+    fields = (
+        'unit_number', 'property', 'tenant_name', 'rent_amount',
+        'lease_agreement', 'image_or_video', 'notes', 'location'
+    )
+
+admin.site.register(Unit, UnitAdmin)
+
+from django.contrib import admin
+from .models import Unit, Panorama, Hotspot
+
+class HotspotInline(admin.TabularInline):
+    model = Hotspot
+    fk_name = 'panorama'
+    extra = 1
+
+class PanoramaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'unit')
+    inlines = [HotspotInline]
+
+admin.site.register(Panorama, PanoramaAdmin)
+  
 # Register your models here.
 admin.site.register(Task)
 admin.site.register(Tool)
 admin.site.register(MaintenanceRecord)
 admin.site.register(Tag)
 admin.site.register(Property)
-admin.site.register(Unit)
 admin.site.register(OpenRepair)
 admin.site.register(RentPayment)
 admin.site.register(Vehicle)

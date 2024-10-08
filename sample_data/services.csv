@@ -1,0 +1,6 @@
+name,description,base_rate,labor_cost_per_unit,material_cost_per_unit,minimum_charge,overhead_percentage,profit_percentage
+Floor Installation,"Professional installation of hardwood floors",100.00,50.00,20.00,200.00,12.00,18.00
+Wall Painting,"Interior wall painting services",50.00,30.00,10.00,150.00,10.00,15.00
+Roof Repair,"Repair services for damaged roofs",150.00,80.00,40.00,300.00,15.00,20.00
+Plumbing Fix,"General plumbing repair services",80.00,45.00,25.00,100.00,10.00,15.00
+Electrical Wiring,"Installation and repair of electrical wiring",120.00,70.00,30.00,180.00,12.00,17.00

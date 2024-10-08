@@ -1,9 +1,10 @@
 {% extends 'layouts/base.html' %}
-{% load custom_filters %} <!-- Load the custom filters -->
+{% load custom_filters %}
 {% load static %}
-{% block title %} Unit Detail {% endblock title %}
+{% block title %}Unit Detail{% endblock title %}
 
 {% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/pannellum/build/pannellum.css">
 <style>
     .status-open { border-left: 5px solid #007bff; } /* Blue */
     .status-closed { border-left: 5px solid #6c757d; } /* Gray */
@@ -17,15 +18,27 @@
     .section-content { margin-bottom: 30px; }
     .list-group-item { margin-bottom: 10px; }
     .media-container img, .media-container video { max-width: 100%; height: auto; }
+    .panorama {
+        width: 100%;
+        height: 500px;
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock stylesheets %}
 
 {% block content %}
 <div class="container">
     <h1>{{ property.name }} - Unit {{ unit.unit_number }}</h1>
-    
+
     <div class="row">
         <div class="col-md-8">
+            <!-- Display the 360-Degree Virtual Tour if panoramas are available -->
+            {% if panoramas %}
+                <div id="panorama" class="panorama"></div>
+            {% else %}
+                <p>No virtual tour available for this unit.</p>
+            {% endif %}
+
             <div class="section-content">
                 <h2 class="section-title">General Info</h2>
                 <p><strong>Tenant:</strong> {{ unit.tenant_name }}</p>
@@ -36,13 +49,12 @@
             <div class="section-content">
                 <h2 class="section-title">Documents</h2>
                 <ul>
-				
-				
-				
                     {% for document in documents %}
                         <li>
                             <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
                         </li>
+                    {% empty %}
+                        <li>No documents available.</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -54,42 +66,20 @@
                         <a href="{% url 'task_detail' task.pk %}" class="list-group-item list-group-item-action status-{{ task.status }} priority-{{ task.priority }}">
                             <h5 class="mb-1">{{ task.title }}</h5>
                             <p class="mb-1">{{ task.description|truncatewords:20 }}</p>
-                            <small>Status: {{ task.get_status_display }} | Priority: {{ task.get_priority_display }} | Location: {{ task.location.name }}</small>
+                            <small>
+                                Status: {{ task.get_status_display }} |
+                                Priority: {{ task.get_priority_display }} |
+                                Location: {{ task.location.name }}
+                            </small>
                         </a>
+                    {% empty %}
+                        <p>No open tickets for this unit.</p>
                     {% endfor %}
                 </div>
             </div>
-<!--
-            <div class="section-content">
-                <h2 class="section-title">Maintenance Records</h2>
-                <ul>
-                    {% for record in maintenance_records %}
-                        <li>{{ record.date }}: {{ record.description }} (Performed by: {{ record.performed_by }})</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="section-content">
-         
-         <h2 class="section-title">Open Repairs</h2>
-                <ul>
-                    {% for repair in open_repairs %}
-                        <li>{{ repair.reported_date }}: {{ repair.description }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="section-content">
-                <h2 class="section-title">Rent Payments</h2>
-                <ul>
-                    {% for payment in rent_payments %}
-                        <li>{{ payment.date }}: ${{ payment.amount }} ({{ payment.get_status_display }})</li>
-                    {% endfor %}
-                </ul>
-            </div>
-			
-			-->
         </div>
         <div class="col-md-4">
+            <!-- Existing Media Display -->
             {% if unit.image_or_video %}
                 <div class="media-container">
                     {% if unit.image_or_video.url|endswith:".mp4" %}
@@ -106,3 +96,49 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block javascripts %}
+<script type="text/javascript" src="https://unpkg.com/pannellum/build/pannellum.js"></script>
+{% if panoramas %}
+<script>
+    var panoData = {
+        "default": {
+            "firstScene": "{{ panoramas.first.id }}",
+            "sceneFadeDuration": 1000,
+            "author": "Your Company"
+        },
+        "scenes": {
+            {% for panorama in panoramas %}
+            "{{ panorama.id }}": {
+                "title": "{{ panorama.name }}",
+                "type": "equirectangular",
+                "panorama": "{{ panorama.image.url }}",
+                {% if panorama.initial_view_parameters %}
+                "pitch": {{ panorama.initial_view_parameters.pitch|default:0 }},
+                "yaw": {{ panorama.initial_view_parameters.yaw|default:0 }},
+                {% else %}
+                "pitch": 0,
+                "yaw": 0,
+                {% endif %}
+                {% if panorama.hotspots.exists %}
+                "hotSpots": [
+                    {% for hotspot in panorama.hotspots.all %}
+                    {
+                        "pitch": {{ hotspot.pitch }},
+                        "yaw": {{ hotspot.yaw }},
+                        "type": "scene",
+                        "text": "{{ hotspot.text }}",
+                        "sceneId": "{{ hotspot.target_panorama.id }}"
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+                {% endif %}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        }
+    };
+
+    pannellum.viewer('panorama', panoData);
+</script>
+{% endif %}
+{% endblock javascripts %}
