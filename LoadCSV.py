@@ -1,12 +1,13 @@
-import os
-import django
-from apps.home.models import Service, Invoice, LineItem  # Add Service, Invoice, and LineItem imports
 
 # Set the environment variable to point to your Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
 # Initialize Django
 django.setup()
+
+import os
+import django
+from apps.home.models import Service, Invoice, LineItem  # Add Service, Invoice, and LineItem imports
 
 import csv
 import datetime
