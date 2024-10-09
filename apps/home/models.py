@@ -538,7 +538,7 @@ class LineItem(models.Model):
         
 class Panorama(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='panoramas')
-    image = models.ImageField(upload_to='tour_images/')
+    image = models.ImageField(upload_to='tour_images/', storage=StaticFileSystemStorage())
     name = models.CharField(max_length=100, help_text="Name of the panorama (e.g., 'Living Room')")
     description = models.TextField(blank=True, null=True)
     initial_view_parameters = models.JSONField(blank=True, null=True, help_text="JSON configuration for initial pitch and yaw")

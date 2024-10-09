@@ -110,12 +110,12 @@
         "scenes": {
             {% for panorama in panoramas %}
             "{{ panorama.id }}": {
-                "title": "{{ panorama.name }}",
+                "title": "{{ panorama.name|escapejs }}",
                 "type": "equirectangular",
                 "panorama": "{{ panorama.image.url }}",
                 {% if panorama.initial_view_parameters %}
-                "pitch": {{ panorama.initial_view_parameters.pitch|default:0 }},
-                "yaw": {{ panorama.initial_view_parameters.yaw|default:0 }},
+                "pitch": {{ panorama.initial_view_parameters.pitch|default:"0" }},
+                "yaw": {{ panorama.initial_view_parameters.yaw|default:"0" }},
                 {% else %}
                 "pitch": 0,
                 "yaw": 0,
@@ -127,18 +127,31 @@
                         "pitch": {{ hotspot.pitch }},
                         "yaw": {{ hotspot.yaw }},
                         "type": "scene",
-                        "text": "{{ hotspot.text }}",
+                        "text": "{{ hotspot.text|escapejs }}",
                         "sceneId": "{{ hotspot.target_panorama.id }}"
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ]
+                {% else %}
+                "hotSpots": []
                 {% endif %}
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
         }
     };
 
+    // Output the generated panoData for debugging
+    console.log("Generated panoData:", JSON.stringify(panoData));
+
     pannellum.viewer('panorama', panoData);
+</script>
+<script>
+    console.log("Pannellum configuration data:", {{ panoData|safe }});
+</script>
+<script>
+    window.onload = function() {
+        // Initialize pannellum.viewer here
+    };
 </script>
 {% endif %}
 {% endblock javascripts %}
