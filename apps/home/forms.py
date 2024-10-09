@@ -158,16 +158,24 @@ class ProjectForm(forms.ModelForm):
 
 from django import forms
 from .models import Invoice, LineItem, Service, Material, LaborEntry
+from django.forms import inlineformset_factory
+from .models import Invoice, LineItem
 
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ['customer_name', 'customer_email', 'customer_address', 'valid_until', 'notes']
+        fields = ['customer_name', 'customer_email', 'customer_address', 'notes']
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
 
 class LineItemForm(forms.ModelForm):
     class Meta:
         model = LineItem
         fields = ['service', 'description', 'quantity']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 2}),
+        }
 
     def clean_quantity(self):
         quantity = self.cleaned_data.get('quantity')

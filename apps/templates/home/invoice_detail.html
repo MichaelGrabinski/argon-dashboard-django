@@ -7,8 +7,8 @@
     <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
 
     <!-- Add Download PDF button -->
-    <a href="{% url 'invoice_pdf' invoice.id %}" class="btn btn-primary">Download PDF</a>
-    <!-- Add Send Email button -->
+    <a href="{% url 'invoice_pdf' invoice.id %}" class="btn btn-primary" target="_blank">Download PDF</a>
+    
     <a href="{% url 'send_invoice_email' invoice.id %}" class="btn btn-secondary">Send via Email</a>
 
 

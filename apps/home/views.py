@@ -1756,7 +1756,7 @@ from decimal import Decimal
 
 @login_required
 def invoice_create(request):
-    LineItemFormSet = inlineformset_factory(Invoice, LineItem, form=LineItemForm, extra=1, can_delete=True)
+    LineItemFormSet = inlineformset_factory(Invoice, LineItem, form=LineItemForm, extra=3, can_delete=True)
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
         formset = LineItemFormSet(request.POST)
@@ -1846,15 +1846,11 @@ def invoice_pdf_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     line_items = invoice.lineitem_set.all()
 
-    # Get the logo image path
-    logo_path = finders.find('images/logo.png')  # Adjust the path to your logo
-    logo_url = request.build_absolute_uri(settings.STATIC_URL + 'images/logo.png') if logo_path else ''
-
     # Render HTML content
     html_string = render_to_string('home/invoice_pdf.html', {
         'invoice': invoice,
         'line_items': line_items,
-        'logo_url': logo_url,
+        # Other context variables...
     })
 
     # Generate PDF
@@ -1863,9 +1859,9 @@ def invoice_pdf_view(request, invoice_id):
 
     # Create HTTP response
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'filename="invoice_{invoice.id}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="invoice_{invoice.id}.pdf"'
     return response
-
+    
 from django.core.mail import EmailMessage
 from io import BytesIO
 
