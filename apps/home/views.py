@@ -1903,3 +1903,7 @@ def send_invoice_email(request, invoice_id):
     messages.success(request, f'Invoice emailed to {invoice.customer_email}.')
 
     return redirect('invoice_detail', invoice_id=invoice.id)
+
+def showcase(request):
+    projects = Project.objects.prefetch_related('images').all()
+    return render(request, 'home/showcase.html', {'projects': projects})

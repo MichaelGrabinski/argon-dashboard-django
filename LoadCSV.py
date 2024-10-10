@@ -1,9 +1,11 @@
-
-# Initialize Django
-django.setup()
+import os
+import django
 
 # Set the environment variable to point to your Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+
+# Initialize Django
+django.setup()
 
 import os
 import django
