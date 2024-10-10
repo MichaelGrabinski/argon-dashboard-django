@@ -3,6 +3,8 @@
 # ----------------------
 # Kudu Deployment Script
 # ----------------------
+exec > >(tee -i /deploy_script.log)
+exec 2>&1
 
 # Enable error handling
 set -e
@@ -20,11 +22,11 @@ apt-get install -y libpango-1.0-0 libpango1.0-dev
 apt-get install -y build-essential python3-dev python3-pip python3-setuptools python3-wheel python3-cffi libcairo2 libcairo2-dev libpango1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
 
 # Change to the directory with your code
-cd "$HOME/site/wwwroot"
+#cd "$HOME/site/wwwroot"
 
 # Activate the virtual environment
 echo "Activating virtual environment..."
-source antenv/bin/activate
+#source antenv/bin/activate
 
 # Install Python dependencies
 echo "Installing Python packages..."
