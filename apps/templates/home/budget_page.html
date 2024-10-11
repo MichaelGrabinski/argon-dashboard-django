@@ -1,108 +1,129 @@
-{% load static %}
+% extends 'layouts/base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Budget/Accounting Hub</h1>
 
-<!-- Budget Summary -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h3>Budget Summary</h3>
-    </div>
-    <div class="card-body">
-        <p>Total Material Cost: ${{ total_material_cost|floatformat:2 }}</p>
-        <p>Total Labor Cost: ${{ total_labor_cost|floatformat:2 }}</p>
-        <p>Total Labor Hours: {{ total_labor_hours }}</p>
-        <p><strong>Total Cost: ${{ total_cost|floatformat:2 }}</strong></p>
-        <p>Cost per Sq Ft: ${{ cost_per_sqft|floatformat:2 }}</p>
-    </div>
-</div>
-<!-- Materials and Labor Entries -->
-<div class="row">
-    <!-- Materials Section -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Materials</h4>
+    <!-- Summary Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Total Income</div>
+                <div class="card-body">
+                    <h5 class="card-title">${{ total_income|floatformat:2 }}</h5>
+                </div>
             </div>
-            <div class="card-body">
-                {% if materials %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Category</th>
-                            <th>Quantity</th>
-                            <th>Unit Cost</th>
-                            <th>Total Cost</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for material in materials %}
-                        <tr>
-                            <td>{{ material.name }}</td>
-                            <td>{{ material.category.name }}</td>
-                            <td>{{ material.quantity }}</td>
-                            <td>${{ material.unit_cost }}</td>
-                            <td>${{ material.total_cost }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p>No materials recorded.</p>
-                {% endif %}
-                <!-- Divider -->
-                <hr>
-                <!-- Add Material Form -->
-                <h5>Add New Material</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="project_id" value="{{ project.id }}">
-                    {{ material_form.as_p }}
-                    <button type="submit" name="add_material" class="btn btn-primary">Add Material</button>
-                </form>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Total Expenses</div>
+                <div class="card-body">
+                    <h5 class="card-title">${{ total_expenses|floatformat:2 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            {% if net_balance >= 0 %}
+            <div class="card text-white bg-primary mb-3">
+            {% else %}
+            <div class="card text-white bg-warning mb-3">
+            {% endif %}
+                <div class="card-header">Net Balance</div>
+                <div class="card-body">
+                    <h5 class="card-title">${{ net_balance|floatformat:2 }}</h5>
+                </div>
             </div>
         </div>
     </div>
-    <!-- Labor Section -->
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h4>Labor</h4>
-            </div>
-            <div class="card-body">
-                {% if labor_entries %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Hours</th>
-                            <th>Hour Rate</th>
-                            <th>Total Pay</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in labor_entries %}
-                        <tr>
-                            <td>{{ entry.user.username }}</td>
-                            <td>{{ entry.hours }}</td>
-                            <td>${{ entry.hourly_rate }}</td>
-                            <td>${{ entry.total_pay }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p>No labor entries recorded.</p>
-                {% endif %}
-                <!-- Divider -->
-                <hr>
-                <!-- Add Labor Entry Form -->
-                <h5>Add New Labor Entry</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="project_id" value="{{ project.id }}">
-                    {{ labor_form.as_p }}
-                    <button type="submit" name="add_labor" class="btn btn-primary">Add Labor Entry</button>
-                </form>
-            </div>
+
+    <!-- Add Income Form -->
+    <h2>Add Income</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ income_form.as_p }}
+        <button type="submit" name="add_income" class="btn btn-success">Add Income</button>
+    </form>
+
+    <!-- Add Expense Form -->
+    <h2 class="mt-4">Add Expense</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ expense_form.as_p }}
+        <button type="submit" name="add_expense" class="btn btn-danger">Add Expense</button>
+    </form>
+
+    <!-- Add Category Form -->
+    <h3 class="mt-4">Add Category</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ category_form.as_p }}
+        <button type="submit" name="add_category" class="btn btn-info">Add Category</button>
+    </form>
+
+    <!-- Transactions Table -->
+    <h2 class="mt-5">Transactions</h2>
+    <ul class="nav nav-tabs" id="transactionsTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="income-tab" data-toggle="tab" href="#income" role="tab">Income</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="expenses-tab" data-toggle="tab" href="#expenses" role="tab">Expenses</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="transactionsTabsContent">
+        <!-- Income Tab -->
+        <div class="tab-pane fade show active" id="income" role="tabpanel" aria-labelledby="income-tab">
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for income in incomes %}
+                    <tr>
+                        <td>{{ income.date }}</td>
+                        <td>{{ income.category }}</td>
+                        <td>{{ income.description }}</td>
+                        <td>{{ income.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No income records available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Expenses Tab -->
+        <div class="tab-pane fade" id="expenses" role="tabpanel" aria-labelledby="expenses-tab">
+            <table class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.date }}</td>
+                        <td>{{ expense.category }}</td>
+                        <td>{{ expense.description }}</td>
+                        <td>{{ expense.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No expense records available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+{% endblock %}

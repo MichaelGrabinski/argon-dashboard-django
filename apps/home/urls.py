@@ -82,6 +82,9 @@ urlpatterns = [
     path('send-invoice-email/<int:invoice_id>/', views.send_invoice_email, name='send_invoice_email'),
     
     path('showcase/', views.showcase, name='showcase'),
+    path('generate_letter/', views.generate_letter_pdf, name='generate_letter_pdf'),
+    path('generate_project_report/<int:project_id>/', views.generate_project_report_pdf, name='generate_project_report_pdf'),
+    path('generate_custom_letter/', views.generate_custom_letter_pdf, name='generate_custom_letter_pdf'),
 
     re_path(r'^.*\.*', views.pages, name='pages'),
     

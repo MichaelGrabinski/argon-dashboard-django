@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        /* Styles for the letterhead and content */
+        @page {
+            size: A4;
+            margin: 1in;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 1in;
+        }
+        header img {
+            max-width: 200px;
+        }
+        .content {
+            /* Content styles */
+        }
+        footer {
+            /* Optional footer styles */
+            position: fixed;
+            bottom: 0;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Include your letterhead image/logo -->
+        <img src="{% static 'images/letterhead_logo.png' %}" alt="Company Logo">
+        <h1>Your Company Name</h1>
+        <p>Your Company Address</p>
+        <p>Contact Info</p>
+    </header>
+
+    <div class="content">
+        {{ content|safe }}
+    </div>
+
+    <footer>
+        <!-- Optional footer content -->
+        Page {{ page_number }} of {{ total_pages }}
+    </footer>
+</body>
+</html>

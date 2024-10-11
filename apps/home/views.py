@@ -1616,49 +1616,53 @@ def upload_project_image(request, project_id):
         form = ProjectImageForm()
     return render(request, 'home/upload_project_image.html', {'form': form, 'project': project})
 
-from .forms import MaterialForm, LaborEntryForm
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Income, Expense, Category
+from .forms import IncomeForm, ExpenseForm, CategoryForm
 
-def budget_page(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    materials = project.materials.select_related('category')
-    labor_entries = project.labor_entries.select_related('user')
+@login_required
+def budget_page(request):
+    incomes = Income.objects.all().order_by('-date')
+    expenses = Expense.objects.all().order_by('-date')
+    categories = Category.objects.all()
 
     if request.method == 'POST':
-        if 'add_material' in request.POST:
-            material_form = MaterialForm(request.POST)
-            labor_form = LaborEntryForm()  # Empty form
-            if material_form.is_valid():
-                material = material_form.save(commit=False)
-                material.project = project
-                material.save()
-                return redirect('budget_page', project_id=project.id)
-        elif 'add_labor' in request.POST:
-            material_form = MaterialForm()  # Empty form
-            labor_form = LaborEntryForm(request.POST)
-            if labor_form.is_valid():
-                labor_entry = labor_form.save(commit=False)
-                labor_entry.project = project
-                labor_entry.save()
-                return redirect('budget_page', project_id=project.id)
+        if 'add_income' in request.POST:
+            income_form = IncomeForm(request.POST)
+            if income_form.is_valid():
+                income_form.save()
+                return redirect('budget_page')
+        elif 'add_expense' in request.POST:
+            expense_form = ExpenseForm(request.POST)
+            if expense_form.is_valid():
+                expense_form.save()
+                return redirect('budget_page')
+        elif 'add_category' in request.POST:
+            category_form = CategoryForm(request.POST)
+            if category_form.is_valid():
+                category_form.save()
+                return redirect('budget_page')
     else:
-        material_form = MaterialForm()
-        labor_form = LaborEntryForm()
+        income_form = IncomeForm()
+        expense_form = ExpenseForm()
+        category_form = CategoryForm()
 
-    total_material_cost = sum(m.total_cost for m in materials)
-    total_labor_cost = sum(l.total_pay for l in labor_entries)
-    total_cost = total_material_cost + total_labor_cost
-    cost_per_sqft = total_cost / project.square_footage if project.square_footage else 0
+    # Calculating totals
+    total_income = sum(income.amount for income in incomes)
+    total_expenses = sum(expense.amount for expense in expenses)
+    net_balance = total_income - total_expenses
 
     context = {
-        'project': project,
-        'materials': materials,
-        'labor_entries': labor_entries,
-        'material_form': material_form,
-        'labor_form': labor_form,
-        'total_material_cost': total_material_cost,
-        'total_labor_cost': total_labor_cost,
-        'total_cost': total_cost,
-        'cost_per_sqft': cost_per_sqft,
+        'incomes': incomes,
+        'expenses': expenses,
+        'income_form': income_form,
+        'expense_form': expense_form,
+        'category_form': category_form,
+        'categories': categories,
+        'total_income': total_income,
+        'total_expenses': total_expenses,
+        'net_balance': net_balance,
     }
     return render(request, 'home/budget_page.html', context)
     
@@ -1907,3 +1911,74 @@ def send_invoice_email(request, invoice_id):
 def showcase(request):
     projects = Project.objects.prefetch_related('images').all()
     return render(request, 'home/showcase.html', {'projects': projects})
+
+def generate_project_report_pdf(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+
+    # Prepare data for the template
+    title = f"Report for {project.title}"
+    content = render_to_string('home/project_report_content.html', {'project': project})
+
+    # Rest of the code remains the same
+    html_string = render_to_string('letter_template.html', {
+        'title': title,
+        'content': content,
+    })
+    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+    pdf_file = html.write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="report_{project.id}.pdf"'
+    return response
+    
+def generate_letter_pdf(request):
+    # Prepare data for the template
+    title = "Sample Letter"
+    content = """
+        <p>Dear [Recipient],</p>
+        <p>This is a sample letter generated with your letterhead.</p>
+        <p>Sincerely,<br>Your Name</p>
+    """
+
+    # Render the HTML template
+    html_string = render_to_string('home/letter_template.html', {
+        'title': title,
+        'content': content,
+    })
+
+    # Generate the PDF
+    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+    pdf_file = html.write_pdf()
+
+    # Create HTTP response with PDF content
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="letter.pdf"'
+    return response
+    
+from .forms import LetterForm
+
+def generate_custom_letter_pdf(request):
+    if request.method == 'POST':
+        form = LetterForm(request.POST)
+        if form.is_valid():
+            recipient_name = form.cleaned_data['recipient_name']
+            body = form.cleaned_data['body']
+
+            # Prepare content
+            content = f"""
+                <p>Dear {recipient_name},</p>
+                {body}
+                <p>Sincerely,<br>Your Company</p>
+            """
+
+            html_string = render_to_string('home/letter_template.html', {
+                'title': 'Custom Letter',
+                'content': content,
+            })
+            html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+            pdf_file = html.write_pdf()
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="custom_letter.pdf"'
+            return response
+    else:
+        form = LetterForm()
+    return render(request, 'custom_letter_form.html', {'form': form})

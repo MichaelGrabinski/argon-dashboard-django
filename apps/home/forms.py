@@ -221,3 +221,29 @@ class UnitForm(forms.ModelForm):
         fields = '__all__'
 
 PanoramaFormSet = inlineformset_factory(Unit, Panorama, fields=('image', 'name', 'description', 'initial_view_parameters'), extra=1, can_delete=True)
+
+class LetterForm(forms.Form):
+    recipient_name = forms.CharField(max_length=100)
+    body = forms.CharField(widget=forms.Textarea)
+
+from django import forms
+from .models import Income, Expense, Category
+
+class IncomeForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = Income
+        fields = ['date', 'category', 'description', 'amount']
+
+class ExpenseForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = Expense
+        fields = ['date', 'category', 'description', 'amount']
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name']

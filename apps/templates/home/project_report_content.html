@@ -1,0 +1,17 @@
+<h2>Project Details</h2>
+<p><strong>Title:</strong> {{ project.title }}</p>
+<p><strong>Description:</strong> {{ project.description }}</p>
+<p><strong>Manager:</strong> {{ project.manager.get_full_name }}</p>
+<!-- Add other project details as needed -->
+
+<!-- Include related data, like tasks -->
+<h3>Tasks</h3>
+<ul>
+    {% for task in project.tasks.all %}
+    <li>
+        <strong>{{ task.title }}</strong> - {{ task.get_status_display }} - Due: {{ task.due_date }}
+    </li>
+    {% empty %}
+    <li>No tasks available.</li>
+    {% endfor %}
+</ul>
