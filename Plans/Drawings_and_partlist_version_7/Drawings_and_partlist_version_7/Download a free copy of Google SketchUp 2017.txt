@@ -1,8 +1,0 @@
-The Sketchup model (Drawing 85 square meter house.zip) is in a Zip file to save space, right cklick on that file and choose "Extract files"
-
-Sketchup is an expencive software to buy. SketchUp Make was still free untill 2017. The links are taken down to that version and im not alowed to give you 
-any links to find the software but if you search for "sketchupmake-2017-2-2555-90782-en-x64.exe" then the first result (/archive.org) is a working version 
-of Sketchup 2017 that you can download and install. I use that version for all my drawings. The software gives you a 30 day trial of the PRO version and 
-then it switches over to "Make" version, that is good enough to draw in and totaly free. 
-
-You can also download a 30 day trial from Sketchup or use their free web based version. 

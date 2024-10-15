@@ -10,7 +10,8 @@ from apps.home.models import Tool, Material, TaskLink, Profile, MaintenanceRecor
 from django.db.models import Q
 from apps.home.models import Task, Attachment, Comment, ActivityLog, Project, Note, Document, ReferenceMaterial, GameProject, Task, Budget, Expense, FinancialReport, ProjectPhase, ReferenceMaterial, ProjectDocument
 from .forms import TaskForm, CommentForm, AttachmentForm, AssignTaskForm, QuickTaskForm, ProjectImageForm, MaterialForm, LaborEntryForm, ProjectNoteForm,ProjectAttachmentForm
-
+from django.core.mail import send_mail  # Add this line
+from django.conf import settings  # And this line
 from apps.home.models import *
 from .forms import *
 from django.contrib.auth.models import User
@@ -1982,3 +1983,43 @@ def generate_custom_letter_pdf(request):
     else:
         form = LetterForm()
     return render(request, 'custom_letter_form.html', {'form': form})
+    
+def request_quote(request):
+    if request.method == 'POST':
+        # Retrieve form data
+        service_type = request.POST.get('service_type')
+        details = request.POST.get('details')
+
+        # Retrieve additional data based on service type
+        additional_info = ''
+        if service_type == 'repair':
+            repair_type = request.POST.get('repair_type')
+            additional_info = f'Type of Repair: {repair_type}'
+        elif service_type == 'renovation':
+            renovation_area = request.POST.get('renovation_area')
+            additional_info = f'Area to Renovate: {renovation_area}'
+        elif service_type == 'maintenance':
+            maintenance_type = request.POST.get('maintenance_type')
+            additional_info = f'Type of Maintenance: {maintenance_type}'
+        elif service_type == 'custom_cabinets':
+            cabinet_type = request.POST.get('cabinet_type')
+            additional_info = f'Type of Cabinet: {cabinet_type}'
+
+        # Prepare email content
+        subject = 'New Quote Request'
+        message = (
+            f"Service Type: {service_type}\n"
+            f"{additional_info}\n"
+            f"Details: {details}"
+        )
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = ['humanfuturesco@gmail.com']
+
+        # Send the email
+        send_mail(subject, message, from_email, recipient_list)
+
+        # Redirect to a success page or render a success template
+        return render(request, 'home/quote_submitted.html')
+    else:
+        # Render the request quote form
+        return render(request, 'home/request_quote.html')

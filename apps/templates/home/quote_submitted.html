@@ -1,0 +1,29 @@
+<!-- templates/home/quote_submitted.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quote Request Submitted</title>
+    <!-- Include your CSS files -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <style>
+        .confirmation-section {
+            padding: 40px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include your navigation/header if necessary -->
+
+    <section class="confirmation-section">
+        <div class="container">
+            <h2>Thank You!</h2>
+            <p>Your quote request has been submitted. We'll get back to you soon.</p>
+            <a href="{% url 'public_home' %}" class="btn btn-primary">Return Home</a>
+        </div>
+    </section>
+
+    <!-- Include your footer if necessary -->
+</body>
+</html>

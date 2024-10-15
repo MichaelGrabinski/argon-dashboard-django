@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Request a Quote</title>
+    <!-- Include your CSS files -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <style>
+        .form-section {
+            padding: 40px 0;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include your navigation/header if necessary -->
+
+    <section class="form-section">
+        <div class="container form-container">
+            <h2 class="text-center">Request a Quote</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="service_type">Service Type:</label>
+                    <select id="service_type" name="service_type" class="form-control" required>
+                        <option value="">Select a service</option>
+                        <option value="repair">Repair</option>
+                        <option value="renovation">Renovation</option>
+                        <option value="maintenance">Maintenance (Lawn, Property, etc.)</option>
+                        <option value="custom_cabinets">Custom Cabinets</option>
+                    </select>
+                </div>
+
+                <!-- Dependent fields will be inserted here -->
+                <div id="dependent-fields"></div>
+
+                <div class="form-group">
+                    <label for="details">Additional Details:</label>
+                    <textarea id="details" name="details" class="form-control" rows="5" placeholder="Provide more details about your request"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Include jQuery and Bootstrap JS -->
+    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#service_type').change(function() {
+                var serviceType = $(this).val();
+                var dependentFields = $('#dependent-fields');
+                dependentFields.empty(); // Clear previous fields
+
+                if (serviceType === 'repair') {
+                    dependentFields.append(`
+                        <div class="form-group">
+                            <label for="repair_type">Type of Repair:</label>
+                            <select id="repair_type" name="repair_type" class="form-control" required>
+                                <option value="">Select a repair type</option>
+                                <option value="plumbing">Plumbing</option>
+                                <option value="electrical">Electrical</option>
+                                <option value="carpentry">Carpentry</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </div>
+                    `);
+                } else if (serviceType === 'renovation') {
+                    dependentFields.append(`
+                        <div class="form-group">
+                            <label for="renovation_area">Area to Renovate:</label>
+                            <select id="renovation_area" name="renovation_area" class="form-control" required>
+                                <option value="">Select an area</option>
+                                <option value="kitchen">Kitchen</option>
+                                <option value="bathroom">Bathroom</option>
+                                <option value="bedroom">Bedroom</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </div>
+                    `);
+                } else if (serviceType === 'maintenance') {
+                    dependentFields.append(`
+                        <div class="form-group">
+                            <label for="maintenance_type">Type of Maintenance:</label>
+                            <select id="maintenance_type" name="maintenance_type" class="form-control" required>
+                                <option value="">Select a maintenance type</option>
+                                <option value="lawn">Lawn</option>
+                                <option value="property">Property</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </div>
+                    `);
+                } else if (serviceType === 'custom_cabinets') {
+                    dependentFields.append(`
+                        <div class="form-group">
+                            <label for="cabinet_type">Type of Cabinet:</label>
+                            <select id="cabinet_type" name="cabinet_type" class="form-control" required>
+                                <option value="">Select a cabinet type</option>
+                                <option value="kitchen_cabinets">Kitchen Cabinets</option>
+                                <option value="bathroom_cabinets">Bathroom Cabinets</option>
+                                <option value="furniture">Custom Furniture</option>
+                                <!-- Add more options as needed -->
+                            </select>
+                        </div>
+                    `);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -38,6 +38,18 @@
       width: 100%; /* The width of the map */
     }
   </style>
+  <style>
+    /* Existing styles */
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+    /* New styles */
+    #deliveryMap {
+      height: 400px;
+      width: 100%;
+    }
+  </style>
  <style> 
   
 .team_container .box .img-box img {
@@ -278,6 +290,32 @@
   </section>
   <!-- end service section -->
 
+ <!-- Cabinet Delivery Section -->
+  <section class="service_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          Service Area for <span>Cabinets &amp; Delivery</span>
+        </h2>
+        <p>
+          Our cabinet delivery services cover a specific area based on travel time. Explore the map to see if your location falls within our delivery zone.
+		  We make custom cabinets and furniture. This map shows our service area where we offer free delivery for orders over $350. 
+        </p>
+      </div>
+      <div id="deliveryMap"></div>
+    </div>
+	    <div class="service_container">
+      <div class="container">
+<div class="btn-box" style="margin-top: 20px;">
+    <a href="{% url 'request_quote' %}">
+        Request a Quote
+    </a>
+</div></div></div>
+  </section>
+
+    
+
+
   <!-- about section -->
   <section class="about_section layout_padding">
     <div class="container">
@@ -292,7 +330,7 @@
       <div class="row">
         <div class="col-md-6">
           <div class="img-box">
-            <img src="/static/images/tech.png" alt="">
+            <img src="/static/images/Human_Future_1.webp" alt="">
           </div>
         </div>
         <div class="col-md-6">
@@ -475,6 +513,83 @@
     // Optionally, add a popup to the circle
     serviceArea.bindPopup("Service Area: Torrington and surrounding areas.");
   </script>
+  
+<!-- Leaflet Map and TravelTime API Integration -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+ // Initialize the delivery map using Leaflet
+var deliveryMap = L.map('deliveryMap').setView([41.8006, -73.1212], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(deliveryMap);
+
+// Function to fetch and display the isochrone
+async function fetchIsochrone() {
+  try {
+    const response = await fetch('https://api.traveltimeapp.com/v4/time-map/fast', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Application-Id': '34a934ac', // Replace with your Application ID
+        'X-Api-Key': 'b79935378ab821528a40f9f3caedf24e' // Replace with your API Key
+      },
+      body: JSON.stringify({
+        "arrival_searches": {
+          "many_to_one": [
+            {
+              "id": "CabinetDeliveryIsochrone",
+              "coords": {
+                "lat": 41.8006,
+                "lng": -73.1212
+              },
+              "arrival_time_period": "weekday_morning",
+              "travel_time": 9000, // 2.5 hours in seconds
+              "transportation": {
+                "type": "driving" // Use the appropriate transportation type
+              }
+            }
+          ]
+        }
+      })
+    });
+
+    const data = await response.json();
+    console.log('Isochrone data:', data);
+
+    // Check if the request was successful
+    if (data.results && data.results.length > 0) {
+      // Get the first isochrone result
+      const isochroneResult = data.results[0].shapes;
+
+      // Draw the isochrone on the map
+      isochroneResult.forEach((shape, index) => {
+        console.log(`Drawing shape ${index}:`, shape.shell);
+
+        // Convert shape.shell to the correct format for Leaflet
+        const latLngs = shape.shell.map(point => [point.lat, point.lng]);
+        console.log('LatLngs:', latLngs);
+
+        const polygon = L.polygon(latLngs, {
+          color: 'green',
+          fillColor: '#90ee90',
+          fillOpacity: 0.5
+        }).addTo(deliveryMap);
+
+        // Fit the map to the bounds of the polygon
+        deliveryMap.fitBounds(polygon.getBounds());
+      });
+    } else {
+      console.error('Failed to fetch isochrone:', data);
+    }
+  } catch (error) {
+    console.error('Error fetching isochrone:', error);
+  }
+}
+
+// Call the function to fetch and display the isochrone
+fetchIsochrone();
+</script>
 </body>
 
 </html>
