@@ -580,9 +580,72 @@ class Income(models.Model):
         return f"{self.date} - {self.description} - ${self.amount}"
 
 
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    sku = models.CharField(max_length=100, unique=True)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    # Add any other fields you need
 
+    def __str__(self):
+        return self.name
 
+class OptionGroup(models.Model):
+    name = models.CharField(max_length=255)
+    product = models.ForeignKey(Product, related_name='option_groups', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f"{self.product.name} - {self.name}"
+
+class Option(models.Model):
+    group = models.ForeignKey(OptionGroup, related_name='options', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    price_adjustment = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    percentage_adjustment = models.DecimalField(max_digits=5, decimal_places=2, default=0.00,
+                                                help_text='Enter as a decimal, e.g., 0.12 for 12%')
+
+    def __str__(self):
+        return f"{self.group.name}: {self.name}"
+
+    def get_price_adjustment(self, base_price):
+        """
+        Calculate the price adjustment based on percentage or fixed amount.
+        """
+        if self.percentage_adjustment:
+            return base_price * self.percentage_adjustment
+        return self.price_adjustment
+
+class CartItem(models.Model):
+    # For simplicity, we'll not associate the cart with a user or session for now
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    width = models.DecimalField(max_digits=6, decimal_places=2)  # Door Width (in inches)
+    height = models.DecimalField(max_digits=6, decimal_places=2)  # Door Height (in inches)
+    options = models.ManyToManyField(Option, blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    
+    
+    def compute_total_price(self):
+        """
+        Compute the total price based on base price, options, and dimensions.
+        """
+        # Calculate the area
+        area = self.width * self.height  # In square inches or square feet
+        base_price = self.product.base_price * area
+
+        # Adjust price based on selected options
+        total_adjustment = 0.00
+        for option in self.options.all():
+            total_adjustment += option.get_price_adjustment(base_price)
+
+        # Compute the total price
+        price = (base_price + total_adjustment) * self.quantity
+        self.total_price = price
+        return self.total_price
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
 
 '''        
 @receiver(post_save, sender=User)
@@ -594,4 +657,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
     '''
+    
     

@@ -1987,6 +1987,9 @@ def generate_custom_letter_pdf(request):
 def request_quote(request):
     if request.method == 'POST':
         # Retrieve form data
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
         service_type = request.POST.get('service_type')
         details = request.POST.get('details')
 
@@ -2008,6 +2011,9 @@ def request_quote(request):
         # Prepare email content
         subject = 'New Quote Request'
         message = (
+            f"Name: {name}\n"
+            f"Email: {email}\n"
+            f"Phone: {phone}\n"
             f"Service Type: {service_type}\n"
             f"{additional_info}\n"
             f"Details: {details}"
@@ -2015,11 +2021,126 @@ def request_quote(request):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = ['humanfuturesco@gmail.com']
 
+        # Handle image attachments
+        images = request.FILES.getlist('images')
+
+        # Create email with attachment
+        email_message = EmailMessage(subject, message, from_email, recipient_list)
+        email_message.reply_to = [email]  # Optionally set the reply-to address
+
+        # Attach images if any
+        for image in images:
+            # Ensure the image file is safe to process
+            email_message.attach(image.name, image.read(), image.content_type)
+
         # Send the email
-        send_mail(subject, message, from_email, recipient_list)
+        email_message.send()
 
         # Redirect to a success page or render a success template
         return render(request, 'home/quote_submitted.html')
     else:
         # Render the request quote form
         return render(request, 'home/request_quote.html')
+        
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product, OptionGroup, CartItem
+from .models import Product, OptionGroup, Option, CartItem  # Add these imports
+
+def store_product_list(request):
+    products = Product.objects.all()
+    return render(request, 'home/store_product_list.html', {'products': products})
+        if not request.session.session_key:
+        request.session.create()
+
+def store_product_detail(request, product_id):
+    # ... existing code ...
+    if request.method == 'POST':
+        # ... existing code ...
+        if not request.session.session_key:
+            request.session.create()
+        session_key = request.session.session_key
+
+        # Create CartItem with session_key
+        cart_item = CartItem.objects.create(
+            product=product,
+            width=width,
+            height=height,
+            quantity=quantity,
+            session_key=session_key,
+        )
+          else:
+              # Handle form errors
+              return render(request, 'home/store_product_detail.html', {
+                  'product': product,
+                  'option_groups': option_groups,
+                  'form': form,
+              })
+      else:
+          form = AddToCartForm()
+
+      return render(request, 'home/store_product_detail.html', {
+          'product': product,
+          'option_groups': option_groups,
+          'form': form,
+      })
+
+def store_cart_detail(request):
+    if not request.session.session_key:
+        request.session.create()
+    session_key = request.session.session_key
+    cart_items = CartItem.objects.filter(session_key=session_key)
+    total = sum(item.total_price for item in cart_items)
+    return render(request, 'home/store_cart_detail.html', {
+        'cart_items': cart_items,
+        'total': total,
+    })
+
+from django.core.mail import EmailMessage
+from django.conf import settings
+
+def store_checkout(request):
+    if request.method == 'POST':
+        # Retrieve customer info
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        # Retrieve cart items
+        cart_items = CartItem.objects.all()
+        if not cart_items:
+            return redirect('store_cart_detail')
+
+        # Prepare email content
+        message = f"Quote Request from {name}\nEmail: {email}\nPhone: {phone}\n\nOrder Details:\n"
+        for item in cart_items:
+            message += f"\nProduct: {item.product.name}"
+            message += f"\nDimensions: {item.width} x {item.height} inches"
+            message += f"\nQuantity: {item.quantity}"
+            message += f"\nOptions:"
+            for option in item.options.all():
+                message += f"\n - {option.group.name}: {option.name}"
+            message += f"\nItem Total: ${item.total_price:.2f}\n"
+
+        message += f"\nGrand Total: ${sum(item.total_price for item in cart_items):.2f}"
+
+        # Send email
+        email_message = EmailMessage(
+            subject='New Quote Request',
+            body=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=['humanfuturesco@gmail.com'],
+            reply_to=[email],
+        )
+        email_message.send()
+
+        # Clear cart (for simplicity, delete all items)
+        cart_items.delete()
+
+        return render(request, 'home/store_quote_submitted.html', {'name': name})
+    else:
+        cart_items = CartItem.objects.all()
+        total = sum(item.total_price for item in cart_items)
+        return render(request, 'home/store_checkout.html', {
+            'cart_items': cart_items,
+            'total': total,
+        })

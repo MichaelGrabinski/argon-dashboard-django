@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ... existing head content ... -->
+    {% load static %}
+    <!-- Include CSS files -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <!-- Include FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'public_home' %}">Your Company</a>
+        <!-- Toggler for mobile view -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <!-- Existing navigation links -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'public_about' %}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'public_services' %}">Services</a>
+                </li>
+                <!-- Add Store link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'store_product_list' %}">Store</a>
+                </li>
+                <!-- Add Cart Icon -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'store_cart_detail' %}">
+                        <i class="fas fa-shopping-cart"></i>
+                        Cart
+                        {% if cart_items_count %}
+                            (<span id="cart-item-count">{{ cart_items_count }}</span>)
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- Include JS files -->
+    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+</body>
+</html>

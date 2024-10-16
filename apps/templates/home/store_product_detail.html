@@ -1,0 +1,88 @@
+{% extends 'layouts/base2.html' %}
+{% block content %}
+   <div class="container mt-5">
+     <h1>{{ product.name }}</h1>
+     <p>{{ product.description|linebreaks }}</p>
+     <form method="post">
+             {% csrf_token %}
+      {{ form.as_p }}
+       <!-- Dimensions and Quantity -->
+       <div class="form-row">
+         <div class="form-group col-md-4">
+           <label for="width">Door Width (in):</label>
+           <input type="number" step="0.01" name="width" class="form-control" required>
+         </div>
+         <div class="form-group col-md-4">
+           <label for="height">Door Height (in):</label>
+           <input type="number" step="0.01" name="height" class="form-control" required>
+         </div>
+         <div class="form-group col-md-4">
+           <label for="quantity">Quantity:</label>
+           <input type="number" name="quantity" value="1" min="1" class="form-control">
+         </div>
+       </div>
+       <!-- Options -->
+       {% for group in option_groups %}
+       <div class="form-group">
+         <label>{{ group.name }}:</label>
+         <select name="option_{{ group.id }}" class="form-control" required>
+           <option value="">Select an option...</option>
+           {% for option in group.options.all %}
+           <option value="{{ option.id }}"
+             data-price-adjustment="{{ option.price_adjustment }}"
+             data-percentage-adjustment="{{ option.percentage_adjustment }}">
+             {{ option.name }}
+             {% if option.price_adjustment %}
+             ( + ${{ option.price_adjustment }} )
+             {% elif option.percentage_adjustment %}
+             ( + {{ option.percentage_adjustment|floatformat:2 }}% )
+             {% endif %}
+           </option>
+           {% endfor %}
+         </select>
+       </div>
+       {% endfor %}
+       <!-- Total Price -->
+       <p class="lead">Total Price: $<span id="total-price">{{ product.base_price }}</span></p>
+       <button type="submit" class="btn btn-success">Add to Cart</button>
+     </form>
+   </div>
+   <!-- Include your JavaScript for dynamic price calculation -->
+
+<!-- JavaScript to update the total price dynamically -->
+<script>
+    // Function to update the total price
+    function updatePrice() {
+        let basePrice = parseFloat({{ product.base_price }});
+        let width = parseFloat(document.querySelector('input[name="width"]').value) || 0;
+        let height = parseFloat(document.querySelector('input[name="height"]').value) || 0;
+        let quantity = parseInt(document.querySelector('input[name="quantity"]').value) || 1;
+        let area = width * height;
+
+        if (area > 0) {
+            let price = basePrice * area;
+            // Adjust for options
+            let optionSelects = document.querySelectorAll('select[name^="option_"]');
+            optionSelects.forEach(function(select) {
+                let selectedOption = select.options[select.selectedIndex];
+                let priceAdjustment = parseFloat(selectedOption.dataset.priceAdjustment) || 0;
+                let percentageAdjustment = parseFloat(selectedOption.dataset.percentageAdjustment) || 0;
+
+                if (priceAdjustment) {
+                    price += priceAdjustment;
+                } else if (percentageAdjustment) {
+                    price += price * percentageAdjustment;
+                }
+            });
+            price = price * quantity;
+            document.getElementById('total-price').innerText = price.toFixed(2);
+        }
+    }
+
+    // Event listeners for inputs
+    document.querySelectorAll('input, select').forEach(function(element) {
+        element.addEventListener('input', updatePrice);
+        element.addEventListener('change', updatePrice);
+    });
+</script>
+{% endblock %}

@@ -78,3 +78,21 @@ admin.site.register(ProjectAttachment)
 admin.site.register(Invoice)
 admin.site.register(LineItem)
 admin.site.register(Service)
+
+
+from django.contrib import admin
+from .models import Product, OptionGroup, Option
+
+class OptionInline(admin.TabularInline):
+    model = Option
+
+class OptionGroupAdmin(admin.ModelAdmin):
+    inlines = [OptionInline]
+
+class OptionGroupInline(admin.TabularInline):
+    model = OptionGroup
+
+class ProductAdmin(admin.ModelAdmin):
+    inlines = [OptionGroupInline]
+
+admin.site.register(Product, ProductAdmin)

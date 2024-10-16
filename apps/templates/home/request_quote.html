@@ -21,8 +21,27 @@
     <section class="form-section">
         <div class="container form-container">
             <h2 class="text-center">Request a Quote</h2>
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                <!-- Name Field -->
+                <div class="form-group">
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" required placeholder="Enter your name">
+                </div>
+
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Your Email Address:</label>
+                    <input type="email" id="email" name="email" class="form-control" required placeholder="Enter your email address">
+                </div>
+
+                <!-- Phone Number Field -->
+                <div class="form-group">
+                    <label for="phone">Your Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required placeholder="Enter your phone number">
+                </div>
+
+                <!-- Service Type Field -->
                 <div class="form-group">
                     <label for="service_type">Service Type:</label>
                     <select id="service_type" name="service_type" class="form-control" required>
@@ -37,9 +56,16 @@
                 <!-- Dependent fields will be inserted here -->
                 <div id="dependent-fields"></div>
 
+                <!-- Additional Details -->
                 <div class="form-group">
                     <label for="details">Additional Details:</label>
                     <textarea id="details" name="details" class="form-control" rows="5" placeholder="Provide more details about your request"></textarea>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="form-group">
+                    <label for="images">Upload Images (Optional):</label>
+                    <input type="file" id="images" name="images" class="form-control-file" accept="image/*" multiple>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -65,6 +91,10 @@
                                 <option value="plumbing">Plumbing</option>
                                 <option value="electrical">Electrical</option>
                                 <option value="carpentry">Carpentry</option>
+                                <option value="hvac">HVAC</option>
+                                <option value="roofing">Roofing</option>
+                                <option value="flooring">Flooring</option>
+                                <option value="painting">Painting</option>
                                 <!-- Add more options as needed -->
                             </select>
                         </div>
@@ -78,6 +108,11 @@
                                 <option value="kitchen">Kitchen</option>
                                 <option value="bathroom">Bathroom</option>
                                 <option value="bedroom">Bedroom</option>
+                                <option value="living_room">Living Room</option>
+                                <option value="basement">Basement</option>
+                                <option value="attic">Attic</option>
+                                <option value="garage">Garage</option>
+                                <option value="full_home">Full Home</option>
                                 <!-- Add more options as needed -->
                             </select>
                         </div>
@@ -88,8 +123,11 @@
                             <label for="maintenance_type">Type of Maintenance:</label>
                             <select id="maintenance_type" name="maintenance_type" class="form-control" required>
                                 <option value="">Select a maintenance type</option>
-                                <option value="lawn">Lawn</option>
-                                <option value="property">Property</option>
+                                <option value="lawn_care">Lawn Care</option>
+                                <option value="snow_removal">Snow Removal</option>
+                                <option value="pool_maintenance">Pool Maintenance</option>
+                                <option value="pest_control">Pest Control</option>
+                                <option value="general_upkeep">General Property Upkeep</option>
                                 <!-- Add more options as needed -->
                             </select>
                         </div>
@@ -97,12 +135,15 @@
                 } else if (serviceType === 'custom_cabinets') {
                     dependentFields.append(`
                         <div class="form-group">
-                            <label for="cabinet_type">Type of Cabinet:</label>
+                            <label for="cabinet_type">Type of Cabinet/Furniture:</label>
                             <select id="cabinet_type" name="cabinet_type" class="form-control" required>
-                                <option value="">Select a cabinet type</option>
+                                <option value="">Select a type</option>
                                 <option value="kitchen_cabinets">Kitchen Cabinets</option>
                                 <option value="bathroom_cabinets">Bathroom Cabinets</option>
-                                <option value="furniture">Custom Furniture</option>
+                                <option value="closet_organizers">Closet Organizers</option>
+                                <option value="entertainment_centers">Entertainment Centers</option>
+                                <option value="custom_furniture">Custom Furniture</option>
+                                <option value="shelving_units">Shelving Units</option>
                                 <!-- Add more options as needed -->
                             </select>
                         </div>

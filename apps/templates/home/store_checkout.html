@@ -1,0 +1,42 @@
+{% extends 'layouts/base2.html' %}
+{% load static %}
+{% block content %}
+<h1>Checkout</h1>
+<form method="post">
+    {% csrf_token %}
+    <!-- Customer Information -->
+    <div>
+        <label for="name">Your Name:</label>
+        <input type="text" name="name" required>
+    </div>
+    <div>
+        <label for="email">Your Email:</label>
+        <input type="email" name="email" required>
+    </div>
+    <div>
+        <label for="phone">Your Phone Number:</label>
+        <input type="tel" name="phone" required>
+    </div>
+
+    <!-- Order Summary -->
+    <h2>Order Summary</h2>
+    {% for item in cart_items %}
+        <div>
+            <strong>{{ item.product.name }}</strong>
+            <p>Dimensions: {{ item.width }} x {{ item.height }} inches</p>
+            <p>Quantity: {{ item.quantity }}</p>
+            <p>Options:</p>
+            <ul>
+                {% for option in item.options.all %}
+                    <li>{{ option.group.name }}: {{ option.name }}</li>
+                {% endfor %}
+            </ul>
+            <p>Item Total: ${{ item.total_price|floatformat:2 }}</p>
+        </div>
+        <hr>
+    {% endfor %}
+    <p><strong>Grand Total: ${{ total|floatformat:2 }}</strong></p>
+
+    <button type="submit">Submit Quote Request</button>
+</form>
+{% endblock %}

@@ -87,6 +87,11 @@ urlpatterns = [
     path('generate_custom_letter/', views.generate_custom_letter_pdf, name='generate_custom_letter_pdf'),
     path('request-quote/', views.request_quote, name='request_quote'),
 
+    path('store/', views.store_product_list, name='store_product_list'),
+    path('store/product/<int:product_id>/', views.store_product_detail, name='store_product_detail'),
+    path('store/cart/', views.store_cart_detail, name='store_cart_detail'),
+    path('store/checkout/', views.store_checkout, name='store_checkout'),
+    
     re_path(r'^.*\.*', views.pages, name='pages'),
     
 ]

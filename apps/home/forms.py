@@ -247,3 +247,11 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['name']
+        
+from django import forms
+from decimal import Decimal
+
+class AddToCartForm(forms.Form):
+    width = forms.DecimalField(max_digits=6, decimal_places=2, min_value=0.01)
+    height = forms.DecimalField(max_digits=6, decimal_places=2, min_value=0.01)
+    quantity = forms.IntegerField(min_value=1)
