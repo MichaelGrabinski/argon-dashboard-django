@@ -2053,14 +2053,10 @@ def store_product_list(request):
         request.session.create()
 
 def store_product_detail(request, product_id):
-    # ... existing code ...
-    if request.method == 'POST':
-        # ... existing code ...
+    if request.method == 'POST':.
         if not request.session.session_key:
             request.session.create()
         session_key = request.session.session_key
-
-        # Create CartItem with session_key
         cart_item = CartItem.objects.create(
             product=product,
             width=width,
@@ -2068,21 +2064,21 @@ def store_product_detail(request, product_id):
             quantity=quantity,
             session_key=session_key,
         )
-          else:
+        else:
               # Handle form errors
-              return render(request, 'home/store_product_detail.html', {
-                  'product': product,
-                  'option_groups': option_groups,
-                  'form': form,
-              })
-      else:
-          form = AddToCartForm()
+             return render(request, 'home/store_product_detail.html', {
+                'product': product,
+                'option_groups': option_groups,
+                'form': form,
+            })
+    else:
+        form = AddToCartForm()
 
-      return render(request, 'home/store_product_detail.html', {
-          'product': product,
-          'option_groups': option_groups,
-          'form': form,
-      })
+    return render(request, 'home/store_product_detail.html', {
+        'product': product,
+        'option_groups': option_groups,
+        'form': form,
+    })
 
 def store_cart_detail(request):
     if not request.session.session_key:
