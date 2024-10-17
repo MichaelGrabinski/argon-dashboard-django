@@ -2048,15 +2048,16 @@ from .models import Product, OptionGroup, Option, CartItem  # Add these imports
 
 def store_product_list(request):
     products = Product.objects.all()
-    return render(request, 'home/store_product_list.html', {'products': products})
-        if not request.session.session_key:
+    if not request.session.session_key:
         request.session.create()
+    return render(request, 'home/store_product_list.html', {'products': products})
 
 def store_product_detail(request, product_id):
-    if request.method == 'POST':.
+    if request.method == 'POST':
         if not request.session.session_key:
             request.session.create()
         session_key = request.session.session_key
+        # Assuming product, width, height, quantity are defined earlier in your code
         cart_item = CartItem.objects.create(
             product=product,
             width=width,
@@ -2064,21 +2065,14 @@ def store_product_detail(request, product_id):
             quantity=quantity,
             session_key=session_key,
         )
-        else:
-              # Handle form errors
-             return render(request, 'home/store_product_detail.html', {
-                'product': product,
-                'option_groups': option_groups,
-                'form': form,
-            })
     else:
+        # Assuming option_groups and form are defined earlier in your code
         form = AddToCartForm()
-
-    return render(request, 'home/store_product_detail.html', {
-        'product': product,
-        'option_groups': option_groups,
-        'form': form,
-    })
+        return render(request, 'home/store_product_detail.html', {
+            'product': product,
+            'option_groups': option_groups,
+            'form': form,
+        })
 
 def store_cart_detail(request):
     if not request.session.session_key:
