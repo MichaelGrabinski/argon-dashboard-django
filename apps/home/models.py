@@ -12,6 +12,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal
+
 
 def get_static_image_path(instance, filename):
     return os.path.join('static', 'tools_images', filename)
@@ -585,7 +587,7 @@ class Product(models.Model):
     sku = models.CharField(max_length=100, unique=True)
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    # Add any other fields you need
+    image = models.ImageField(upload_to='products/', storage=StaticFileSystemStorage(), null=True, blank=True)  # Add this field
 
     def __str__(self):
         return self.name
@@ -607,13 +609,17 @@ class Option(models.Model):
     def __str__(self):
         return f"{self.group.name}: {self.name}"
 
-    def get_price_adjustment(self, base_price):
+    def get_price_adjustment(self, base_cost):
         """
         Calculate the price adjustment based on percentage or fixed amount.
         """
-        if self.percentage_adjustment:
-            return base_price * self.percentage_adjustment
-        return self.price_adjustment
+        if self.percentage_adjustment and self.percentage_adjustment != Decimal('0.000'):
+            percentage = Decimal(str(self.percentage_adjustment))
+            adjustment = base_cost * percentage
+            return adjustment.quantize(Decimal('0.01'))  # Round to 2 decimal places
+        else:
+            price_adj = Decimal(str(self.price_adjustment))
+            return price_adj.quantize(Decimal('0.01'))  # Round to 2 decimal places
 
 class CartItem(models.Model):
     # For simplicity, we'll not associate the cart with a user or session for now
@@ -630,22 +636,33 @@ class CartItem(models.Model):
         """
         Compute the total price based on base price, options, and dimensions.
         """
+        # Convert width, height, and quantity to Decimal
+        width = Decimal(str(self.width))
+        height = Decimal(str(self.height))
+        quantity = Decimal(str(self.quantity))
+
+        # Convert base_price to Decimal
+        base_price = Decimal(str(self.product.base_price))
+
         # Calculate the area
-        area = self.width * self.height  # In square inches or square feet
-        base_price = self.product.base_price * area
+        area = width * height  # area is now a Decimal
+
+        # Calculate base cost
+        base_cost = base_price * area
+
+        # Initialize total_adjustment as Decimal
+        total_adjustment = Decimal('0.00')
 
         # Adjust price based on selected options
-        total_adjustment = 0.00
         for option in self.options.all():
-            total_adjustment += option.get_price_adjustment(base_price)
+            adjustment = option.get_price_adjustment(base_cost)
+            total_adjustment += adjustment
 
         # Compute the total price
-        price = (base_price + total_adjustment) * self.quantity
-        self.total_price = price
-        return self.total_price
+        price = (base_cost + total_adjustment) * quantity
+        self.total_price = price.quantize(Decimal('0.01'))  # Round to 2 decimal places
 
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name}"
+        return self.total_price
 
 '''        
 @receiver(post_save, sender=User)

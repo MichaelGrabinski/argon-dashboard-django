@@ -1,0 +1,8 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Quote Request Submitted</h1>
+    <p>Thank you, {{ name }}! Your quote request has been submitted. We'll get back to you soon.</p>
+    <a href="{% url 'store_product_list' %}" class="btn btn-primary">Back to Products</a>
+</div>
+{% endblock %}
