@@ -1,37 +1,44 @@
- {% block content %}
-   <div class="container mt-5">
-     <h1>Your Cart</h1>
-     {% if cart_items %}
-     <table class="table table-bordered">
-       <thead class="thead-light">
-         <tr>
-           <th>Product</th>
-           <th>Dimensions (WxH)</th>
-           <th>Quantity</th>
-           <th>Options</th>
-           <th>Total Price</th>
-         </tr>
-       </thead>
-       <tbody>
-         {% for item in cart_items %}
-         <tr>
-           <td>{{ item.product.name }}</td>
-           <td>{{ item.width }} x {{ item.height }} inches</td>
-           <td>{{ item.quantity }}</td>
-           <td>
-             {% for option in item.options.all %}
-             {{ option.group.name }}: {{ option.name }}<br>
-             {% endfor %}
-           </td>
-           <td>${{ item.total_price|floatformat:2 }}</td>
-         </tr>
-         {% endfor %}
-       </tbody>
-     </table>
-     <p class="lead">Grand Total: ${{ total|floatformat:2 }}</p>
-     <a href="{% url 'store_checkout' %}" class="btn btn-primary">Proceed to Checkout</a>
-     {% else %}
-     <p>Your cart is empty.</p>
-     {% endif %}
-   </div>
-   {% endblock %}
+{% extends 'layouts/base2.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Your Cart</h1>
+    {% if cart_items %}
+    <table class="table table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th>Product</th>
+                <th>Dimensions (WxH)</th>
+                <th>Quantity</th>
+                <th>Options</th>
+                <th>Total Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+                <!-- Only display items with a price greater than $0.00 -->
+                {% if item.total_price > 0 %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.width }} x {{ item.height }} inches</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        {% for option in item.options.all %}
+                            {{ option.group.name }}: {{ option.name }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>${{ item.total_price|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <p class="lead">Grand Total: ${{ total|floatformat:2 }}</p>
+    <a href="{% url 'store_product_list' %}" class="btn btn-primary">&larr; Continue Shopping</a>
+    <a href="{% url 'store_checkout' %}" class="btn btn-success">Proceed to Checkout &rarr;</a>
+    {% else %}
+    <p>Your cart is empty.</p>
+    <a href="{% url 'store_product_list' %}" class="btn btn-primary">Start Shopping</a>
+    {% endif %}
+</div>
+{% endblock %}

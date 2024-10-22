@@ -2053,11 +2053,45 @@ def store_product_list(request):
     return render(request, 'home/store_product_list.html', {'products': products})
 
 def store_product_detail(request, product_id):
+    # Retrieve the product object
+    product = get_object_or_404(Product, id=product_id)
+    option_groups = product.option_groups.all()
+
     if request.method == 'POST':
+        # If using forms:
+        # form = AddToCartForm(request.POST)
+        # if form.is_valid():
+        #     width = form.cleaned_data['width']
+        #     height = form.cleaned_data['height']
+        #     quantity = form.cleaned_data['quantity']
+        # Else, parse from POST data
+        try:
+            width = Decimal(str(request.POST.get('width')))
+            height = Decimal(str(request.POST.get('height')))
+            quantity = int(request.POST.get('quantity', 1))
+        except (ValueError, TypeError, Decimal.InvalidOperation):
+            # Handle invalid input
+            error_message = "Please enter valid dimensions and quantity."
+            return render(request, 'home/store_product_detail.html', {
+                'product': product,
+                'option_groups': option_groups,
+                'error_message': error_message,
+            })
+
+        # Collect selected options
+        selected_options = []
+        for group in option_groups:
+            option_id = request.POST.get(f'option_{group.id}')
+            if option_id:
+                option = get_object_or_404(group.options, id=option_id)
+                selected_options.append(option)
+
+        # Ensure session key exists
         if not request.session.session_key:
             request.session.create()
         session_key = request.session.session_key
-        # Assuming product, width, height, quantity are defined earlier in your code
+
+        # Create CartItem
         cart_item = CartItem.objects.create(
             product=product,
             width=width,
@@ -2065,13 +2099,18 @@ def store_product_detail(request, product_id):
             quantity=quantity,
             session_key=session_key,
         )
+        cart_item.options.set(selected_options)
+        cart_item.compute_total_price()
+        cart_item.save()
+
+        return redirect('store_cart_detail')
     else:
-        # Assuming option_groups and form are defined earlier in your code
-        form = AddToCartForm()
+        # If using forms:
+        # form = AddToCartForm()
         return render(request, 'home/store_product_detail.html', {
             'product': product,
             'option_groups': option_groups,
-            'form': form,
+            # 'form': form,  # If using forms
         })
 
 def store_cart_detail(request):
@@ -2079,7 +2118,8 @@ def store_cart_detail(request):
         request.session.create()
     session_key = request.session.session_key
     cart_items = CartItem.objects.filter(session_key=session_key)
-    total = sum(item.total_price for item in cart_items)
+    # Calculate total excluding items with $0.00 total_price
+    total = sum(item.total_price for item in cart_items if item.total_price > Decimal('0.00'))
     return render(request, 'home/store_cart_detail.html', {
         'cart_items': cart_items,
         'total': total,
@@ -2096,7 +2136,7 @@ def store_checkout(request):
         phone = request.POST.get('phone')
 
         # Retrieve cart items
-        cart_items = CartItem.objects.all()
+        cart_items = CartItem.objects.filter(session_key=session_key, total_price__gt=Decimal('0.00'))
         if not cart_items:
             return redirect('store_cart_detail')
 
@@ -2128,7 +2168,10 @@ def store_checkout(request):
 
         return render(request, 'home/store_quote_submitted.html', {'name': name})
     else:
-        cart_items = CartItem.objects.all()
+        if not request.session.session_key:
+            request.session.create()
+        session_key = request.session.session_key
+        cart_items = CartItem.objects.filter(session_key=session_key, total_price__gt=Decimal('0.00'))
         total = sum(item.total_price for item in cart_items)
         return render(request, 'home/store_checkout.html', {
             'cart_items': cart_items,
