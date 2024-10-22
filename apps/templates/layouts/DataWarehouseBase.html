@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Your App Title{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/custom.css' %}">
+
+
+  {% block stylesheets %}
+  /* Customize the navbar color */
+.bg-custom {
+    background-color: #336699; /* Adjust the blue shade as needed */
+}
+
+/* Adjust the navbar height and padding */
+.navbar {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Style for the navbar brand (logo or name) */
+.navbar-brand {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* Style for navbar links */
+.nav-link {
+    color: #ffffff;
+}
+
+/* Change the color on hover */
+.nav-link:hover,
+.nav-link:focus {
+    color: #cce6ff;
+}
+
+/* Style for the navbar text (user greeting) */
+.navbar-text {
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+/* Customize the navbar-toggler icon to show three bars */
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler-icon {
+    background-image: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    position: relative;
+}
+
+.navbar-toggler-icon div,
+.navbar-toggler-icon::before,
+.navbar-toggler-icon::after {
+    content: '';
+    background-color: #ffffff;
+    position: absolute;
+    width: 100%;
+    height: 0.2rem;
+}
+
+.navbar-toggler-icon::before {
+    top: 0.2rem;
+}
+
+.navbar-toggler-icon::after {
+    bottom: 0.2rem;
+}
+
+.navbar-toggler-icon div {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+    background-color: #336699;
+    border: none;
+}
+
+.dropdown-item {
+    color: #ffffff;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #284d73;
+}
+  {% endblock stylesheets %}
+
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <nav class="navbar navbar-expand-lg navbar-light bg-custom">
+            <div class="container-fluid">
+                <!-- Hamburger Menu Icon -->
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent"
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon">
+                        <!-- Three bars icon -->
+                        <div></div>
+                    </span>
+                </button>
+
+                <!-- Navbar Brand or Logo -->
+                <a class="navbar-brand" href="#">YourBrand</a>
+
+                <!-- Navbar Links -->
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav mr-auto">
+                        <!-- Home Link -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <!-- Dashboard Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="dashboardDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Dashboard
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="dashboardDropdown">
+                                <a class="dropdown-item" href="{% url 'dashboard1' %}">Dashboard 1</a>
+                                <a class="dropdown-item" href="{% url 'dashboard2' %}">Dashboard 2</a>
+                                <!-- Add more dashboard links as needed -->
+                            </div>
+                        </li>
+                        <!-- Additional Tabs -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Tab 1</a>
+                        </li>
+                        <!-- Add more tabs as needed -->
+                    </ul>
+
+                    <!-- Right Side User Greeting -->
+                    <span class="navbar-text ml-auto">
+                        Hello, {{ request.user.first_name }}
+                    </span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main role="main" class="container-fluid">
+        {% block content %}
+        <!-- Page-specific content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+
+    <!-- Additional scripts -->
+    {% block javascripts %}{% endblock %}
+</body>
+</html>
