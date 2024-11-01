@@ -1,0 +1,262 @@
+<html>
+<head>
+<title>Sentiment Analysis.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #0037a6;}
+.s5 { color: #1750eb;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Sentiment Analysis.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% 
+#import os</span>
+<span class="s0">#%% 
+#os.chdir(r'C:\Users\Bumjoo\OneDrive - Western Governors University\WGU\D213 Advanced Data Analytics\Data sets\sentiment labelled sentences')</span>
+<span class="s0">#%% 
+#Import libraries</span>
+<span class="s2">import </span><span class="s1">pandas </span><span class="s2">as </span><span class="s1">pd</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">import </span><span class="s1">matplotlib.pyplot </span><span class="s2">as </span><span class="s1">plt</span>
+<span class="s2">import </span><span class="s1">re</span>
+<span class="s2">from </span><span class="s1">collections </span><span class="s2">import </span><span class="s1">Counter</span>
+<span class="s2">import </span><span class="s1">nltk</span>
+<span class="s2">from </span><span class="s1">nltk.corpus </span><span class="s2">import </span><span class="s1">stopwords</span>
+<span class="s2">from </span><span class="s1">wordcloud </span><span class="s2">import </span><span class="s1">WordCloud, STOPWORDS, ImageColorGenerator</span>
+<span class="s2">from </span><span class="s1">sklearn.feature_extraction.text </span><span class="s2">import </span><span class="s1">CountVectorizer</span>
+<span class="s2">from </span><span class="s1">sklearn.linear_model </span><span class="s2">import </span><span class="s1">LogisticRegression</span>
+<span class="s2">from </span><span class="s1">sklearn.model_selection </span><span class="s2">import </span><span class="s1">KFold</span>
+<span class="s2">from </span><span class="s1">sklearn.model_selection </span><span class="s2">import </span><span class="s1">train_test_split</span>
+<span class="s2">from </span><span class="s1">sklearn.metrics </span><span class="s2">import </span><span class="s1">confusion_matrix, classification_report</span>
+<span class="s2">import </span><span class="s1">tensorflow </span><span class="s2">as </span><span class="s1">tf</span>
+<span class="s2">from </span><span class="s1">tensorflow.keras.preprocessing.text </span><span class="s2">import </span><span class="s1">Tokenizer</span>
+<span class="s2">from </span><span class="s1">tensorflow.keras.preprocessing.sequence </span><span class="s2">import </span><span class="s1">pad_sequences</span>
+<span class="s2">from </span><span class="s1">tensorflow.keras.models </span><span class="s2">import </span><span class="s1">Sequential</span>
+<span class="s2">from </span><span class="s1">tensorflow.keras.layers </span><span class="s2">import </span><span class="s1">Embedding, LSTM, Dense, Dropout, SpatialDropout1D, BatchNormalization</span>
+<span class="s2">from </span><span class="s1">tensorflow.keras.callbacks </span><span class="s2">import </span><span class="s1">EarlyStopping</span>
+<span class="s2">from </span><span class="s1">keras.regularizers </span><span class="s2">import </span><span class="s1">l2</span>
+<span class="s0">#%% 
+# Load the Amazon dataset</span>
+<span class="s1">amazon_df = pd.read_csv(</span><span class="s3">'amazon_cells_labelled.txt'</span><span class="s1">, delimiter=</span><span class="s3">'</span><span class="s4">\t</span><span class="s3">'</span><span class="s1">, header=</span><span class="s2">None</span><span class="s1">, names=[</span><span class="s3">'text'</span><span class="s1">, </span><span class="s3">'label'</span><span class="s1">])</span>
+<span class="s1">amazon_df[</span><span class="s3">'source'</span><span class="s1">] = </span><span class="s3">'amazon'  </span><span class="s0"># Add a source column</span>
+
+<span class="s0"># Load the Yelp dataset</span>
+<span class="s1">yelp_df = pd.read_csv(</span><span class="s3">'yelp_labelled.txt'</span><span class="s1">, delimiter=</span><span class="s3">'</span><span class="s4">\t</span><span class="s3">'</span><span class="s1">, header=</span><span class="s2">None</span><span class="s1">, names=[</span><span class="s3">'text'</span><span class="s1">, </span><span class="s3">'label'</span><span class="s1">])</span>
+<span class="s1">yelp_df[</span><span class="s3">'source'</span><span class="s1">] = </span><span class="s3">'yelp'  </span><span class="s0"># Add a source column</span>
+
+<span class="s0"># Load the IMDB dataset</span>
+<span class="s1">imdb_df = pd.read_csv(</span><span class="s3">'imdb_labelled.txt'</span><span class="s1">, delimiter=</span><span class="s3">'</span><span class="s4">\t</span><span class="s3">'</span><span class="s1">, header=</span><span class="s2">None</span><span class="s1">, names=[</span><span class="s3">'text'</span><span class="s1">, </span><span class="s3">'label'</span><span class="s1">])</span>
+<span class="s1">imdb_df[</span><span class="s3">'source'</span><span class="s1">] = </span><span class="s3">'imdb'  </span><span class="s0"># Add a source column</span>
+
+<span class="s0"># Concatenate all dataframes into one</span>
+<span class="s1">combined_df = pd.concat([amazon_df, yelp_df, imdb_df], ignore_index=</span><span class="s2">True</span><span class="s1">)</span>
+<span class="s0">#%% 
+# Function to find non-alphanumeric characters</span>
+<span class="s2">def </span><span class="s1">find_unusual_chars(text):</span>
+    <span class="s2">return </span><span class="s1">re.findall(</span><span class="s3">r'[^\x00-\x7F]+'</span><span class="s1">, text)</span>
+
+<span class="s0"># Apply the function and find sentences with unusual characters</span>
+<span class="s1">combined_df[</span><span class="s3">'unusual_chars'</span><span class="s1">] = combined_df[</span><span class="s3">'text'</span><span class="s1">].apply(find_unusual_chars)</span>
+<span class="s1">df_unusual = combined_df[combined_df[</span><span class="s3">'unusual_chars'</span><span class="s1">].map(len) &gt; </span><span class="s5">0</span><span class="s1">]</span>
+
+<span class="s0"># Display sentences with unusual characters</span>
+<span class="s1">df_unusual[[</span><span class="s3">'text'</span><span class="s1">, </span><span class="s3">'unusual_chars'</span><span class="s1">]]</span>
+<span class="s0">#%% 
+#vocab size</span>
+<span class="s1">tokenizer = Tokenizer(oov_token=</span><span class="s3">'&lt;OOV&gt;'</span><span class="s1">)  </span><span class="s0"># Remove num_words parameter</span>
+<span class="s1">tokenizer.fit_on_texts(combined_df[</span><span class="s3">'text'</span><span class="s1">])</span>
+<span class="s1">vocab_size = len(tokenizer.word_index)</span>
+<span class="s1">print(</span><span class="s3">f&quot;Updated Vocabulary Size: </span><span class="s4">{</span><span class="s1">vocab_size</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+
+<span class="s0">#%% 
+#Data Cleaning such as lower case, removing stop words and punctuation, eliminating extra white spaces</span>
+
+<span class="s1">nltk.download(</span><span class="s3">'stopwords'</span><span class="s1">)</span>
+<span class="s1">stop_words = set(stopwords.words(</span><span class="s3">'english'</span><span class="s1">))</span>
+
+<span class="s2">def </span><span class="s1">clean_text(text):</span>
+    <span class="s1">text = text.lower()</span>
+    <span class="s1">text = re.sub(</span><span class="s3">r&quot;[^a-zA-Z0-9]&quot;</span><span class="s1">, </span><span class="s3">&quot; &quot;</span><span class="s1">, text)</span>
+    <span class="s1">text = </span><span class="s3">' '</span><span class="s1">.join(word </span><span class="s2">for </span><span class="s1">word </span><span class="s2">in </span><span class="s1">text.split() </span><span class="s2">if </span><span class="s1">word </span><span class="s2">not in </span><span class="s1">stop_words)</span>
+    <span class="s2">return </span><span class="s1">text</span>
+
+<span class="s1">combined_df[</span><span class="s3">'text'</span><span class="s1">] = combined_df[</span><span class="s3">'text'</span><span class="s1">].apply(clean_text)</span>
+
+<span class="s0">#%% 
+#vocab size</span>
+<span class="s1">tokenizer = Tokenizer(oov_token=</span><span class="s3">'&lt;OOV&gt;'</span><span class="s1">)  </span><span class="s0"># Remove num_words parameter</span>
+<span class="s1">tokenizer.fit_on_texts(combined_df[</span><span class="s3">'text'</span><span class="s1">])</span>
+<span class="s1">vocab_size = len(tokenizer.word_index)</span>
+<span class="s1">print(</span><span class="s3">f&quot;Updated Vocabulary Size: </span><span class="s4">{</span><span class="s1">vocab_size</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+#showing the wordcloud</span>
+<span class="s1">list_text =</span><span class="s3">' '</span><span class="s1">.join(combined_df[</span><span class="s3">'text'</span><span class="s1">].to_list())</span>
+<span class="s1">wordcloud = WordCloud(stopwords = stop_words).generate(list_text)</span>
+<span class="s1">plt.imshow(wordcloud, interpolation=</span><span class="s3">'bilinear'</span><span class="s1">)</span>
+<span class="s1">plt.axis(</span><span class="s3">'off'</span><span class="s1">)</span>
+<span class="s1">plt.savefig(</span><span class="s3">'wordcloud.png'</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+#embedding length</span>
+<span class="s1">embedding_length = </span><span class="s5">100  </span>
+<span class="s1">print(</span><span class="s3">f&quot;Proposed embedding length: </span><span class="s4">{</span><span class="s1">embedding_length</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+# Initialize the tokenizer</span>
+<span class="s1">tokenizer = Tokenizer()</span>
+
+<span class="s0"># Fit the tokenizer on the text data</span>
+<span class="s1">tokenizer.fit_on_texts(combined_df[</span><span class="s3">'text'</span><span class="s1">])  </span><span class="s0"># Assuming your text column is named 'text'</span>
+
+<span class="s0"># Create the 'tokens' column (list of tokenized words)</span>
+<span class="s1">combined_df[</span><span class="s3">'tokens'</span><span class="s1">] = tokenizer.texts_to_sequences(combined_df[</span><span class="s3">'text'</span><span class="s1">])</span>
+
+<span class="s1">combined_df.head()</span>
+<span class="s0">#%% 
+</span><span class="s1">combined_df</span>
+<span class="s0">#%% 
+# Tokenize the sentences</span>
+<span class="s0">#Max number of unique words</span>
+<span class="s1">all_text = </span><span class="s3">' '</span><span class="s1">.join(amazon_df[</span><span class="s3">'text'</span><span class="s1">])</span>
+<span class="s1">word_counts = Counter(all_text.split())</span>
+<span class="s0"># Sort words by frequency, keeping the top frequent ones</span>
+<span class="s1">top_words = [word </span><span class="s2">for </span><span class="s1">word, freq </span><span class="s2">in </span><span class="s1">word_counts.most_common(</span><span class="s5">15000</span><span class="s1">)]</span>
+<span class="s1">vocab_size = len(top_words)</span>
+<span class="s1">vocab_size</span>
+
+<span class="s0">#%% 
+# Now you can calculate sentence lengths</span>
+<span class="s1">combined_df[</span><span class="s3">'sentence_length'</span><span class="s1">] = combined_df[</span><span class="s3">'tokens'</span><span class="s1">].apply(len)</span>
+<span class="s0">#%% 
+# Get sentence lengths</span>
+<span class="s1">combined_df[</span><span class="s3">'sentence_length'</span><span class="s1">] = combined_df[</span><span class="s3">'tokens'</span><span class="s1">].apply(len)</span>
+
+<span class="s0"># Get basic statistics of sentence length</span>
+<span class="s1">print(combined_df[</span><span class="s3">'sentence_length'</span><span class="s1">].describe())</span>
+
+<span class="s0"># Propose max sequence length based on 95th percentile</span>
+<span class="s1">max_seq_length = int(combined_df[</span><span class="s3">'sentence_length'</span><span class="s1">].quantile(</span><span class="s5">0.95</span><span class="s1">))</span>
+<span class="s1">print(</span><span class="s3">f&quot;Proposed max sequence length (95th percentile): </span><span class="s4">{</span><span class="s1">max_seq_length</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span><span class="s1">max_seq_length</span>
+<span class="s0">#%% 
+# Pad sequences</span>
+<span class="s1">padded_sequences = pad_sequences(sequences, maxlen= max_seq_length , padding=</span><span class="s3">'post'</span><span class="s1">)</span>
+<span class="s1">print(padded_sequences[:</span><span class="s5">5</span><span class="s1">])</span>
+<span class="s0">#%% 
+#Data Preparation</span>
+<span class="s1">combined_df[</span><span class="s3">'sentiment'</span><span class="s1">] = combined_df[</span><span class="s3">'label'</span><span class="s1">].apply(</span><span class="s2">lambda </span><span class="s1">x: </span><span class="s3">'positive' </span><span class="s2">if </span><span class="s1">x == </span><span class="s5">1 </span><span class="s2">else </span><span class="s3">'negative'</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span><span class="s1">unique_labels = combined_df[</span><span class="s3">'sentiment'</span><span class="s1">].unique()</span>
+<span class="s1">print(</span><span class="s3">f&quot;Sentiment categories: </span><span class="s4">{</span><span class="s1">unique_labels</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+#Train Test split</span>
+<span class="s1">X = combined_df[</span><span class="s3">'text'</span><span class="s1">]</span>
+<span class="s1">y = combined_df[</span><span class="s3">'label'</span><span class="s1">]</span>
+<span class="s1">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=</span><span class="s5">0.2</span><span class="s1">, random_state=</span><span class="s5">42</span><span class="s1">)</span>
+<span class="s0">#%% 
+#tokenization and padding</span>
+<span class="s1">vocab_size = </span><span class="s5">5000</span>
+<span class="s1">tokenizer = Tokenizer(num_words = vocab_size, oov_token=</span><span class="s3">'&lt;OOV&gt;'</span><span class="s1">)  </span><span class="s0"># Remove num_words parameter</span>
+<span class="s1">tokenizer.fit_on_texts(X_train)</span>
+<span class="s1">X_train_seq = tokenizer.texts_to_sequences(X_train)</span>
+<span class="s1">X_test_seq = tokenizer.texts_to_sequences(X_test)</span>
+<span class="s0">#%% 
+</span><span class="s1">X_train_pad = pad_sequences(X_train_seq, maxlen=max_seq_length, padding = </span><span class="s3">'post'</span><span class="s1">)</span>
+<span class="s1">X_test_pad = pad_sequences(X_test_seq, maxlen=max_seq_length, padding = </span><span class="s3">'post'</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span><span class="s1">X_train_pad_i=pd.DataFrame(X_train_pad)</span>
+<span class="s1">X_test_pad_i=pd.DataFrame(X_test_pad)</span>
+<span class="s0">#%% 
+# Save prepared data</span>
+<span class="s1">X_train_pad_i.to_csv(</span><span class="s3">'X_train.csv'</span><span class="s1">, index=</span><span class="s2">False</span><span class="s1">)</span>
+<span class="s1">X_test_pad_i.to_csv(</span><span class="s3">'X_test.csv'</span><span class="s1">, index=</span><span class="s2">False</span><span class="s1">)</span>
+<span class="s1">y_train.to_csv(</span><span class="s3">'Y_train.csv'</span><span class="s1">, index=</span><span class="s2">False</span><span class="s1">)</span>
+<span class="s1">y_test.to_csv(</span><span class="s3">'Y_test.csv'</span><span class="s1">, index=</span><span class="s2">False</span><span class="s1">)</span>
+
+<span class="s0">#%% 
+</span><span class="s2">from </span><span class="s1">keras.callbacks </span><span class="s2">import </span><span class="s1">LearningRateScheduler</span>
+
+<span class="s0"># Define a function for the scheduler</span>
+<span class="s2">def </span><span class="s1">scheduler(epoch, lr):</span>
+    <span class="s2">if </span><span class="s1">epoch == </span><span class="s5">0</span><span class="s1">:  </span><span class="s0"># Every 5 epochs</span>
+        <span class="s2">return </span><span class="s1">lr * </span><span class="s5">0.1  </span><span class="s0"># Reduce learning rate by 0.5</span>
+    <span class="s2">return </span><span class="s1">lr</span>
+<span class="s1">lr_scheduler = LearningRateScheduler(scheduler)</span>
+<span class="s0">#%% 
+#Neural Network</span>
+<span class="s1">embedding_dim = </span><span class="s5">100</span>
+
+<span class="s1">model = Sequential([</span>
+    <span class="s1">Embedding(input_dim=</span><span class="s5">5000</span><span class="s1">, output_dim=embedding_dim, input_length=max_length),</span>
+    <span class="s1">SpatialDropout1D(</span><span class="s5">0.5</span><span class="s1">),</span>
+    <span class="s1">LSTM(</span><span class="s5">4</span><span class="s1">, dropout=</span><span class="s5">0.5</span><span class="s1">),</span>
+    <span class="s1">BatchNormalization(), </span>
+    <span class="s1">Dropout(</span><span class="s5">0.5</span><span class="s1">),</span>
+    <span class="s1">Dense(</span><span class="s5">1</span><span class="s1">, activation=</span><span class="s3">'sigmoid'</span><span class="s1">,kernel_regularizer=l2(</span><span class="s5">0.1</span><span class="s1">))</span>
+<span class="s1">])</span>
+
+
+
+<span class="s1">model.compile(optimizer=</span><span class="s3">'adam'</span><span class="s1">, loss=</span><span class="s3">'binary_crossentropy'</span><span class="s1">, metrics=[</span><span class="s3">'accuracy'</span><span class="s1">])</span>
+
+<span class="s0"># Early stopping callback</span>
+<span class="s1">early_stopping = EarlyStopping(monitor=</span><span class="s3">'val_accuracy'</span><span class="s1">, patience=</span><span class="s5">5</span><span class="s1">, restore_best_weights=</span><span class="s2">True</span><span class="s1">)</span>
+
+<span class="s1">history = model.fit(X_train_pad, y_train, epochs = </span><span class="s5">20</span><span class="s1">, validation_data=(X_test_pad, y_test), batch_size=</span><span class="s5">14</span><span class="s1">, callbacks=[lr_scheduler,early_stopping])</span>
+<span class="s0">#%% 
+</span><span class="s1">model.summary()</span>
+<span class="s0">#%% 
+# Evaluate model on training data</span>
+<span class="s1">train_loss, train_accuracy = model.evaluate(X_train_pad, y_train)</span>
+<span class="s1">print(</span><span class="s3">f&quot;Training Accuracy: </span><span class="s4">{</span><span class="s1">train_accuracy</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+
+<span class="s1">y_train_pred = (model.predict(X_train_pad) &gt; </span><span class="s5">0.5</span><span class="s1">).astype(</span><span class="s3">&quot;int32&quot;</span><span class="s1">)</span>
+<span class="s1">print(</span><span class="s3">&quot;Training Data Confusion Matrix:&quot;</span><span class="s1">)</span>
+<span class="s1">print(confusion_matrix(y_train, y_train_pred))</span>
+<span class="s1">print(</span><span class="s3">&quot;Training Data Classification Report:&quot;</span><span class="s1">)</span>
+<span class="s1">print(classification_report(y_train, y_train_pred))</span>
+<span class="s0">#%% 
+# Evaluation on Test data</span>
+<span class="s1">loss, accuracy = model.evaluate(X_test_pad, y_test)</span>
+<span class="s1">print(</span><span class="s3">f&quot;Test Accuracy: </span><span class="s4">{</span><span class="s1">accuracy</span><span class="s4">}</span><span class="s3">&quot;</span><span class="s1">)</span>
+<span class="s1">y_pred = (model.predict(X_test_pad) &gt; </span><span class="s5">0.5</span><span class="s1">).astype(</span><span class="s3">&quot;int32&quot;</span><span class="s1">)</span>
+<span class="s1">print(confusion_matrix(y_test, y_pred))</span>
+<span class="s1">print(classification_report(y_test, y_pred))</span>
+<span class="s0">#%% 
+# Plot Accuracy and Loss</span>
+<span class="s1">plt.plot(history.history[</span><span class="s3">'accuracy'</span><span class="s1">], label=</span><span class="s3">'Train Accuracy'</span><span class="s1">)</span>
+<span class="s1">plt.plot(history.history[</span><span class="s3">'val_accuracy'</span><span class="s1">], label=</span><span class="s3">'Validation Accuracy'</span><span class="s1">)</span>
+<span class="s1">plt.legend()</span>
+<span class="s1">plt.title(</span><span class="s3">'Model Accuracy'</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+</span><span class="s1">plt.plot(history.history[</span><span class="s3">'loss'</span><span class="s1">], label=</span><span class="s3">'Train Loss'</span><span class="s1">)</span>
+<span class="s1">plt.plot(history.history[</span><span class="s3">'val_loss'</span><span class="s1">], label=</span><span class="s3">'Validation Loss'</span><span class="s1">)</span>
+<span class="s1">plt.legend()</span>
+<span class="s1">plt.title(</span><span class="s3">'Model Loss'</span><span class="s1">)</span>
+<span class="s1">plt.show()</span>
+<span class="s0">#%% 
+# Prediction Function</span>
+<span class="s2">def </span><span class="s1">predict_sentiment(text, threshold = </span><span class="s5">0.5</span><span class="s1">):</span>
+    <span class="s1">seq = tokenizer.texts_to_sequences([text])</span>
+    <span class="s1">pad_seq = pad_sequences(seq, maxlen=max_length)</span>
+    <span class="s1">prediction = model.predict(pad_seq).round().astype(int).item()</span>
+    <span class="s1">sentiment = </span><span class="s3">&quot;positive&quot; </span><span class="s2">if </span><span class="s1">prediction &gt; threshold </span><span class="s2">else </span><span class="s3">&quot;negative&quot;</span>
+    <span class="s1">print(</span><span class="s3">f&quot;Predicted sentiment: </span><span class="s4">{</span><span class="s1">sentiment</span><span class="s4">} </span><span class="s3">(Confidence: </span><span class="s4">{</span><span class="s1">prediction</span><span class="s4">:</span><span class="s3">.2f</span><span class="s4">}</span><span class="s3">)&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span><span class="s1">predict_sentiment(</span><span class="s3">&quot;It works good with my phone&quot;</span><span class="s1">)</span>
+<span class="s1">predict_sentiment(</span><span class="s3">&quot;It is bad with my phone&quot;</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span><span class="s1">model.save(</span><span class="s3">'sentiment_model.keras'</span><span class="s1">)</span>
+<span class="s0">#%% 
+</span></pre>
+</body>
+</html>
