@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'apps.home',  # Enable the inner home (home)
     'rest_framework',
     'gantt.apps.GanttConfig',
+    'google_analytics',
 ]
+
+GOOGLE_ANALYTICS_MODEL = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),

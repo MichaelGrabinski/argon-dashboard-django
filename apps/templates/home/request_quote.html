@@ -1,10 +1,9 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Request a Quote</title>
     <!-- Include your CSS files -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+     <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css" />
     <style>
         .form-section {
             padding: 40px 0;
@@ -12,6 +11,15 @@
         .form-container {
             max-width: 800px;
             margin: 0 auto;
+        }
+        .disabled-btn {
+            background-color: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .red-message {
+            color: red;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -68,13 +76,18 @@
                     <input type="file" id="images" name="images" class="form-control-file" accept="image/*" multiple>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <!-- Submit Button -->
+              <!--  <button type="submit" class="btn btn-primary">Submit</button> -->
+                <span class="red-message">Currently not available</span>
+
+                <!-- Disabled Send Button -->
+                <button type="button" class="btn disabled-btn" disabled>Submit</button>
             </form>
         </div>
     </section>
 
     <!-- Include jQuery and Bootstrap JS -->
-    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+	<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#service_type').change(function() {
