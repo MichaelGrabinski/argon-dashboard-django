@@ -72,7 +72,7 @@
 
     <div class="hero_bg_box">
       <div class="bg_img_box">
-        <img src="/static/images/hero-bg.png" alt="">
+        <img src="/static/images/Public_Page/hero-bg.webp" alt="">
       </div>
     </div>
 
@@ -80,7 +80,7 @@
     <header class="header_section">
       <div class="container-fluid">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand" href="{% url 'home' %}>
             <span>
               Human Futures, LLC
             </span>
@@ -134,7 +134,7 @@
                       At Human Futures, LLC, we offer comprehensive IT services including data management, software development, app development, and hardware solutions. Our expert team is dedicated to providing innovative and efficient technology solutions tailored to meet your business needs in Connecticut.
                     </p>
                     <div class="btn-box">
-                      <a href="about.html" class="btn1">
+                      <a class="btn1" href="{% url 'public_services' %}">
                         Read More
                       </a>
                     </div>
@@ -142,7 +142,7 @@
                 </div>
                 <div class="col-md-6">
                   <div class="img-box">
-                     <img src="/static/images/Tech.png" alt=""> 
+                     <img src="/static/images/Public_Page/Tech.webp" alt=""> 
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@
                       Our home improvement services cover a range of small to medium-sized projects including window installations, house siding, minor roofing, and renovations. We are committed to enhancing the beauty and functionality of your home with quality craftsmanship and attention to detail.
                     </p>
                     <div class="btn-box">
-                      <a href="about.html" class="btn1">
+                      <a class="btn1" href="{% url 'public_services' %}">
                         Read More
                       </a>
                     </div>
@@ -169,7 +169,7 @@
                 </div>
                 <div class="col-md-6">
                   <div class="img-box">
-                    <img src="/static/images/27120.png" alt=""> 
+                    <img src="/static/images/Public_Page/27120.webp" alt=""> 
                   </div>
                 </div>
               </div>
@@ -188,7 +188,7 @@
                       Human Futures, LLC is excited to announce our upcoming venture into new home construction. Starting next year, we will be building high-quality, energy-efficient homes designed to meet the modern needs of families in Connecticut. Stay tuned for more updates!
                     </p>
                     <div class="btn-box">
-                      <a href="about.html" class="btn1">
+                      <a class="btn1" href="{% url 'public_services' %}">
                         Read More
                       </a>
                     </div>
@@ -196,7 +196,7 @@
                 </div>
                 <div class="col-md-6">
                   <div class="img-box">
-                     <img src="/static/images/32514.png" alt=""> 
+                     <img src="/static/images/Public_Page/32514.webp" alt=""> 
                   </div>
                 </div>
               </div>
@@ -227,7 +227,7 @@
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images/window.png" alt="Window Installation">
+                <img src="/static/images//Public_Page/window.webp" alt="Window Installation">
               </div>
               <div class="detail-box">
                 <h5>
@@ -236,7 +236,7 @@
                 <p>
                   Enhance your home's energy efficiency and aesthetic appeal with our professional window installation services. Our team ensures precise fitting and high-quality materials for long-lasting performance.
                 </p>
-                <a href="about.html">
+                <a class="btn1" href="{% url 'public_services' %}">
                   Read More
                 </a>
               </div>
@@ -245,7 +245,7 @@
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images/siding.png" alt="Exterior Siding">
+                <img src="/static/images/Public_Page/siding.webp" alt="Exterior Siding">
               </div>
               <div class="detail-box">
                 <h5>
@@ -254,7 +254,7 @@
                 <p>
                   Protect and beautify your home with our durable and stylish exterior siding solutions. We offer a variety of materials and colors to match your home's design and withstand the elements.
                 </p>
-                <a href="about.html">
+                <a class="btn1" href="{% url 'public_services' %}">
                   Read More
                 </a>
               </div>
@@ -263,7 +263,7 @@
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images/s3.png" alt="Database Architecture, Migration, and Setup">
+                <img src="/static/images/Public_Page/s3.webp" alt="Database Architecture, Migration, and Setup">
               </div>
               <div class="detail-box">
                 <h5>
@@ -272,7 +272,7 @@
                 <p>
                   Optimize your data management with our expert database architecture, migration, and setup services. We ensure seamless transitions and robust systems tailored to your business needs.
                 </p>
-                <a href="about.html">
+                <a class="btn1" href="{% url 'public_services' %}">
                   Read More
                 </a>
               </div>
@@ -281,7 +281,7 @@
         </div>
 
         <div class="btn-box">
-          <a href="service.html">
+          <a href="{% url 'public_services' %}">
             View All
           </a>
         </div>
@@ -308,9 +308,10 @@
 	    <div class="service_container">
       <div class="container">
 <div class="btn-box" style="margin-top: 20px;">
-    <a href="{% url 'request_quote' %}">
-        Request a Quote
-    </a>
+  <!-- <a href="{% url 'request_quote' %}"> -->
+  <a style="text-decoration: line-through;">
+    Request a Quote
+  </a>
 </div></div></div>
   </section>
 
@@ -331,7 +332,7 @@
       <div class="row">
         <div class="col-md-6">
           <div class="img-box">
-            <img src="/static/images/Human_Future_1.webp" alt="">
+            <img src="/static/images/Public_Page/Human_Future_1.webp" alt="">
           </div>
         </div>
         <div class="col-md-6">
@@ -342,7 +343,7 @@
             <p>
               Human Futures, LLC is dedicated to providing top-notch IT services, home improvement solutions, and new home construction. Our team of experts is committed to delivering quality and innovation in every project we undertake.
             </p>
-            <a href="about.html">
+            <a href="{% url 'public_about' %}">
               Read More
             </a>
           </div>
@@ -366,7 +367,7 @@
         <div class="col-lg-3 col-sm-6">
           <div class="box">
             <div class="img-box">
-              <img src="/static/images/Michael.webp" class="img1" alt="Michael Grabinski, Ph.D.">
+              <img src="/static/images/Public_Page/Michael.webp" class="img1" alt="Michael Grabinski, Ph.D.">
             </div>
             <div class="detail-box">
               <h5>
@@ -398,7 +399,7 @@
         <div class="col-lg-3 col-sm-6">
           <div class="box">
             <div class="img-box">
-              <img src="/static/images/Nicholas.webp" class="img1" alt="Nicholas Gordneer">
+              <img src="/static/images/Public_Page/Nicholas.webp" class="img1" alt="Nicholas Gordneer">
             </div>
             <div class="detail-box">
               <h5>
@@ -430,7 +431,7 @@
         <div class="col-lg-3 col-sm-6">
           <div class="box">
             <div class="img-box">
-              <img src="/static/images/Jon.webp" class="img1" alt="Jon">
+              <img src="/static/images/Public_Page/Jon.webp" class="img1" alt="Jon">
             </div>
             <div class="detail-box">
               <h5>
