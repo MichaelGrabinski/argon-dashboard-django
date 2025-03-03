@@ -2,30 +2,87 @@
 {% block content %}
 <div class="container mt-4">
     <h1>Create Invoice</h1>
-    <form method="post">
+    <form method="post" id="invoice-form">
         {% csrf_token %}
+
+        <!-- Customer Information -->
         <div class="card mb-3">
             <div class="card-header">Customer Information</div>
             <div class="card-body">
                 {{ form.as_p }}
             </div>
         </div>
+
+        <!-- Project Details with Preset Selector -->
+        <div class="card mb-3">
+            <div class="card-header">Project Details</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="project-type">Project Type</label>
+                    <select id="project-type" name="project_type" class="form-control">
+                        <option value="">Select a type</option>
+                        <option value="remodel">Remodel</option>
+                        <option value="repair">Repair</option>
+                        <option value="new_build">New Build</option>
+                    </select>
+                </div>
+                <!-- Preset Options that show only for Remodel (or other types as needed) -->
+                <div id="preset-options" style="display:none;">
+                    <div class="form-group mt-3">
+                        <label for="quality">Quality</label>
+                        <select id="quality" name="quality" class="form-control">
+                            <option value="">Select quality</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="size">Size</label>
+                        <select id="size" name="size" class="form-control">
+                            <option value="">Select size</option>
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items with Extended Options and Price Calculation -->
         <div class="card mb-3">
             <div class="card-header">Line Items</div>
             <div class="card-body" id="line-items">
                 {{ formset.management_form }}
                 {% for form in formset.forms %}
-                    <div class="row line-item-form" id="line-item-form-{{ forloop.counter0 }}">
-                        <div class="col-md-3">
-                            {{ form.service.label_tag }} {{ form.service }}
+                    <div class="row line-item-form mb-2" id="line-item-form-{{ forloop.counter0 }}">
+                        <div class="col-md-2">
+                            {{ form.service.label_tag }} 
+                            {{ form.service }}
                         </div>
                         <div class="col-md-3">
-                            {{ form.description.label_tag }} {{ form.description }}
+                            {{ form.description.label_tag }} 
+                            {{ form.description }}
                         </div>
                         <div class="col-md-2">
-                            {{ form.quantity.label_tag }} {{ form.quantity }}
+                            {{ form.quantity.label_tag }} 
+                            {{ form.quantity }}
                         </div>
+                        <!-- Additional dynamic fields for each line item -->
                         <div class="col-md-2">
+                            <div class="dynamic-fields" style="display:none;">
+                                <label>Quality Option</label>
+                                <select name="line_quality_{{ forloop.counter0 }}" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="standard">Standard</option>
+                                    <option value="premium">Premium</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-primary calculate-item">Calc</button>
+                        </div>
+                        <div class="col-md-1">
                             <button type="button" class="btn btn-danger remove-line-item">Remove</button>
                         </div>
                     </div>
@@ -34,23 +91,40 @@
             </div>
             <button type="button" class="btn btn-secondary" id="add-item">Add another item</button>
         </div>
+
         <button type="submit" class="btn btn-success">Create Invoice</button>
     </form>
 </div>
 
 <!-- Empty form template for JavaScript dynamic form addition -->
 <div id="empty-form" style="display: none;">
-    <div class="row line-item-form" id="line-item-form-__prefix__">
-        <div class="col-md-3">
-            {{ formset.empty_form.service.label_tag }} {{ formset.empty_form.service }}
+    <div class="row line-item-form mb-2" id="line-item-form-__prefix__">
+        <div class="col-md-2">
+            {{ formset.empty_form.service.label_tag }} 
+            {{ formset.empty_form.service }}
         </div>
         <div class="col-md-3">
-            {{ formset.empty_form.description.label_tag }} {{ formset.empty_form.description }}
+            {{ formset.empty_form.description.label_tag }} 
+            {{ formset.empty_form.description }}
         </div>
         <div class="col-md-2">
-            {{ formset.empty_form.quantity.label_tag }} {{ formset.empty_form.quantity }}
+            {{ formset.empty_form.quantity.label_tag }} 
+            {{ formset.empty_form.quantity }}
         </div>
         <div class="col-md-2">
+            <div class="dynamic-fields" style="display:none;">
+                <label>Quality Option</label>
+                <select name="line_quality" class="form-control">
+                    <option value="">Select</option>
+                    <option value="standard">Standard</option>
+                    <option value="premium">Premium</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-primary calculate-item">Calc</button>
+        </div>
+        <div class="col-md-1">
             <button type="button" class="btn btn-danger remove-line-item">Remove</button>
         </div>
     </div>
@@ -64,8 +138,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let addItemButton = document.getElementById('add-item');
     let totalForms = document.getElementById('id_form-TOTAL_FORMS');
     let lineItemsContainer = document.getElementById('line-items');
-    let emptyFormTemplate = document.getElementById('empty-form').innerHTML.replace(/__prefix__/g, '{{ formset.total_form_count }}');
+    let emptyFormTemplate = document.getElementById('empty-form').innerHTML;
 
+    // Add new line item
     addItemButton.addEventListener('click', function(e) {
         e.preventDefault();
         let currentFormCount = parseInt(totalForms.value);
@@ -74,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         totalForms.value = currentFormCount + 1;
     });
 
-    // Event delegation for removing line items
+    // Remove line item and update form count
     lineItemsContainer.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-line-item')) {
             e.preventDefault();
@@ -82,12 +157,37 @@ document.addEventListener('DOMContentLoaded', function() {
             formRow.remove();
             updateTotalForms();
         }
+        if (e.target.classList.contains('calculate-item')) {
+            e.preventDefault();
+            // Here you would gather the row data and, for example, trigger an AJAX call
+            // to fetch the appropriate price reference and calculate values.
+            alert("Calculating item cost based on service and preset price list...");
+        }
     });
 
     function updateTotalForms() {
         let formCount = lineItemsContainer.querySelectorAll('.line-item-form').length;
         totalForms.value = formCount;
     }
+
+    // Toggle preset options based on selected project type
+    let projectTypeSelect = document.getElementById('project-type');
+    let presetOptionsContainer = document.getElementById('preset-options');
+
+    projectTypeSelect.addEventListener('change', function(e) {
+        let selectedType = e.target.value;
+        if(selectedType === 'remodel'){
+            presetOptionsContainer.style.display = 'block';
+            document.querySelectorAll('.line-item-form .dynamic-fields').forEach(function(field){
+                field.style.display = 'block';
+            });
+        } else {
+            presetOptionsContainer.style.display = 'none';
+            document.querySelectorAll('.line-item-form .dynamic-fields').forEach(function(field){
+                field.style.display = 'none';
+            });
+        }
+    });
 });
 </script>
 {% endblock %}
