@@ -664,6 +664,65 @@ class CartItem(models.Model):
 
         return self.total_price
 
+
+
+class PriceListEntry(models.Model):
+    PROJECT_TYPE_CHOICES = (
+        ('remodel', 'Remodel'),
+        ('repair', 'Repair'),
+        ('new_build', 'New Build'),
+    )
+    QUALITY_CHOICES = (
+        ('standard', 'Standard'),
+        ('premium', 'Premium'),
+    )
+    SIZE_CHOICES = (
+        ('small', 'Small'),
+        ('medium', 'Medium'),
+        ('large', 'Large'),
+    )
+    
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='price_list_entries')
+    project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES)
+    quality = models.CharField(max_length=20, choices=QUALITY_CHOICES, null=True, blank=True)
+    size = models.CharField(max_length=20, choices=SIZE_CHOICES, null=True, blank=True)
+    labor_cost_adjustment = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    material_cost_adjustment = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    overhead_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('10.00'))
+    profit_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('15.00'))
+    
+    def calculate_adjusted_costs(self, quantity):
+        # Retrieve base costs from the service
+        labor = self.service.labor_cost_per_unit * quantity
+        material = self.service.material_cost_per_unit * quantity
+        
+        # Apply adjustments
+        labor += self.labor_cost_adjustment
+        material += self.material_cost_adjustment
+        
+        base_cost = labor + material
+        overhead = base_cost * (self.overhead_percentage / Decimal('100'))
+        profit = base_cost * (self.profit_percentage / Decimal('100'))
+        total_cost = base_cost + overhead + profit
+        
+        return {
+            'labor_cost': labor,
+            'material_cost': material,
+            'base_cost': base_cost,
+            'overhead': overhead,
+            'profit': profit,
+            'total_cost': total_cost
+        }
+
+    def __str__(self):
+        return f"{self.service.name} - {self.project_type} ({self.quality or 'N/A'}, {self.size or 'N/A'})"
+
+
+
+
+
+
+
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
