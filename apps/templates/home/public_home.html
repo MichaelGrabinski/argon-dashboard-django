@@ -1,239 +1,117 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-
 <head>
-  <!-- Basic -->
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
   <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/png">
-
   <title>Human Futures, LLC</title>
 
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-
-  <!-- fonts style -->
+  <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-
-  <!--owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-
-  <!-- font awesome style -->
-  <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet" />
-
-  <!-- Custom styles for this template -->
-  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="{% static 'css/responsive.css' %}" rel="stylesheet" />
-
-  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/responsive.css' %}" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
   <style>
-    /* ----- MAP HEIGHTS ----- */
-    #map,
-    #deliveryMap {
-      height: 400px;
-      width: 100%;
-    }
-
-    /* ----- NAVBAR FIXES ----- */
-    .navbar-brand {
-      font-weight: 700;
-      font-size: 1.4rem;
-    }
-
-    .navbar-nav {
-      align-items: center;
-    }
-
-    .navbar-nav .nav-link {
-      padding: 0.5rem 1.2rem;
-    }
-
-    /* ----- SLIDER BOUNCE FIX ----- */
-    .slider_section .carousel-item {
-      /* same height for every slide to prevent page jump */
-      min-height: 600px;
-      display: -webkit-box;
-      display: -ms-flexbox;
-      display: flex;
-      -webkit-box-align: center;
-          -ms-flex-align: center;
-              align-items: center;
-    }
-
-    .slider_section .img-box img {
-      width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-    }
-
-    /* ----- TEAM IMAGES ----- */
-    .team_container .box .img-box img {
-      width: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      max-width: 120px;
-      max-height: 120px;
-    }
+    #map,#deliveryMap{height:400px;width:100%}
+    .navbar-brand{font-weight:700;font-size:1.4rem}
+    .navbar-nav{align-items:center}
+    .navbar-nav .nav-link{padding:0.5rem 1.2rem}
+    .slider_section .carousel-item{min-height:600px;display:flex;align-items:center}
+    .slider_section .img-box img{width:100%;max-height:400px;object-fit:contain}
+    .team_container .box .img-box img{width:100%;border-radius:50%;object-fit:cover;max-width:120px;max-height:120px}
   </style>
 </head>
-
 <body>
-  <div class="hero_area">
-    <div class="hero_bg_box">
-      <div class="bg_img_box">
-        <img src="{% static 'images/Public_Page/hero-bg.webp' %}" alt="Hero background">
-      </div>
-    </div>
+<div class="hero_area">
+  <div class="hero_bg_box"><div class="bg_img_box"><img src="{% static 'images/Public_Page/hero-bg.webp' %}" alt=""></div></div>
 
-    <!-- ===== HEADER ===== -->
-    <header class="header_section">
-      <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg custom_nav-container">
-          <a class="navbar-brand" href="{% url 'home' %}">
-            <span>Human Futures, LLC</span>
-          </a>
-
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ml-auto">
-              <li class="nav-item active"><a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'public_about' %}">About</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'public_services' %}">Services</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'showcase' %}">Showcase</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'original_home' %}">Employee&nbsp;Login</a></li>
-            </ul>
-          </div>
-        </nav>
-      </div>
-    </header>
-    <!-- ===== END HEADER ===== -->
-
-    <!-- ===== SLIDER ===== -->
-    <section class="slider_section">
-      <div id="customCarousel1" class="carousel slide" data-ride="carousel" data-interval="6500">
-        <div class="carousel-inner">
-          <!-- ---- SLIDE 1: FREIGHT SERVICES ---- -->
-          <div class="carousel-item active">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-                  <div class="detail-box">
-                    <h1>Freight<br>Services</h1>
-                    <p>
-                      Human Futures, LLC now offers regional <strong>freight hauling &amp; logistics</strong> throughout Connecticut and the Northeast corridor. From single‑pallet hot‑shots to full‑truckload moves, our FMCSA‑licensed drivers keep your cargo on schedule and your costs predictable.
-                    </p>
-                    <div class="btn-box">
-                      <a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
-                  <div class="img-box">
-                    <img src="{% static 'images/Public_Page/Truck.webp' %}" alt="Freight services truck">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ---- SLIDE 1: Info Tech ---- -->
-          <div class="carousel-item active">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-                  <div class="detail-box">
-                    <h1>Info<br>Tech</h1>
-                    <p>
-                       Human Futures, LLC now provides regional <strong>information technology solutions</strong> throughout Connecticut and the Northeast corridor. From single-system troubleshooting to comprehensive network management, our certified IT professionals ensure your systems run smoothly and your technology investments are optimized.
-					   </p>
-                    <div class="btn-box">
-                      <a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
-                  <div class="img-box">
-                    <img src="{% static 'images/Public_Page/Tech.webp' %}" alt="Tech services">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- ---- SLIDE 2: HOME IMPROVEMENT ---- -->
-          <div class="carousel-item">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-                  <div class="detail-box">
-                    <h1>Home<br>Improvement</h1>
-                    <p>
-                      Our home‑improvement crew handles windows, siding, minor roofing, and whole‑home renovations — all with licensed craftsmen and transparent estimates.
-                    </p>
-                    <div class="btn-box">
-                      <a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
-                  <div class="img-box">
-                    <img src="{% static 'images/Public_Page/27120.webp' %}" alt="Home improvement">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ---- SLIDE 3: NEW CONSTRUCTION ---- -->
-          <div class="carousel-item">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-                  <div class="detail-box">
-                    <h1>Home<br>Construction</h1>
-                    <p>
-                      Breaking ground <strong>next season</strong>: energy‑efficient homes built for New England weather. Follow our progress and reserve an early build slot.
-                    </p>
-                    <div class="btn-box">
-                      <a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
-                  <div class="img-box">
-                    <img src="{% static 'images/Public_Page/32514.webp' %}" alt="New construction rendering">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <header class="header_section">
+    <div class="container-fluid">
+      <nav class="navbar navbar-expand-lg custom_nav-container">
+        <a class="navbar-brand" href="{% url 'home' %}"><span>Human Futures, LLC</span></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto text-center">
+            <li class="nav-item active"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'public_about' %}">About</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'public_services' %}">Services</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'showcase' %}">Showcase</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'original_home' %}">Employee&nbsp;Login</a></li>
+          </ul>
         </div>
-        <!-- controls -->
-        <a class="carousel-control-prev" href="#customCarousel1" role="button" data-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#customCarousel1" role="button" data-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">Next</span>
-        </a>
-      </div>
-    </section>
-    <!-- ===== END SLIDER ===== -->
-  </div>
+      </nav>
+    </div>
+  </header>
 
+  <section class="slider_section">
+    <div id="customCarousel1" class="carousel slide" data-ride="carousel" data-interval="6500">
+      <div class="carousel-inner">
+        <!-- SLIDE 1: Freight (active) -->
+        <div class="carousel-item active">
+          <div class="container"><div class="row">
+            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+              <div class="detail-box">
+                <h1>Freight<br>Services</h1>
+                <p>Human Futures, LLC now offers regional <strong>freight hauling &amp; logistics</strong> throughout Connecticut and the Northeast corridor. From single‑pallet hot‑shots to full‑truckload moves, our FMCSA‑licensed drivers keep your cargo on schedule and your costs predictable.</p>
+                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
+              </div>
+            </div>
+            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/Truck.webp' %}" alt="Freight services truck"></div></div>
+          </div></div>
+        </div>
+
+        <!-- SLIDE 2: Info Tech -->
+        <div class="carousel-item">
+          <div class="container"><div class="row">
+            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+              <div class="detail-box">
+                <h1>Info<br>Tech</h1>
+                <p>Human Futures, LLC delivers <strong>information‑technology solutions</strong> from single‑system troubleshooting to full network management, so your infrastructure stays resilient and cost‑effective.</p>
+                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
+              </div>
+            </div>
+            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/Tech.webp' %}" alt="Tech services"></div></div>
+          </div></div>
+        </div>
+
+        <!-- SLIDE 3: Home Improvement -->
+        <div class="carousel-item">
+          <div class="container"><div class="row">
+            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+              <div class="detail-box">
+                <h1>Home<br>Improvement</h1>
+                <p>We handle windows, siding, minor roofing, and whole‑home renovations — all with licensed craftsmen and transparent estimates.</p>
+                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
+              </div>
+            </div>
+            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/27120.webp' %}" alt="Home improvement"></div></div>
+          </div></div>
+        </div>
+
+        <!-- SLIDE 4: New Construction -->
+        <div class="carousel-item">
+          <div class="container"><div class="row">
+            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+              <div class="detail-box">
+                <h1>Home<br>Construction</h1>
+                <p>Breaking ground <strong>next season</strong>: energy‑efficient homes tailored to New England living. Follow our progress and reserve an early build slot.</p>
+                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
+              </div>
+            </div>
+            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/32514.webp' %}" alt="New construction rendering"></div></div>
+          </div></div>
+        </div>
+      </div>
+      <a class="carousel-control-prev" href="#customCarousel1" role="button" data-slide="prev"><span class="carousel-control-prev-icon"></span><span class="sr-only">Previous</span></a>
+      <a class="carousel-control-next" href="#customCarousel1" role="button" data-slide="next"><span class="carousel-control-next-icon"></span><span class="sr-only">Next</span></a>
+    </div>
+  </section>
+</div>
 
 
 

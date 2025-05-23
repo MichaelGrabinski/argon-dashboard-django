@@ -1282,14 +1282,18 @@ openai_client = openai.OpenAI(
 
 # List of allowed models
 ALLOWED_MODELS = [
-    'gpt-4',
-    'gpt-4-vision',
-    'chatgpt-4o-latest',
-    'o1-preview',
-    'dall-e-generation',
-    'dall-e-edit',
-    'tts-1',
+    "gpt-4",
+    "gpt-4-vision",
+    "chatgpt-4o-latest",
+    "o1-preview",
+    "o3",            # NEW
+    "o4-mini",       # NEW
+    "o4-mini-high",  # NEW
+    "dall-e-generation",
+    "dall-e-edit",
+    "tts-1",
 ]
+
 
 @login_required
 def conversation_list(request):
@@ -1308,27 +1312,42 @@ def new_conversation(request):
     else:
         return redirect('conversation_list')
 
-def get_gpt_response(messages, model_name, user_input, image_file=None, include_context=True, max_context_messages=10):
-    if model_name in ['gpt-4', 'chatgpt-4o-latest', 'o1-preview']:
+def get_gpt_response(messages, model_name, user_input,
+                     image_file=None,
+                     include_context=True,
+                     max_context_messages=10):
+    # ------------- normal chat models -------------
+    if model_name in CHAT_MODELS:
         conversation_history = []
         if include_context:
             conversation_history = [
-                {"role": msg.sender, "content": msg.content}
-                for msg in messages
-            ]
-            # Limit to the last N messages
-            conversation_history = conversation_history[-max_context_messages:]
-            conversation_history.append({"role": "user", "content": user_input})
+                {"role": m.sender, "content": m.content} for m in messages
+            ][-max_context_messages:]
+
+        # ***Inject one system message that forces the model to reveal
+        #     its chain-of-thought (in markdown so it renders nicely).***
+        conversation_history.insert(
+            0,
+            {
+                "role": "system",
+                "content": (
+                    "When you answer, first think step-by-step and show your "
+                    "**Reasoning** section, then output a clear **Answer** "
+                    "section. Never hide your reasoning."
+                ),
+            },
+        )
+
+        conversation_history.append({"role": "user", "content": user_input})
 
         try:
             response = openai_client.chat.completions.create(
                 model=model_name,
                 messages=conversation_history,
             )
-            assistant_message = response.choices[0].message.content
-            return assistant_message.strip()
+            return response.choices[0].message.content.strip()
         except openai.OpenAIError as e:
-            logger.error(f"OpenAI API error: {e}")
+            logger.error("OpenAI API error: %s", e)
             return "An error occurred while processing your request."
 
     elif model_name == 'gpt-4-vision':
