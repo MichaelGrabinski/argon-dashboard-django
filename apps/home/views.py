@@ -1862,9 +1862,9 @@ def service_edit(request, service_id):
 from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from weasyprint import HTML
+#from weasyprint import HTML
 from django.contrib.staticfiles import finders
-
+'''
 @login_required
 def invoice_pdf_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
@@ -1927,7 +1927,7 @@ def send_invoice_email(request, invoice_id):
     messages.success(request, f'Invoice emailed to {invoice.customer_email}.')
 
     return redirect('invoice_detail', invoice_id=invoice.id)
-
+'''
 def showcase(request):
     projects = Project.objects.prefetch_related('images').all()
     return render(request, 'home/showcase.html', {'projects': projects})
