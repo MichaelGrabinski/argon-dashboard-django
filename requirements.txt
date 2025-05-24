@@ -21,5 +21,4 @@ bs4
 gtts
 pdfminer
 pdfminer.six
-weasyprint
 google_analytics
