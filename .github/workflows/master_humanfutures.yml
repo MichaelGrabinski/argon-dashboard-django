@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME:  ${{ github.repository_owner }}/hf-django   # <-- your Docker-Hub repo
+  IMAGE_NAME:  michaelgrabinski/hf-django    # <-- your Docker-Hub repo
   WEBAPP_NAME: HumanFutures                               # <-- Azure Web App name
 
 jobs:
