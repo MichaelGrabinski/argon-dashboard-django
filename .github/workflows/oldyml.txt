@@ -1,0 +1,49 @@
+
+
+name: Build & deploy container
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  IMAGE_NAME:  michaelgrabinski/hf-django
+  WEBAPP_NAME: HumanFutures
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    # 1️⃣ Enable Docker
+    - uses: docker/setup-buildx-action@v3
+
+    # 2️⃣ Login to Docker Hub
+    - uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # 3️⃣ Build & push image
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ env.IMAGE_NAME }}:latest
+
+    # 4. Log in to Azure (OIDC or publish-profile — keep whichever you already use)
+    - name: Azure login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B9833D2506694C1B9FD17D066ADBFB80 }}
+        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8288A19A52C44135A788B0103D4DB614 }}
+        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6C0B67B54A844958B48CBD9A7E241BBA }}
+
+    # 5. Tell the Web App to pull the new tag
+    - name: Deploy to Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name:   $WEBAPP_NAME
+        images:     docker.io/${{ env.IMAGE_NAME }}:latest
+        slot-name:  production
