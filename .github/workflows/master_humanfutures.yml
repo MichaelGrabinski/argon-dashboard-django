@@ -1,4 +1,4 @@
-- name: Debug secrets (masked)
+name: Debug secrets (masked)
   run: |
     echo "User: $DOCKERHUB_USERNAME"
     echo "Token length: ${#DOCKERHUB_TOKEN}"
