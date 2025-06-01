@@ -7,7 +7,7 @@ on:
 
 permissions:            # ← add this at the top (workflow-level)
   id-token: write        #  ⬅️ allow GitHub to mint an OIDC token
-  contents: read         #  ⬅️ allow checkout
+  contents: read         #  ⬅️ allow checkout i
 
 env:
   IMAGE_NAME:  michaelgrabinki/hf-django
