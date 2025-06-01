@@ -31,6 +31,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Debug secrets (masked)
+      run: |
+        echo "User: $DOCKERHUB_USERNAME"
+        echo "Token length: ${#DOCKERHUB_TOKEN}"
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
+
 
     # 3️ Build & push image
     - uses: docker/build-push-action@v5
