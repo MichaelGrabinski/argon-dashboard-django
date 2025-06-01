@@ -3,14 +3,22 @@ name: Build & deploy container
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
+
+permissions:            # ← add this at the top (workflow-level)
+  id-token: write        #  ⬅️ allow GitHub to mint an OIDC token
+  contents: read         #  ⬅️ allow checkout
 
 env:
-  IMAGE_NAME:  michaelgrabinki/hf-django
+  IMAGE_NAME:  michaelgrabinski/hf-django
   WEBAPP_NAME: HumanFutures
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    # (all the existing steps stay the same)
+
     env:
       DOCKERHUB_USERNAME: michaelgrabinki  # Replace with your actual Docker Hub username
     steps:
