@@ -11,43 +11,28 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: MichaelGrabinski  # Replace with your actual Docker Hub username
+
     steps:
     - uses: actions/checkout@v4
 
-    # 1️ Enable Docker
+    # 1️⃣ Enable Docker
     - uses: docker/setup-buildx-action@v3
 
-    # Debugging Step
-    - name: Print Environment Variables
-      run: |
-        echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
-        echo "WEBAPP_NAME=${{ env.WEBAPP_NAME }}"
-      env:
-        IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-        WEBAPP_NAME: ${{ secrets.WEBAPP_NAME }}
-
-    # 2️ Login to Docker Hub
+    # 2️⃣ Login to Docker Hub
     - uses: docker/login-action@v3
       with:
-        username: ${{ vars.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
-    - name: Debug secrets (masked)
-      run: |
-        echo "User: $DOCKERHUB_USERNAME"
-        echo "Token length: ${#DOCKERHUB_TOKEN}"
-      env:
-        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}  # Use a secret for the token
 
-
-    # 3️ Build & push image
+    # 3️⃣ Build & push image
     - uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ${{ env.IMAGE_NAME }}:latest
-
+        
     # 4. Log in to Azure (OIDC or publish-profile — keep whichever you already use)
     - name: Azure login
       uses: azure/login@v2
