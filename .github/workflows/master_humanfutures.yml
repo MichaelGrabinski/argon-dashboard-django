@@ -37,7 +37,7 @@ jobs:
         echo "User: $DOCKERHUB_USERNAME"
         echo "Token length: ${#DOCKERHUB_TOKEN}"
       env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         DOCKERHUB_TOKEN:    ${{ secrets.DOCKERHUB_TOKEN }}
 
 
