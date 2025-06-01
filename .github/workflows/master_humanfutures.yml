@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 env:
-  IMAGE_NAME:  michaelgrabinski/hf-django
+  IMAGE_NAME:  michaelgrabinki/hf-django
   WEBAPP_NAME: HumanFutures
 
 jobs:
