@@ -12,8 +12,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      DOCKERHUB_USERNAME: MichaelGrabinski  # Replace with your actual Docker Hub username
-
+      DOCKERHUB_USERNAME: michaelgrabinki  # Replace with your actual Docker Hub username
     steps:
     - uses: actions/checkout@v4
 
