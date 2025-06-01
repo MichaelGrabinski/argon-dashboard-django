@@ -96,3 +96,32 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [OptionGroupInline]
 
 admin.site.register(Product, ProductAdmin)
+
+
+# home/admin.py
+
+from django.contrib import admin
+from .models import Truck, TruckExpense, TruckLoad, TruckFile
+
+@admin.register(Truck)
+class TruckAdmin(admin.ModelAdmin):
+    list_display = ('name', 'license_plate', 'active')
+    list_filter = ('active',)
+
+@admin.register(TruckExpense)
+class TruckExpenseAdmin(admin.ModelAdmin):
+    list_display = ('truck', 'date_incurred', 'description', 'amount', 'category')
+    list_filter = ('truck', 'category', 'date_incurred')
+
+@admin.register(TruckLoad)
+class TruckLoadAdmin(admin.ModelAdmin):
+    list_display = (
+        'truck', 'date_started', 'date_completed', 'customer',
+        'pay_amount', 'status'
+    )
+    list_filter = ('truck', 'status', 'date_started')
+
+@admin.register(TruckFile)
+class TruckFileAdmin(admin.ModelAdmin):
+    list_display = ('truck', 'title', 'uploaded_at')
+    list_filter = ('truck',)

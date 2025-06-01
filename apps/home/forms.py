@@ -255,3 +255,55 @@ class AddToCartForm(forms.Form):
     width = forms.DecimalField(max_digits=6, decimal_places=2, min_value=0.01)
     height = forms.DecimalField(max_digits=6, decimal_places=2, min_value=0.01)
     quantity = forms.IntegerField(min_value=1)
+    
+# home/forms.py
+
+from django import forms
+from .models import Truck, TruckExpense, TruckLoad, TruckFile
+
+class TruckForm(forms.ModelForm):
+    class Meta:
+        model = Truck
+        fields = ['name', 'license_plate', 'active']
+
+
+class TruckExpenseForm(forms.ModelForm):
+    date_incurred = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+    class Meta:
+        model = TruckExpense
+        fields = ['truck', 'description', 'amount', 'date_incurred', 'category']
+
+
+class TruckLoadForm(forms.ModelForm):
+    date_started = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+    date_completed = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        required=False
+    )
+    time_loaded = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        required=False
+    )
+    time_unloaded = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        required=False
+    )
+
+    class Meta:
+        model = TruckLoad
+        fields = [
+            'truck', 'customer', 'date_started', 'date_completed',
+            'time_loaded', 'time_unloaded',
+            'pay_amount', 'miles', 'hours_total', 'hours_load_unload', 'status'
+        ]
+
+
+class TruckFileForm(forms.ModelForm):
+    class Meta:
+        model = TruckFile
+        fields = ['truck', 'title', 'file']

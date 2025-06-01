@@ -718,6 +718,121 @@ class PriceListEntry(models.Model):
         return f"{self.service.name} - {self.project_type} ({self.quality or 'N/A'}, {self.size or 'N/A'})"
 
 
+# home/models.py
+
+from django.db import models
+from django.contrib.auth.models import User
+from decimal import Decimal
+
+class Truck(models.Model):
+    """
+    If you already have a Vehicle model and want to reuse it for trucks,
+    you can skip this and reference Vehicle instead. Otherwise, use Truck.
+    """
+    name = models.CharField(max_length=100)
+    license_plate = models.CharField(max_length=50, blank=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name or f"Truck #{self.pk}"
+
+
+class TruckExpense(models.Model):
+    """
+    Monthly or variable expense for the trucking business.
+    """
+    truck = models.ForeignKey(
+        'Truck',
+        on_delete=models.CASCADE,
+        related_name='expenses'
+    )
+    description = models.CharField(max_length=200)
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    date_incurred = models.DateField()
+    # e.g. fuel, insurance, maintenance, tolls, etc.
+    category = models.CharField(max_length=50, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.truck.name} – {self.description} (${self.amount})"
+
+
+class TruckLoad(models.Model):
+    """
+    Record each load: pay, miles, hours, load/unload times, etc.
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+    ]
+
+    truck = models.ForeignKey(
+        'Truck',
+        on_delete=models.CASCADE,
+        related_name='loads'
+    )
+    date_started = models.DateField()
+    date_completed = models.DateField(null=True, blank=True)
+    customer = models.CharField(max_length=100, blank=True)
+    pay_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    miles = models.PositiveIntegerField(default=0)
+    hours_total = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    hours_load_unload = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+    # Optional timestamp fields if you want exact times:
+    time_loaded = models.TimeField(null=True, blank=True)
+    time_unloaded = models.TimeField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def profit(self):
+        """
+        (Example) Net profit = pay_amount – all expenses allocated to this load.
+        For simplicity, we won't allocate expenses per load here.
+        """
+        return self.pay_amount
+
+    def __str__(self):
+        return f"Load #{self.pk} ({self.truck.name}) – ${self.pay_amount}"
+
+
+class TruckFile(models.Model):
+    """
+    Upload truck-related documents (IFTA, gas card copy, registration, etc.).
+    """
+    truck = models.ForeignKey(
+        'Truck',
+        on_delete=models.CASCADE,
+        related_name='files'
+    )
+    title = models.CharField(max_length=100)
+    file = models.FileField(upload_to='trucking/files/%Y/%m/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} – {self.truck.name}"
 
 
 

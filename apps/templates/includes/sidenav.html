@@ -1,12 +1,13 @@
 {% load static %}
-<nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+<nav class="sidenav navbar navbar-vertical fixed-left navbar-expand-xs navbar-light bg-white" id="sidenav-main">
   <div class="scrollbar-inner">
     <!-- Brand -->
-    <div class="sidenav-header  align-items-center">
+    <div class="sidenav-header align-items-center">
       <a class="navbar-brand" href="/">
-        <img src="/static/assets/img/brand/blue.png" class="navbar-brand-img" alt="Argon Design">
+        <img src="{% static 'assets/img/brand/blue.png' %}" class="navbar-brand-img" alt="Argon Design">
       </a>
     </div>
+
     <div class="navbar-inner">
       <!-- Collapse -->
       <div class="collapse navbar-collapse" id="sidenav-collapse-main">
@@ -14,119 +15,129 @@
         <ul class="navbar-nav">
 
           <li class="nav-item">
-            <a class="nav-link {% if 'index' in segment %} active {% endif %}" href="/">
+            <a class="nav-link {% if 'index' in segment %}active{% endif %}" href="/">
               <i class="ni ni-tv-2 text-primary"></i>
               <span class="nav-link-text">Dashboard</span>
             </a>
-</li>
+          </li>
 
           <li class="nav-item">
-            <a class="nav-link {% if 'tools' in segment %} active {% endif %}" href="/tools/">
+            <a class="nav-link {% if 'tools' in segment %}active{% endif %}" href="/tools/">
               <i class="ni ni-ruler-pencil text-orange"></i>
               <span class="nav-link-text">Tools/Equipment</span>
-          </a>
-</li>
+            </a>
+          </li>
 
-<li class="nav-item">
-            <a class="nav-link {% if 'tasks' in segment %} active {% endif %}" href="/tasks/">
+          <li class="nav-item">
+            <a class="nav-link {% if 'tasks' in segment %}active{% endif %}" href="/tasks/">
               <i class="ni ni-settings text-black"></i>
               <span class="nav-link-text">Jobs/Tasks</span>
-            </a>           
-</li>
+            </a>
+          </li>
 
-
-<li class="nav-item">
-            <a class="nav-link {% if 'properties' in segment %} active {% endif %}" href="/properties/">
+          <li class="nav-item">
+            <a class="nav-link {% if 'properties' in segment %}active{% endif %}" href="/properties/">
               <i class="ni ni-building text-blue"></i>
               <span class="nav-link-text">Rentals</span>
-            </a>           
-</li>
-	<li class="nav-item">
-            <a class="nav-link {% if 'vehicles' in segment %} active {% endif %}" href="/vehicles/">
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'vehicles' in segment %}active{% endif %}" href="/vehicles/">
               <i class="ni ni-bus-front-12 text-blue"></i>
               <span class="nav-link-text">Cars</span>
-            </a> 		
-		</li>
-		
-	<li class="nav-item">
-            <a class="nav-link {% if 'invoices' in segment %} active {% endif %}" href="/invoices/">
-              <i class="ni ni-book-bookmark   text-red"></i>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'invoices' in segment %}active{% endif %}" href="/invoices/">
+              <i class="ni ni-book-bookmark text-red"></i>
               <span class="nav-link-text">Invoices</span>
-            </a> 		
-		</li>
-<!--
-<li class="nav-item">
-            <a class="nav-link {% if 'construction' in segment %} active {% endif %}" href="/construction/">
+            </a>
+          </li>
+
+          <!-- ====== NEW: Trucking ====== -->
+          <li class="nav-item">
+            <a class="nav-link {% if 'trucking' in segment %}active{% endif %}" href="/trucking/">
+              <i class="ni ni-delivery-fast text-indigo"></i>
+              <span class="nav-link-text">Trucking</span>
+            </a>
+          </li>
+          <!-- ========================== -->
+
+          <!--
+          <li class="nav-item">
+            <a class="nav-link {% if 'construction' in segment %}active{% endif %}" href="/construction/">
               <i class="ni ni-shop text-red"></i>
               <span class="nav-link-text">Construction</span>
-            </a> 
-		</li>
-		
-		
+            </a>
+          </li>
 
-
-		<li class="nav-item">
-            <a class="nav-link {% if 'game-studio' in segment %} active {% endif %}" href="/game-studio/">
+          <li class="nav-item">
+            <a class="nav-link {% if 'game-studio' in segment %}active{% endif %}" href="/game-studio/">
               <i class="ni ni-controller text-pink"></i>
               <span class="nav-link-text">Game Studio</span>
-            </a> 		
-		</li>	
--->
+            </a>
+          </li>
+          -->
 
-
-
-		<li class="nav-item">
-            <a class="nav-link {% if 'otherprojects' in segment %} active {% endif %}" href="/projects/">
+          <li class="nav-item">
+            <a class="nav-link {% if 'otherprojects' in segment %}active{% endif %}" href="/projects/">
               <i class="ni ni-archive-2 text-pink"></i>
               <span class="nav-link-text">Projects</span>
-            </a> 		
-		</li>	
-		
-	<li class="nav-item">
-            <a class="nav-link {% if 'budget-accounting' in segment %} active {% endif %}" href="/budget-accounting/">
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'budget-accounting' in segment %}active{% endif %}" href="/budget-accounting/">
               <i class="ni ni-books text-green"></i>
               <span class="nav-link-text">Budget</span>
-            </a> 		
-		</li>
-		
-	<li class="nav-item">
-            <a class="nav-link {% if 'conversations' in segment %} active {% endif %}" href="/conversations/">
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'conversations' in segment %}active{% endif %}" href="/conversations/">
               <i class="ni ni-circle-08 text-grey"></i>
               <span class="nav-link-text">GPT Assistant</span>
-            </a> 		
-		</li>
-		
+            </a>
+          </li>
+
           <li class="nav-item">
-            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="/profile.html">
+            <a class="nav-link {% if 'profile' in segment %}active{% endif %}" href="/profile.html">
               <i class="ni ni-single-02 text-yellow"></i>
               <span class="nav-link-text">Profile</span>
             </a>
           </li>
-           
+
         </ul>
+
         <!-- Divider -->
         <hr class="my-3">
+
         <!-- Heading -->
         <h6 class="navbar-heading p-0 text-muted">
           <span class="docs-normal">Resources</span>
         </h6>
+
         <!-- Navigation -->
         <ul class="navbar-nav mb-md-3">
-
           <li class="nav-item">
-            <a class="nav-link {% if 'icons' in segment %} active {% endif %}" href="/icons.html">
+            <a class="nav-link {% if 'icons' in segment %}active{% endif %}" href="/icons.html">
               <i class="ni ni-planet text-orange"></i>
               <span class="nav-link-text">Icons</span>
             </a>
           </li>
-		            <li class="nav-item">
-            <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href="/tables.html">
+
+          <li class="nav-item">
+            <a class="nav-link {% if 'tables' in segment %}active{% endif %}" href="/tables.html">
               <i class="ni ni-bullet-list-67 text-default"></i>
               <span class="nav-link-text">Tables</span>
             </a>
           </li>
+
+          <!--
           <li class="nav-item">
-    <!--        <a class="nav-link {% if 'map' in segment %} active {% endif %}" href="/map.html">
+            <a class="nav-link {% if 'map' in segment %}active{% endif %}" href="/map.html">
               <i class="ni ni-pin-3 text-primary"></i>
               <span class="nav-link-text">Google</span>
             </a>
@@ -138,29 +149,32 @@
               <span class="nav-link-text">Login (template)</span>
             </a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link" href="/register.html">
               <i class="ni ni-circle-08 text-pink"></i>
               <span class="nav-link-text">Register (template)</span>
             </a>
           </li>
-
-
--->
+          -->
 
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">
               <i class="ni ni-user-run text-red"></i>
               <span class="nav-link-text">Logout</span>
             </a>
-          </li> 
-          <li class="nav-item">
           </li>
 
           <li class="nav-item">
+            <!-- reserved for future -->
           </li>
 
           <li class="nav-item">
+            <!-- reserved for future -->
+          </li>
+
+          <li class="nav-item">
+            <!-- reserved for future -->
           </li>
         </ul>
       </div>

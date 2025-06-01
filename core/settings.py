@@ -21,15 +21,17 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'linux.krustykrew.org', 'humanfutures
 
 # Application definition
 ALLOWED_MODELS = [
-    'gpt-4',
-    'gpt-4-vision',
-    'dall-e-2',
-    'dall-e-3',
-    'tts-1',
-    'chatgpt-4o-latest',
-    'o1-preview'
+    "gpt-4",
+    "gpt-4-vision",
+    "chatgpt-4o-latest",
+    "o1-preview",
+    "o3",            # NEW
+    "o4-mini",       # NEW
+    "o4-mini-high",  # NEW
+    "dall-e-generation",
+    "dall-e-edit",
+    "tts-1",
 ]
-
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 INSTALLED_APPS = [

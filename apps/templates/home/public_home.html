@@ -5,500 +5,510 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/png">
-  <title>Human Futures, LLC</title>
 
+  <title>Human Futures, LLC</title>
+  <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/png">
+
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (for any icons) -->
   <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}" />
+
+  <!-- Your Custom CSS -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   <link rel="stylesheet" href="{% static 'css/responsive.css' %}" />
+
+  <!-- Leaflet CSS (only once) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
   <style>
-    #map,#deliveryMap{height:400px;width:100%}
-    .navbar-brand{font-weight:700;font-size:1.4rem}
-    .navbar-nav{align-items:center}
-    .navbar-nav .nav-link{padding:0.5rem 1.2rem}
-    .slider_section .carousel-item{min-height:600px;display:flex;align-items:center}
-    .slider_section .img-box img{width:100%;max-height:400px;object-fit:contain}
-    .team_container .box .img-box img{width:100%;border-radius:50%;object-fit:cover;max-width:120px;max-height:120px}
+    #map, #deliveryMap {
+      height: 400px;
+      width: 100%;
+    }
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+    .navbar-nav {
+      align-items: center;
+    }
+    .navbar-nav .nav-link {
+      padding: 0.5rem 1.2rem;
+    }
+    .slider_section .carousel-item {
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+    }
+    .slider_section .img-box img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+    }
+    .team_container .box .img-box img {
+      width: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      max-width: 120px;
+      max-height: 120px;
+    }
   </style>
 </head>
 <body>
-<div class="hero_area">
-  <div class="hero_bg_box"><div class="bg_img_box"><img src="{% static 'images/Public_Page/hero-bg.webp' %}" alt=""></div></div>
-
-  <header class="header_section">
-    <div class="container-fluid">
-      <nav class="navbar navbar-expand-lg custom_nav-container">
-        <a class="navbar-brand" href="{% url 'home' %}"><span>Human Futures, LLC</span></a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto text-center">
-            <li class="nav-item active"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'public_about' %}">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'public_services' %}">Services</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'showcase' %}">Showcase</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'original_home' %}">Employee&nbsp;Login</a></li>
-          </ul>
-        </div>
-      </nav>
-    </div>
-  </header>
-
-  <section class="slider_section">
-    <div id="customCarousel1" class="carousel slide" data-ride="carousel" data-interval="6500">
-      <div class="carousel-inner">
-        <!-- SLIDE 1: Freight (active) -->
-        <div class="carousel-item active">
-          <div class="container"><div class="row">
-            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-              <div class="detail-box">
-                <h1>Freight<br>Services</h1>
-                <p>Human Futures, LLC now offers regional <strong>freight hauling &amp; logistics</strong> throughout Connecticut and the Northeast corridor. From single‑pallet hot‑shots to full‑truckload moves, our FMCSA‑licensed drivers keep your cargo on schedule and your costs predictable.</p>
-                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
-              </div>
-            </div>
-            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/Truck.webp' %}" alt="Freight services truck"></div></div>
-          </div></div>
-        </div>
-
-        <!-- SLIDE 2: Info Tech -->
-        <div class="carousel-item">
-          <div class="container"><div class="row">
-            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-              <div class="detail-box">
-                <h1>Info<br>Tech</h1>
-                <p>Human Futures, LLC delivers <strong>information‑technology solutions</strong> from single‑system troubleshooting to full network management, so your infrastructure stays resilient and cost‑effective.</p>
-                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
-              </div>
-            </div>
-            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/Tech.webp' %}" alt="Tech services"></div></div>
-          </div></div>
-        </div>
-
-        <!-- SLIDE 3: Home Improvement -->
-        <div class="carousel-item">
-          <div class="container"><div class="row">
-            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-              <div class="detail-box">
-                <h1>Home<br>Improvement</h1>
-                <p>We handle windows, siding, minor roofing, and whole‑home renovations — all with licensed craftsmen and transparent estimates.</p>
-                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
-              </div>
-            </div>
-            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/27120.webp' %}" alt="Home improvement"></div></div>
-          </div></div>
-        </div>
-
-        <!-- SLIDE 4: New Construction -->
-        <div class="carousel-item">
-          <div class="container"><div class="row">
-            <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
-              <div class="detail-box">
-                <h1>Home<br>Construction</h1>
-                <p>Breaking ground <strong>next season</strong>: energy‑efficient homes tailored to New England living. Follow our progress and reserve an early build slot.</p>
-                <div class="btn-box"><a class="btn1" href="{% url 'public_services' %}">Read&nbsp;More</a></div>
-              </div>
-            </div>
-            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0"><div class="img-box"><img src="{% static 'images/Public_Page/32514.webp' %}" alt="New construction rendering"></div></div>
-          </div></div>
-        </div>
+  <div class="hero_area">
+    <div class="hero_bg_box">
+      <div class="bg_img_box">
+        <img src="{% static 'images/Public_Page/hero-bg.webp' %}" alt="Background" />
       </div>
-      <a class="carousel-control-prev" href="#customCarousel1" role="button" data-slide="prev"><span class="carousel-control-prev-icon"></span><span class="sr-only">Previous</span></a>
-      <a class="carousel-control-next" href="#customCarousel1" role="button" data-slide="next"><span class="carousel-control-next-icon"></span><span class="sr-only">Next</span></a>
     </div>
-  </section>
-</div>
 
+    <!-- Header / Navbar -->
+    <header class="header_section">
+      <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="{% url 'home' %}"><span>Human Futures, LLC</span></a>
+          <button class="navbar-toggler" type="button"
+                  data-toggle="collapse"
+                  data-target="#navbarSupportedContent"
+                  aria-controls="navbarSupportedContent"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto text-center">
+              <li class="nav-item active"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'public_about' %}">About</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'public_services' %}">Services</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'showcase' %}">Showcase</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'original_home' %}">Employee Login</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </header>
 
+    <!-- ====== Slider Section (Bootstrap Carousel) ====== -->
+    <section class="slider_section">
+      <div id="customCarousel1" class="carousel slide" data-ride="carousel" data-interval="6500">
+        <div class="carousel-inner">
+          <!-- Slide #1 -->
+          <div class="carousel-item active">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+                  <div class="detail-box">
+                    <h1>Freight<br />Services</h1>
+                    <p>
+                      Human Futures, LLC now offers regional <strong>freight hauling &amp; logistics</strong> 
+                      throughout Connecticut and the Northeast corridor. From single-pallet hot-shots 
+                      to full-truckload moves, our FMCSA-licensed drivers keep your cargo on schedule 
+                      and your costs predictable.
+                    </p>
+                    <div class="btn-box">
+                      <a class="btn1" href="{% url 'public_services' %}">Read More</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
+                  <div class="img-box">
+                    <img src="{% static 'images/Public_Page/Truck.webp' %}" alt="Freight services truck" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <!-- service section -->
+          <!-- Slide #2 -->
+          <div class="carousel-item">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+                  <div class="detail-box">
+                    <h1>Info<br />Tech</h1>
+                    <p>
+                      Human Futures, LLC delivers <strong>information-technology solutions</strong> from 
+                      single-system troubleshooting to full network management, so your infrastructure 
+                      stays resilient and cost-effective.
+                    </p>
+                    <div class="btn-box">
+                      <a class="btn1" href="{% url 'public_services' %}">Read More</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
+                  <div class="img-box">
+                    <img src="{% static 'images/Public_Page/Tech.webp' %}" alt="Tech services" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide #3 -->
+          <div class="carousel-item">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+                  <div class="detail-box">
+                    <h1>Home<br />Improvement</h1>
+                    <p>
+                      We handle windows, siding, minor roofing, and whole-home renovations — all 
+                      with licensed craftsmen and transparent estimates.
+                    </p>
+                    <div class="btn-box">
+                      <a class="btn1" href="{% url 'public_services' %}">Read More</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
+                  <div class="img-box">
+                    <img src="{% static 'images/Public_Page/27120.webp' %}" alt="Home improvement" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide #4 -->
+          <div class="carousel-item">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-6 order-2 order-md-1 d-flex flex-column justify-content-center">
+                  <div class="detail-box">
+                    <h1>Home<br />Construction</h1>
+                    <p>
+                      Breaking ground <strong>next season</strong>: energy-efficient homes tailored 
+                      to New England living. Follow our progress and reserve an early build slot.
+                    </p>
+                    <div class="btn-box">
+                      <a class="btn1" href="{% url 'public_services' %}">Read More</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
+                  <div class="img-box">
+                    <img src="{% static 'images/Public_Page/32514.webp' %}" alt="New construction rendering" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carousel Controls -->
+        <a class="carousel-control-prev" href="#customCarousel1" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#customCarousel1" role="button" data-slide="next">
+          <span class="carousel-control-next-icon"></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= Service Section ================ -->
   <section class="service_section layout_padding">
     <div class="service_container">
       <div class="container">
         <div class="heading_container heading_center">
-          <h2>
-            Our <span>Service Area</span>
-          </h2>
+          <h2>Our <span>Service Area</span></h2>
           <p>
-            The company is set to expand its offerings from private contracts to providing services in Torrington, CT and the surrounding areas.
+            The company is set to expand its offerings from private contracts 
+            to providing services in Torrington, CT and the surrounding areas.
           </p>
         </div>
-        <p> </p>
         <div id="map"></div>
 
         <div class="row">
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images//Public_Page/window.webp" alt="Window Installation">
+                <img src="{% static 'images/Public_Page/window.webp' %}" alt="Window Installation" />
               </div>
               <div class="detail-box">
-                <h5>
-                  Window Installation
-                </h5>
+                <h5>Window Installation</h5>
                 <p>
-                  Enhance your home's energy efficiency and aesthetic appeal with our professional window installation services. Our team ensures precise fitting and high-quality materials for long-lasting performance.
+                  Enhance your home's energy efficiency and aesthetic appeal with our 
+                  professional window installation services. Our team ensures precise 
+                  fitting and high-quality materials for long-lasting performance.
                 </p>
-                <a class="btn1" href="{% url 'public_services' %}">
-                  Read More
-                </a>
+                <a class="btn1" href="{% url 'public_services' %}">Read More</a>
               </div>
             </div>
           </div>
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images/Public_Page/siding.webp" alt="Exterior Siding">
+                <img src="{% static 'images/Public_Page/siding.webp' %}" alt="Exterior Siding" />
               </div>
               <div class="detail-box">
-                <h5>
-                  Exterior Siding
-                </h5>
+                <h5>Exterior Siding</h5>
                 <p>
-                  Protect and beautify your home with our durable and stylish exterior siding solutions. We offer a variety of materials and colors to match your home's design and withstand the elements.
+                  Protect and beautify your home with our durable and stylish exterior 
+                  siding solutions. We offer a variety of materials and colors to match 
+                  your home's design and withstand the elements.
                 </p>
-                <a class="btn1" href="{% url 'public_services' %}">
-                  Read More
-                </a>
+                <a class="btn1" href="{% url 'public_services' %}">Read More</a>
               </div>
             </div>
           </div>
           <div class="col-md-4">
             <div class="box">
               <div class="img-box">
-                <img src="/static/images/Public_Page/s3.webp" alt="Database Architecture, Migration, and Setup">
+                <img src="{% static 'images/Public_Page/s3.webp' %}" alt="Database Architecture, Migration, and Setup" />
               </div>
               <div class="detail-box">
-                <h5>
-                  Database Architecture, Migration, and Setup
-                </h5>
+                <h5>Database Architecture, Migration, and Setup</h5>
                 <p>
-                  Optimize your data management with our expert database architecture, migration, and setup services. We ensure seamless transitions and robust systems tailored to your business needs.
+                  Optimize your data management with our expert database architecture, 
+                  migration, and setup services. We ensure seamless transitions and 
+                  robust systems tailored to your business needs.
                 </p>
-                <a class="btn1" href="{% url 'public_services' %}">
-                  Read More
-                </a>
+                <a class="btn1" href="{% url 'public_services' %}">Read More</a>
               </div>
             </div>
           </div>
         </div>
 
         <div class="btn-box">
-          <a href="{% url 'public_services' %}">
-            View All
-          </a>
+          <a href="{% url 'public_services' %}">View All</a>
         </div>
       </div>
     </div>
   </section>
-  <!-- end service section -->
 
-<!-- Cabinet Delivery Section -->
-<section class="service_section layout_padding">
+  <!-- =============== Cabinet Delivery Section =============== -->
+  <section class="service_section layout_padding">
     <div class="container">
-        <div class="heading_container heading_center">
-            <h2>
-                Service Area for <span>Cabinets &amp; Delivery</span> 
-                <span style="color: red;">(Currently Unavailable)</span>
-            </h2>
+      <div class="heading_container heading_center">
+        <h2>
+          Service Area for <span>Cabinets &amp; Delivery</span> 
+          <span style="color: red;">(Currently Unavailable)</span>
+        </h2>
         <p>
-          Our cabinet delivery services cover a specific area based on travel time. Explore the map to see if your location falls within our delivery zone.
-		  We make custom cabinets and furniture. This map shows our service area where we offer free delivery for orders over $350. 
+          Our cabinet delivery services cover a specific area based on travel time. 
+          Explore the map to see if your location falls within our delivery zone. 
+          We make custom cabinets and furniture. This map shows our service area 
+          where we offer free delivery for orders over $350.
         </p>
       </div>
       <div id="deliveryMap"></div>
     </div>
-	    <div class="service_container">
+    <div class="service_container">
       <div class="container">
-<div class="btn-box" style="margin-top: 20px;">
-  <!-- <a href="{% url 'request_quote' %}"> -->
-  <a style="text-decoration: line-through;">
-    Request a Quote
-  </a>
-</div></div></div>
+        <div class="btn-box" style="margin-top: 20px;">
+          <!-- <a href="{% url 'request_quote' %}"> -->
+          <a style="text-decoration: line-through;">Request a Quote</a>
+        </div>
+      </div>
+    </div>
   </section>
 
-    
-
-
-  <!-- about section -->
+  <!-- ================ About Section ================ -->
   <section class="about_section layout_padding">
     <div class="container">
       <div class="heading_container heading_center">
-        <h2>
-          About <span>Us</span>
-        </h2>
+        <h2>About <span>Us</span></h2>
         <p>
-          Learn more about Human Futures, LLC and our commitment to excellence in IT services, home improvement, and new home construction.
+          Learn more about Human Futures, LLC and our commitment to excellence in 
+          IT services, home improvement, and new home construction.
         </p>
       </div>
       <div class="row">
         <div class="col-md-6">
           <div class="img-box">
-            <img src="/static/images/Public_Page/Human_Future_1.webp" alt="">
+            <img src="{% static 'images/Public_Page/Human_Future_1.webp' %}" alt="" />
           </div>
         </div>
         <div class="col-md-6">
           <div class="detail-box">
-            <h3>
-              We Are Human Futures
-            </h3>
+            <h3>We Are Human Futures</h3>
             <p>
-              Human Futures, LLC is dedicated to providing top-notch IT services, home improvement solutions, and new home construction. Our team of experts is committed to delivering quality and innovation in every project we undertake.
+              Human Futures, LLC is dedicated to providing top-notch IT services, 
+              home improvement solutions, and new home construction. Our team of 
+              experts is committed to delivering quality and innovation in every 
+              project we undertake.
             </p>
-            <a href="{% url 'public_about' %}">
-              Read More
-            </a>
+            <a href="{% url 'public_about' %}">Read More</a>
           </div>
         </div>
       </div>
     </div>
   </section>
-  <!-- end about section -->
 
-<!-- team section -->
-<section class="team_section layout_padding">
-  <div class="container-fluid">
-    <div class="heading_container heading_center">
-      <h2 class="">
-        Our <span>Team</span>
-      </h2>
-    </div>
+  <!-- ================ Team Section ================ -->
+  <section class="team_section layout_padding">
+    <div class="container-fluid">
+      <div class="heading_container heading_center">
+        <h2>Our <span>Team</span></h2>
+      </div>
 
-    <div class="team_container">
-      <div class="row justify-content-center">
-        <div class="col-lg-3 col-sm-6">
-          <div class="box">
-            <div class="img-box">
-              <img src="/static/images/Public_Page/Michael.webp" class="img1" alt="Michael Grabinski, Ph.D.">
-            </div>
-            <div class="detail-box">
-              <h5>
-                Michael Grabinski, Ph.D.
-              </h5>
-              <p>
-                CEO
-              </p>
-            </div>
-            <div class="social_box">
-              <a href="#">
-                <i class="fa fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-instagram" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-youtube-play" aria-hidden="true"></i>
-              </a>
+      <div class="team_container">
+        <div class="row justify-content-center">
+          <div class="col-lg-3 col-sm-6">
+            <div class="box">
+              <div class="img-box">
+                <img src="{% static 'images/Public_Page/Michael.webp' %}" class="img1" alt="Michael Grabinski, Ph.D." />
+              </div>
+              <div class="detail-box">
+                <h5>Michael Grabinski, Ph.D.</h5>
+                <p>CEO</p>
+              </div>
+              <div class="social_box">
+                <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-          <div class="box">
-            <div class="img-box">
-              <img src="/static/images/Public_Page/Nicholas.webp" class="img1" alt="Nicholas Gordneer">
-            </div>
-            <div class="detail-box">
-              <h5>
-                Nicholas Gordneer
-              </h5>
-              <p>
-                IT Services and Construction
-              </p>
-            </div>
-            <div class="social_box">
-              <a href="#">
-                <i class="fa fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-instagram" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-youtube-play" aria-hidden="true"></i>
-              </a>
+          <div class="col-lg-3 col-sm-6">
+            <div class="box">
+              <div class="img-box">
+                <img src="{% static 'images/Public_Page/Nicholas.webp' %}" class="img1" alt="Nicholas Gordneer" />
+              </div>
+              <div class="detail-box">
+                <h5>Nicholas Gordneer</h5>
+                <p>IT Services and Construction</p>
+              </div>
+              <div class="social_box">
+                <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col-lg-3 col-sm-6">
-          <div class="box">
-            <div class="img-box">
-              <img src="/static/images/Public_Page/Jon.webp" class="img1" alt="Jon">
-            </div>
-            <div class="detail-box">
-              <h5>
-                Jonathon Santigo
-              </h5>
-              <p>
-                IT Services and Construction
-              </p>
-            </div>
-            <div class="social_box">
-              <a href="#">
-                <i class="fa fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-instagram" aria-hidden="true"></i>
-              </a>
-              <a href="#">
-                <i class="fa fa-youtube-play" aria-hidden="true"></i>
-              </a>
+          <div class="col-lg-3 col-sm-6">
+            <div class="box">
+              <div class="img-box">
+                <img src="{% static 'images/Public_Page/Jon.webp' %}" class="img1" alt="Jonathon Santigo" />
+              </div>
+              <div class="detail-box">
+                <h5>Jonathon Santigo</h5>
+                <p>IT Services and Construction</p>
+              </div>
+              <div class="social_box">
+                <a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
-<!-- end team section -->
+  </section>
 
-
-  <!-- footer section -->
+  <!-- ================ Footer ================ -->
   <section class="footer_section">
     <div class="container">
-      <p>
-        &copy; <span id="displayYear"></span> All Rights Reserved By Human Futures, LLC
-      </p>
+      <p>&copy; <span id="displayYear"></span> All Rights Reserved By Human Futures, LLC</p>
     </div>
   </section>
-  <!-- footer section -->
 
-  <!-- jQery -->
-  <script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
-  <!-- popper js -->
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
-  </script>
-  <!-- bootstrap js -->
-  <script type="text/javascript" src="/static/js/bootstrap.js"></script>
-  <!-- owl slider -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
-  </script>
-  <!-- custom js -->
-  <script type="text/javascript" src="/static/js/custom.js"></script>
-  <!-- Leaflet Map -->
+  <!-- =================== Scripts =================== -->
+  <!-- jQuery -->
+  <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+
+  <!-- Bootstrap Bundle (includes Popper) -->
+  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+  <!-- Your Custom JS -->
+  <script src="{% static 'js/custom.js' %}"></script>
+
+  <!-- Leaflet JS (only once) -->
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <script>
-    // Initialize the map and set its view to Torrington, CT
-    var map = L.map('map').setView([41.8006, -73.1212], 10);
 
-    // Add the OpenStreetMap tiles
+  <!-- Initialize the maps -->
+  <script>
+    // Initialize the home “service area” map (Torrington, CT)
+    var map = L.map('map').setView([41.8006, -73.1212], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
-
-    // Define the center and radius for the service area circle
-    var serviceAreaCenter = [41.8006, -73.1212];
-    var serviceAreaRadius = 15000; // Radius in meters (15 km)
-
-    // Create and add the circle to the map
-    var serviceArea = L.circle(serviceAreaCenter, {
+    var serviceArea = L.circle([41.8006, -73.1212], {
       color: 'blue',
       fillColor: '#add8e6',
       fillOpacity: 0.5,
-      radius: serviceAreaRadius
+      radius: 15000
     }).addTo(map);
-
-    // Optionally, add a popup to the circle
     serviceArea.bindPopup("Service Area: Torrington and surrounding areas.");
-  </script>
-  
-<!-- Leaflet Map and TravelTime API Integration -->
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script>
- // Initialize the delivery map using Leaflet
-var deliveryMap = L.map('deliveryMap').setView([41.8006, -73.1212], 10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(deliveryMap);
 
-// Function to fetch and display the isochrone
-async function fetchIsochrone() {
-  try {
-    const response = await fetch('https://api.traveltimeapp.com/v4/time-map/fast', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Application-Id': '34a934ac', // Replace with your Application ID
-        'X-Api-Key': 'b79935378ab821528a40f9f3caedf24e' // Replace with your API Key
-      },
-      body: JSON.stringify({
-        "arrival_searches": {
-          "many_to_one": [
-            {
-              "id": "CabinetDeliveryIsochrone",
-              "coords": {
-                "lat": 41.8006,
-                "lng": -73.1212
-              },
-              "arrival_time_period": "weekday_morning",
-              "travel_time": 9000, // 2.5 hours in seconds
-              "transportation": {
-                "type": "driving" // Use the appropriate transportation type
-              }
+    // Initialize the “deliveryMap” isochrone
+    var deliveryMap = L.map('deliveryMap').setView([41.8006, -73.1212], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(deliveryMap);
+
+    async function fetchIsochrone() {
+      try {
+        const response = await fetch('https://api.traveltimeapp.com/v4/time-map/fast', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Application-Id': '34a934ac',       // ← replace with your own
+            'X-Api-Key': 'b79935378ab821528a40f9f3caedf24e' // ← replace with your own
+          },
+          body: JSON.stringify({
+            "arrival_searches": {
+              "many_to_one": [
+                {
+                  "id": "CabinetDeliveryIsochrone",
+                  "coords": { "lat": 41.8006, "lng": -73.1212 },
+                  "arrival_time_period": "weekday_morning",
+                  "travel_time": 9000,    // 2.5 hours in seconds
+                  "transportation": { "type": "driving" }
+                }
+              ]
             }
-          ]
+          })
+        });
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          data.results[0].shapes.forEach(shape => {
+            const latLngs = shape.shell.map(pt => [pt.lat, pt.lng]);
+            const polygon = L.polygon(latLngs, {
+              color: 'green',
+              fillColor: '#90ee90',
+              fillOpacity: 0.5
+            }).addTo(deliveryMap);
+            deliveryMap.fitBounds(polygon.getBounds());
+          });
+        } else {
+          console.error('Isochrone fetch failed:', data);
         }
-      })
-    });
-
-    const data = await response.json();
-    console.log('Isochrone data:', data);
-
-    // Check if the request was successful
-    if (data.results && data.results.length > 0) {
-      // Get the first isochrone result
-      const isochroneResult = data.results[0].shapes;
-
-      // Draw the isochrone on the map
-      isochroneResult.forEach((shape, index) => {
-        console.log(`Drawing shape ${index}:`, shape.shell);
-
-        // Convert shape.shell to the correct format for Leaflet
-        const latLngs = shape.shell.map(point => [point.lat, point.lng]);
-        console.log('LatLngs:', latLngs);
-
-        const polygon = L.polygon(latLngs, {
-          color: 'green',
-          fillColor: '#90ee90',
-          fillOpacity: 0.5
-        }).addTo(deliveryMap);
-
-        // Fit the map to the bounds of the polygon
-        deliveryMap.fitBounds(polygon.getBounds());
-      });
-    } else {
-      console.error('Failed to fetch isochrone:', data);
+      } catch (err) {
+        console.error('Error fetching isochrone:', err);
+      }
     }
-  } catch (error) {
-    console.error('Error fetching isochrone:', error);
-  }
-}
+    fetchIsochrone();
 
-// Call the function to fetch and display the isochrone
-fetchIsochrone();
-</script>
+    // Update year in footer automatically
+    document.getElementById('displayYear').innerText = new Date().getFullYear();
+  </script>
+
+  <!-- Initialize the Bootstrap carousel explicitly -->
+  <script>
+    (function($) {
+      $('#customCarousel1').carousel({
+        interval: 6500,
+        ride: 'carousel'
+      });
+    })(jQuery);
+  </script>
 </body>
-
 </html>

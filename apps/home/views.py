@@ -2196,3 +2196,135 @@ def store_checkout(request):
             'cart_items': cart_items,
             'total': total,
         })
+        
+
+
+
+
+# home/views.py
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Truck, TruckExpense, TruckLoad, TruckFile
+from .forms import TruckExpenseForm, TruckLoadForm, TruckFileForm
+
+@login_required
+def trucking_hub(request):
+    """
+    A single view that dispatches to different 'tabs' based on ?tab=…
+    Tabs: hub (overview), files, add (expenses & loads), accounting, active_loads.
+    """
+    # Determine which tab to show (default = 'hub')
+    selected_tab = request.GET.get('tab', 'hub')
+
+    # Fetch all trucks (so user can pick which truck they’re working with)
+    trucks = Truck.objects.all()
+
+    # Context shared by all tabs:
+    context = {
+        'trucks': trucks,
+        'selected_tab': selected_tab,
+    }
+
+    # ---------- HUB tab: overview of metrics ----------
+    if selected_tab == 'hub':
+        # Compute total expenses, total load pay, net profit across all trucks
+        total_expenses = TruckExpense.objects.aggregate(
+            total=models.Sum('amount')
+        )['total'] or 0
+        total_revenue = TruckLoad.objects.aggregate(
+            total=models.Sum('pay_amount')
+        )['total'] or 0
+        net_profit = total_revenue - total_expenses
+
+        # Optionally, group by truck
+        per_truck = []
+        for t in trucks:
+            truck_exp = t.expenses.aggregate(sum=models.Sum('amount'))['sum'] or 0
+            truck_rev = t.loads.aggregate(sum=models.Sum('pay_amount'))['sum'] or 0
+            truck_profit = truck_rev - truck_exp
+            active_count = t.loads.filter(status='active').count()
+            per_truck.append({
+                'truck': t,
+                'expense_total': truck_exp,
+                'revenue_total': truck_rev,
+                'profit': truck_profit,
+                'active_loads': active_count,
+            })
+
+        context.update({
+            'total_expenses': total_expenses,
+            'total_revenue': total_revenue,
+            'net_profit': net_profit,
+            'per_truck': per_truck,
+        })
+
+        return render(request, 'home/trucking.html', context)
+
+    # ---------- FILES tab: upload/view truck files ----------
+    elif selected_tab == 'files':
+        files = TruckFile.objects.all().order_by('-uploaded_at')
+        if request.method == 'POST':
+            form = TruckFileForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=files")
+        else:
+            form = TruckFileForm()
+
+        context.update({
+            'files': files,
+            'file_form': form,
+        })
+        return render(request, 'home/trucking.html', context)
+
+    # ---------- ADD tab: add expenses or loads ----------
+    elif selected_tab == 'add':
+        if request.method == 'POST':
+            # Determine whether they submitted an expense form or a load form
+            if 'add_expense' in request.POST:
+                exp_form = TruckExpenseForm(request.POST)
+                load_form = TruckLoadForm()
+                if exp_form.is_valid():
+                    exp_form.save()
+                    return redirect(f"{request.path}?tab=add")
+            elif 'add_load' in request.POST:
+                load_form = TruckLoadForm(request.POST)
+                exp_form = TruckExpenseForm()
+                if load_form.is_valid():
+                    load_form.save()
+                    return redirect(f"{request.path}?tab=add")
+            else:
+                exp_form = TruckExpenseForm()
+                load_form = TruckLoadForm()
+        else:
+            exp_form = TruckExpenseForm()
+            load_form = TruckLoadForm()
+
+        context.update({
+            'expense_form': exp_form,
+            'load_form': load_form,
+        })
+        return render(request, 'home/trucking.html', context)
+
+    # ---------- ACCOUNTING tab: show all expenses & loads together ----------
+    elif selected_tab == 'accounting':
+        all_expenses = TruckExpense.objects.select_related('truck').order_by('-date_incurred')
+        all_loads = TruckLoad.objects.select_related('truck').order_by('-date_started')
+        context.update({
+            'all_expenses': all_expenses,
+            'all_loads': all_loads,
+        })
+        return render(request, 'home/trucking.html', context)
+
+    # ---------- ACTIVE LOADS tab: show loads where status='active' ----------
+    elif selected_tab == 'active_loads':
+        active_loads = TruckLoad.objects.filter(status='active').select_related('truck')
+        context.update({
+            'active_loads': active_loads,
+        })
+        return render(request, 'home/trucking.html', context)
+
+    # Fallback: treat unknown tab as hub
+    else:
+        return redirect(f"{request.path}?tab=hub")
