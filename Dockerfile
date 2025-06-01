@@ -15,7 +15,7 @@ COPY . .
 COPY infra/nginx.conf /etc/nginx/conf.d/default.conf
 
 # ------------- Expose & launch --------------------------
+# ----- Expose & launch -------------------------------------------------
 EXPOSE 80
-CMD gunicorn apps.wsgi:application \          # ← replace “myproject”
-        --bind 127.0.0.1:8000 --workers 4 & \
-    nginx -g "daemon off;"
+
+CMD /bin/sh -c "gunicorn apps.wsgi:application --bind 127.0.0.1:8000 --workers 4 & nginx -g 'daemon off;'"
