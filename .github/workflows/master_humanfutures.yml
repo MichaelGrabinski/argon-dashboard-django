@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 permissions:            # ← add this at the top (workflow-level)
-  id-token: write        #  ⬅️ allow GitHub to mint an OIDC token
   contents: read         #  ⬅️ allow checkout i
 
 env:
@@ -42,21 +41,17 @@ jobs:
         build-args: |
             BUILDKIT_PROGRESS=plain        # <-- temp flag
     
-        
-        
-        
-    # 4. Log in to Azure (OIDC or publish-profile — keep whichever you already use)
-    - name: Azure login
-      uses: azure/login@v2
+ # 4) Build & push the image
+    - uses: docker/build-push-action@v5
       with:
-        client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_B9833D2506694C1B9FD17D066ADBFB80 }}
-        tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8288A19A52C44135A788B0103D4DB614 }}
-        subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6C0B67B54A844958B48CBD9A7E241BBA }}
+        context: .
+        push: true
+        tags: ${{ env.IMAGE_NAME }}:latest
 
-    # 5. Tell the Web App to pull the new tag
-    - name: Deploy to Web App
-      uses: azure/webapps-deploy@v3
+    # 5) Deploy to Azure Web App (publish-profile)
+    - uses: azure/webapps-deploy@v3
       with:
-        app-name:   $WEBAPP_NAME
-        images:     docker.io/${{ env.IMAGE_NAME }}:latest
-        slot-name:  production
+        app-name:        ${{ env.WEBAPP_NAME }}
+        slot-name:       Production          # omit or change if you use slots
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        images:          docker.io/${{ env.IMAGE_NAME }}:latest
