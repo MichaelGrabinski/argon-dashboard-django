@@ -10,7 +10,7 @@ permissions:            # ← add this at the top (workflow-level)
   contents: read         #  ⬅️ allow checkout
 
 env:
-  IMAGE_NAME:  michaelgrabinski/hf-django
+  IMAGE_NAME:  michaelgrabinki/hf-django
   WEBAPP_NAME: HumanFutures
 
 jobs:
