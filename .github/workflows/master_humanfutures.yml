@@ -25,12 +25,17 @@ jobs:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}  # Use a secret for the token
 
-    # 3️⃣ Build & push image
+    # 3️ Build & push image
     - uses: docker/build-push-action@v5
       with:
         context: .
         push: true
         tags: ${{ env.IMAGE_NAME }}:latest
+        build-args: |
+            BUILDKIT_PROGRESS=plain        # <-- temp flag
+    
+        
+        
         
     # 4. Log in to Azure (OIDC or publish-profile — keep whichever you already use)
     - name: Azure login
