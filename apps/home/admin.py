@@ -98,30 +98,83 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 
 
-# home/admin.py
-
 from django.contrib import admin
-from .models import Truck, TruckExpense, TruckLoad, TruckFile
+from .models import (
+    Truck, Driver, Customer,
+    TruckExpense, FuelEntry, MaintenanceSchedule,
+    MaintenanceRecord, TruckLoad, TruckFile,
+    HosLog, Invoice, LineItem, TollEntry
+)
 
 @admin.register(Truck)
 class TruckAdmin(admin.ModelAdmin):
-    list_display = ('name', 'license_plate', 'active')
+    list_display = ('name', 'license_plate', 'odometer', 'active')
     list_filter = ('active',)
+
+
+@admin.register(Driver)
+class DriverAdmin(admin.ModelAdmin):
+    list_display = ('user', 'cdl_number', 'phone', 'hire_date')
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contact_name', 'contact_email', 'contact_phone')
+
 
 @admin.register(TruckExpense)
 class TruckExpenseAdmin(admin.ModelAdmin):
     list_display = ('truck', 'date_incurred', 'description', 'amount', 'category')
     list_filter = ('truck', 'category', 'date_incurred')
 
+
+@admin.register(FuelEntry)
+class FuelEntryAdmin(admin.ModelAdmin):
+    list_display = ('truck', 'date', 'gallons', 'price_per_gallon', 'total_cost', 'odometer_reading')
+    list_filter = ('truck', 'date')
+
+
+@admin.register(MaintenanceSchedule)
+class MaintenanceScheduleAdmin(admin.ModelAdmin):
+    list_display = ('truck', 'service_type', 'interval_miles', 'interval_months', 'next_service_date')
+    list_filter = ('truck', 'service_type')
+
+
+@admin.register(MaintenanceRecord)
+class MaintenanceRecordAdmin(admin.ModelAdmin):
+    list_display = ('truck', 'date', 'odometer', 'description', 'cost')
+    list_filter = ('truck', 'date')
+
+
 @admin.register(TruckLoad)
 class TruckLoadAdmin(admin.ModelAdmin):
-    list_display = (
-        'truck', 'date_started', 'date_completed', 'customer',
-        'pay_amount', 'status'
-    )
-    list_filter = ('truck', 'status', 'date_started')
+    list_display = ('truck', 'driver', 'customer', 'date_started', 'status', 'pay_amount')
+    list_filter = ('status', 'truck', 'driver')
+
 
 @admin.register(TruckFile)
 class TruckFileAdmin(admin.ModelAdmin):
     list_display = ('truck', 'title', 'uploaded_at')
-    list_filter = ('truck',)
+    list_filter = ('truck', 'uploaded_at')
+
+
+@admin.register(HosLog)
+class HosLogAdmin(admin.ModelAdmin):
+    list_display = ('driver', 'date', 'driving_hours')
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ('invoice_number', 'load', 'date_issued', 'total_amount', 'paid')
+    list_filter = ('paid',)
+
+
+@admin.register(LineItem)
+class LineItemAdmin(admin.ModelAdmin):
+    list_display = ('invoice', 'description', 'quantity', 'unit_price', 'total_price')
+
+
+@admin.register(TollEntry)
+class TollEntryAdmin(admin.ModelAdmin):
+    list_display = ('load', 'date', 'toll_location', 'amount')
+    list_filter = ('load', 'date')

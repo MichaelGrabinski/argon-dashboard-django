@@ -2201,48 +2201,79 @@ def store_checkout(request):
 
 
 
-# home/views.py
-
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Truck, TruckExpense, TruckLoad, TruckFile
-from .forms import TruckExpenseForm, TruckLoadForm, TruckFileForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+from django.db.models import Sum, F
+from decimal import Decimal
+import datetime, csv
+
+from .models import (
+    Truck, Driver, Customer,
+    TruckExpense, FuelEntry, MaintenanceSchedule,
+    MaintenanceRecord, TruckLoad, TruckFile,
+    HosLog, Invoice, LineItem, TollEntry
+)
+from .forms import (
+    TruckForm, DriverForm, CustomerForm,
+    TruckExpenseForm, FuelEntryForm, TollEntryForm,
+    MaintenanceScheduleForm, MaintenanceRecordForm,
+    TruckLoadForm, TruckFileForm,
+    HosLogForm, InvoiceForm, LineItemForm
+)
+
 
 @login_required
 def trucking_hub(request):
     """
-    A single view that dispatches to different 'tabs' based on ?tab=…
-    Tabs: hub (overview), files, add (expenses & loads), accounting, active_loads.
+    A catch-all view for all trucking-related tabs. 
+    Tabs: hub, files, add, accounting, active_loads,
+    drivers, customers, maintenance, fuel, hos, invoices, tolls, etc.
     """
-    # Determine which tab to show (default = 'hub')
+    segment = request.path.strip('/').split('/')[-1]  # e.g. "trucking"
     selected_tab = request.GET.get('tab', 'hub')
 
-    # Fetch all trucks (so user can pick which truck they’re working with)
-    trucks = Truck.objects.all()
+    # 0) Handle any POST actions that mark things complete or create quick records
+    if request.method == 'POST':
+        # Mark load completed
+        if request.POST.get('mark_complete'):
+            load_id = request.POST.get('load_id')
+            try:
+                ld = TruckLoad.objects.get(pk=load_id)
+                ld.mark_completed()
+            except:
+                pass
+            return redirect(f"{request.path}?tab=active_loads")
 
-    # Context shared by all tabs:
+        # Quick‐Add logic (we’ll fall through to proper form validation below for each tab)
+        # … (no need to handle here if each form’s POST is managed in its own block)
+
+    # Common context items
+    trucks = Truck.objects.all()
+    drivers = Driver.objects.all()
+    customers = Customer.objects.all()
+
     context = {
         'trucks': trucks,
+        'drivers': drivers,
+        'customers': customers,
         'selected_tab': selected_tab,
     }
 
-    # ---------- HUB tab: overview of metrics ----------
+    # ──────────────── TAB: HUB (Dashboard) ────────────────
     if selected_tab == 'hub':
-        # Compute total expenses, total load pay, net profit across all trucks
-        total_expenses = TruckExpense.objects.aggregate(
-            total=models.Sum('amount')
-        )['total'] or 0
-        total_revenue = TruckLoad.objects.aggregate(
-            total=models.Sum('pay_amount')
-        )['total'] or 0
-        net_profit = total_revenue - total_expenses
+        # overall metrics
+        total_expenses = TruckExpense.objects.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        total_revenue = TruckLoad.objects.aggregate(total=Sum('pay_amount'))['total'] or Decimal('0.00')
+        net_profit = (total_revenue - total_expenses).quantize(Decimal('0.01'))
 
-        # Optionally, group by truck
+        # per-truck breakdown
         per_truck = []
         for t in trucks:
-            truck_exp = t.expenses.aggregate(sum=models.Sum('amount'))['sum'] or 0
-            truck_rev = t.loads.aggregate(sum=models.Sum('pay_amount'))['sum'] or 0
-            truck_profit = truck_rev - truck_exp
+            truck_exp = t.expenses.aggregate(sum=Sum('amount'))['sum'] or Decimal('0.00')
+            truck_rev = t.loads.aggregate(sum=Sum('pay_amount'))['sum'] or Decimal('0.00')
+            truck_profit = (truck_rev - truck_exp).quantize(Decimal('0.01'))
             active_count = t.loads.filter(status='active').count()
             per_truck.append({
                 'truck': t,
@@ -2252,18 +2283,28 @@ def trucking_hub(request):
                 'active_loads': active_count,
             })
 
+        # overall fuel and MPG metrics
+        avg_mpg = []
+        for t in trucks:
+            fuels = FuelEntry.objects.filter(truck=t).order_by('-date')
+            if fuels.exists():
+                last = fuels.first().mpg()
+                avg_mpg.append({'truck': t, 'mpg': last or '—'})
+            else:
+                avg_mpg.append({'truck': t, 'mpg': '—'})
+
         context.update({
             'total_expenses': total_expenses,
             'total_revenue': total_revenue,
             'net_profit': net_profit,
             'per_truck': per_truck,
+            'avg_mpg': avg_mpg,
         })
-
         return render(request, 'home/trucking.html', context)
 
-    # ---------- FILES tab: upload/view truck files ----------
+    # ──────────────── TAB: FILES ────────────────
     elif selected_tab == 'files':
-        files = TruckFile.objects.all().order_by('-uploaded_at')
+        files = TruckFile.objects.order_by('-uploaded_at')
         if request.method == 'POST':
             form = TruckFileForm(request.POST, request.FILES)
             if form.is_valid():
@@ -2271,60 +2312,292 @@ def trucking_hub(request):
                 return redirect(f"{request.path}?tab=files")
         else:
             form = TruckFileForm()
-
-        context.update({
-            'files': files,
-            'file_form': form,
-        })
+        context.update({'files': files, 'file_form': form})
         return render(request, 'home/trucking.html', context)
 
-    # ---------- ADD tab: add expenses or loads ----------
+    # ──────────────── TAB: ADD ────────────────
     elif selected_tab == 'add':
+        # Distinguish which form was submitted
+        expense_form = TruckExpenseForm()
+        load_form = TruckLoadForm()
+        fuel_form = FuelEntryForm()
+        toll_form = TollEntryForm()
+
         if request.method == 'POST':
-            # Determine whether they submitted an expense form or a load form
             if 'add_expense' in request.POST:
-                exp_form = TruckExpenseForm(request.POST)
-                load_form = TruckLoadForm()
-                if exp_form.is_valid():
-                    exp_form.save()
+                expense_form = TruckExpenseForm(request.POST)
+                if expense_form.is_valid():
+                    expense_form.save()
                     return redirect(f"{request.path}?tab=add")
             elif 'add_load' in request.POST:
                 load_form = TruckLoadForm(request.POST)
-                exp_form = TruckExpenseForm()
                 if load_form.is_valid():
                     load_form.save()
                     return redirect(f"{request.path}?tab=add")
-            else:
-                exp_form = TruckExpenseForm()
-                load_form = TruckLoadForm()
-        else:
-            exp_form = TruckExpenseForm()
-            load_form = TruckLoadForm()
+            elif 'add_fuel' in request.POST:
+                fuel_form = FuelEntryForm(request.POST)
+                if fuel_form.is_valid():
+                    fuel_form.save()
+                    return redirect(f"{request.path}?tab=add")
+            elif 'add_toll' in request.POST:
+                toll_form = TollEntryForm(request.POST)
+                if toll_form.is_valid():
+                    toll_form.save()
+                    return redirect(f"{request.path}?tab=add")
+            # else: fallback to initial
 
         context.update({
-            'expense_form': exp_form,
+            'expense_form': expense_form,
             'load_form': load_form,
+            'fuel_form': fuel_form,
+            'toll_form': toll_form,
         })
         return render(request, 'home/trucking.html', context)
 
-    # ---------- ACCOUNTING tab: show all expenses & loads together ----------
+    # ──────────────── TAB: ACCOUNTING ────────────────
     elif selected_tab == 'accounting':
         all_expenses = TruckExpense.objects.select_related('truck').order_by('-date_incurred')
-        all_loads = TruckLoad.objects.select_related('truck').order_by('-date_started')
-        context.update({
-            'all_expenses': all_expenses,
-            'all_loads': all_loads,
-        })
+        all_loads = TruckLoad.objects.select_related('truck', 'customer').order_by('-date_started')
+        context.update({'all_expenses': all_expenses, 'all_loads': all_loads})
         return render(request, 'home/trucking.html', context)
 
-    # ---------- ACTIVE LOADS tab: show loads where status='active' ----------
+    # ──────────────── TAB: ACTIVE LOADS ────────────────
     elif selected_tab == 'active_loads':
-        active_loads = TruckLoad.objects.filter(status='active').select_related('truck')
+        active_loads = TruckLoad.objects.filter(status='active').select_related('truck', 'customer')
+        context.update({'active_loads': active_loads})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: DRIVERS ────────────────
+    elif selected_tab == 'drivers':
+        if request.method == 'POST':
+            form = DriverForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=drivers")
+        else:
+            form = DriverForm()
+        context.update({'drivers': drivers, 'driver_form': form})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: CUSTOMERS ────────────────
+    elif selected_tab == 'customers':
+        if request.method == 'POST':
+            form = CustomerForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=customers")
+        else:
+            form = CustomerForm()
+        context.update({'customers': customers, 'customer_form': form})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: MAINTENANCE ────────────────
+    elif selected_tab == 'maintenance':
+        schedules = MaintenanceSchedule.objects.select_related('truck').all()
+        records = MaintenanceRecord.objects.select_related('truck', 'schedule').all()
+        if request.method == 'POST':
+            if 'add_schedule' in request.POST:
+                sched_form = MaintenanceScheduleForm(request.POST)
+                record_form = MaintenanceRecordForm()
+                if sched_form.is_valid():
+                    sched_form.save()
+                    return redirect(f"{request.path}?tab=maintenance")
+            elif 'add_record' in request.POST:
+                record_form = MaintenanceRecordForm(request.POST)
+                sched_form = MaintenanceScheduleForm()
+                if record_form.is_valid():
+                    record_form.save()
+                    return redirect(f"{request.path}?tab=maintenance")
+            else:
+                sched_form = MaintenanceScheduleForm()
+                record_form = MaintenanceRecordForm()
+        else:
+            sched_form = MaintenanceScheduleForm()
+            record_form = MaintenanceRecordForm()
+
         context.update({
-            'active_loads': active_loads,
+            'schedules': schedules,
+            'records': records,
+            'schedule_form': sched_form,
+            'record_form': record_form,
         })
         return render(request, 'home/trucking.html', context)
 
-    # Fallback: treat unknown tab as hub
+    # ──────────────── TAB: FUEL ────────────────
+    elif selected_tab == 'fuel':
+        entries = FuelEntry.objects.select_related('truck').order_by('-date')
+        if request.method == 'POST':
+            form = FuelEntryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=fuel")
+        else:
+            form = FuelEntryForm()
+
+        # compute avg mpg per truck
+        truck_mpgs = []
+        for t in trucks:
+            last = t.fuel_entries.order_by('-date').first()
+            mpg = last.mpg() if last else None
+            truck_mpgs.append({'truck': t, 'mpg': mpg or '—'})
+
+        context.update({'entries': entries, 'fuel_form': form, 'truck_mpgs': truck_mpgs})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: HOS ────────────────
+    elif selected_tab == 'hos':
+        logs = HosLog.objects.select_related('driver').order_by('-date')
+        if request.method == 'POST':
+            form = HosLogForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=hos")
+        else:
+            form = HosLogForm()
+        context.update({'hos_logs': logs, 'hos_form': form})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: INVOICES ────────────────
+    elif selected_tab == 'invoices':
+        invoices = Invoice.objects.select_related('load').all().order_by('-date_issued')
+        if request.method == 'POST':
+            form = InvoiceForm(request.POST)
+            if form.is_valid():
+                inv = form.save()
+                return redirect()
+        else:
+            form = InvoiceForm()
+        context.update({'invoices': invoices, 'invoice_form': form})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── TAB: TOLLS ────────────────
+    elif selected_tab == 'tolls':
+        tolls = TollEntry.objects.select_related('load').order_by('-date')
+        if request.method == 'POST':
+            form = TollEntryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(f"{request.path}?tab=tolls")
+        else:
+            form = TollEntryForm()
+        context.update({'tolls': tolls, 'toll_form': form})
+        return render(request, 'home/trucking.html', context)
+
+    # ──────────────── Unknown Tab → Redirect to HUB ────────────────
     else:
         return redirect(f"{request.path}?tab=hub")
+
+
+# ──────────────────────────────────────────────────────────────
+# Utility: Export Accounting (CSV)
+# ──────────────────────────────────────────────────────────────
+
+@login_required
+def export_accounting_csv(request):
+    """
+    Exports all expenses & loads into a single CSV with basics columns.
+    """
+    # Only handle if user asked for CSV explicitly
+    if request.GET.get('format') != 'csv':
+        return redirect('trucking_hub')
+
+    # Create HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="accounting.csv"'
+
+    writer = csv.writer(response)
+    # Header
+    writer.writerow([
+        'Type', 'Date', 'Truck', 'Category/Customer',
+        'Description/Load ID', 'Amount', 'Miles', 'Profit'
+    ])
+
+    # Write Expense rows
+    for e in TruckExpense.objects.select_related('truck').all():
+        writer.writerow([
+            'Expense',
+            e.date_incurred,
+            e.truck.name,
+            e.category,
+            e.description,
+            f"{e.amount:.2f}",
+            '',  # no miles
+            '',  # no profit
+        ])
+
+    # Write Load rows
+    for l in TruckLoad.objects.select_related('truck', 'customer').all():
+        writer.writerow([
+            'Load',
+            l.date_started,
+            l.truck.name,
+            l.customer.name if l.customer else '',
+            f"Load #{l.pk}",
+            f"{l.pay_amount:.2f}",
+            l.miles,
+            f"{l.net_profit():.2f}",
+        ])
+
+    return response
+
+
+# ──────────────────────────────────────────────────────────────
+# Utility: Monthly P&L (JSON for charts)
+# ──────────────────────────────────────────────────────────────
+
+@login_required
+def monthly_pl_data(request):
+    """
+    Return JSON of revenue, expenses by month for last 12 months.
+    Used by JS chart on Hub.
+    """
+    twelve_months_ago = datetime.date.today() - datetime.timedelta(days=365)
+    # Group expenses by month
+    exp_qs = TruckExpense.objects.filter(date_incurred__gte=twelve_months_ago)
+    exp_by_month = exp_qs.annotate(month=F('date_incurred__month'), year=F('date_incurred__year')) \
+       .values('year', 'month') \
+       .annotate(total_exp=Sum('amount')) \
+       .order_by('year', 'month')
+
+    load_qs = TruckLoad.objects.filter(date_started__gte=twelve_months_ago)
+    rev_by_month = load_qs.annotate(month=F('date_started__month'), year=F('date_started__year')) \
+       .values('year', 'month') \
+       .annotate(total_rev=Sum('pay_amount')) \
+       .order_by('year', 'month')
+
+    # Merge into a single list of { “year”:…, “month”:…, “revenue”:…, “expense”:… }
+    data = {}
+    for item in exp_by_month:
+        key = f"{item['year']:04d}-{item['month']:02d}"
+        data[key] = {'expense': float(item['total_exp']), 'revenue': 0.0}
+    for item in rev_by_month:
+        key = f"{item['year']:04d}-{item['month']:02d}"
+        if key not in data:
+            data[key] = {'expense': 0.0, 'revenue': float(item['total_rev'])}
+        else:
+            data[key]['revenue'] = float(item['total_rev'])
+
+    # Fill missing months if desired, or just send existing keys
+    sorted_keys = sorted(data.keys())
+    result = [{'month': k, 'expense': data[k]['expense'], 'revenue': data[k]['revenue']} for k in sorted_keys]
+
+    return JsonResponse({'data': result})
+
+
+# ──────────────────────────────────────────────────────────────
+# Utility: IFTA Preparation
+# ──────────────────────────────────────────────────────────────
+
+@login_required
+def ifta_report(request):
+    """
+    Summarize total miles per state (if you recorded states_provided field).
+    For now, just placeholder that returns an empty response.
+    """
+    # If you add a states_miles JSONField to TruckLoad, you could aggregate here.
+    data = {
+        'q1': {'NY': 1000, 'CT': 500},
+        'q2': {'NY': 1200, 'CT': 600},
+        # etc.
+    }
+    return JsonResponse(data)

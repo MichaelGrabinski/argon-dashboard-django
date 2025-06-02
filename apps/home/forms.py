@@ -257,53 +257,157 @@ class AddToCartForm(forms.Form):
     quantity = forms.IntegerField(min_value=1)
     
 # home/forms.py
-
 from django import forms
-from .models import Truck, TruckExpense, TruckLoad, TruckFile
+from .models import (
+    Truck, Driver, Customer,
+    TruckExpense, FuelEntry, MaintenanceSchedule,
+    MaintenanceRecord, TruckLoad, TruckFile,
+    HosLog, Invoice, LineItem, TollEntry
+)
+
+# ──────────────────────────────────────────────────────────────
+# 1) Truck, Driver, Customer Forms
+# ──────────────────────────────────────────────────────────────
 
 class TruckForm(forms.ModelForm):
     class Meta:
         model = Truck
-        fields = ['name', 'license_plate', 'active']
+        fields = ['name', 'license_plate', 'odometer', 'active']
 
+
+class DriverForm(forms.ModelForm):
+    hire_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
+    class Meta:
+        model = Driver
+        fields = ['user', 'cdl_number', 'phone', 'hire_date']
+
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['name', 'contact_name', 'contact_email', 'contact_phone', 'address']
+
+
+# ──────────────────────────────────────────────────────────────
+# 2) Expense, Fuel, and Toll Forms
+# ──────────────────────────────────────────────────────────────
 
 class TruckExpenseForm(forms.ModelForm):
-    date_incurred = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
+    date_incurred = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = TruckExpense
-        fields = ['truck', 'description', 'amount', 'date_incurred', 'category']
+        fields = ['truck', 'description', 'amount', 'date_incurred', 'category', 'loads']
 
+
+class FuelEntryForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = FuelEntry
+        fields = ['truck', 'date', 'gallons', 'price_per_gallon', 'odometer_reading']
+
+
+class TollEntryForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TollEntry
+        fields = ['load', 'date', 'toll_location', 'amount']
+
+
+# ──────────────────────────────────────────────────────────────
+# 3) Maintenance Schedule & Record Forms
+# ──────────────────────────────────────────────────────────────
+
+class MaintenanceScheduleForm(forms.ModelForm):
+    last_service_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
+    class Meta:
+        model = MaintenanceSchedule
+        fields = [
+            'truck', 'service_type',
+            'interval_miles', 'interval_months',
+            'last_service_date', 'last_service_odometer'
+        ]
+
+
+class MaintenanceRecordForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = MaintenanceRecord
+        fields = [
+            'truck', 'schedule', 'date',
+            'odometer', 'description', 'cost', 'parts_replaced'
+        ]
+
+
+# ──────────────────────────────────────────────────────────────
+# 4) Truck Load & File Forms
+# ──────────────────────────────────────────────────────────────
 
 class TruckLoadForm(forms.ModelForm):
-    date_started = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'})
-    )
-    date_completed = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
-        required=False
-    )
-    time_loaded = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time'}),
-        required=False
-    )
-    time_unloaded = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time'}),
-        required=False
-    )
+    date_started = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    date_completed = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+    time_loaded = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), required=False)
+    time_unloaded = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}), required=False)
 
     class Meta:
         model = TruckLoad
         fields = [
-            'truck', 'customer', 'date_started', 'date_completed',
+            'truck', 'driver', 'customer',
+            'pickup_address', 'dropoff_address',
+            'date_started', 'date_completed',
             'time_loaded', 'time_unloaded',
-            'pay_amount', 'miles', 'hours_total', 'hours_load_unload', 'status'
+            'miles', 'route_distance',
+            'pay_amount', 'hours_total', 'hours_load_unload',
+            'status'
         ]
 
 
 class TruckFileForm(forms.ModelForm):
     class Meta:
         model = TruckFile
-        fields = ['truck', 'title', 'file']
+        fields = ['truck', 'title', 'file', 'notes']
+
+
+# ──────────────────────────────────────────────────────────────
+# 5) HOS Log Form
+# ──────────────────────────────────────────────────────────────
+
+class HosLogForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = HosLog
+        fields = ['driver', 'date', 'on_duty_time', 'off_duty_time', 'driving_hours', 'notes']
+
+
+# ──────────────────────────────────────────────────────────────
+# 6) Invoice & LineItem Forms
+# ──────────────────────────────────────────────────────────────
+
+class InvoiceForm(forms.ModelForm):
+    date_issued = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = Invoice
+        fields = ['load', 'invoice_number', 'date_issued', 'total_amount', 'paid', 'paid_date']
+
+
+class LineItemForm(forms.ModelForm):
+    class Meta:
+        model = LineItem
+        fields = ['description', 'quantity', 'unit_price']
+
+
+# ──────────────────────────────────────────────────────────────
+# 7) TollEntry is defined above (already included)
+# ──────────────────────────────────────────────────────────────
+
+
+# ──────────────────────────────────────────────────────────────
+# 8) Any Other Tiny Utility Forms (e.g., search/filter) can go here
+# ──────────────────────────────────────────────────────────────

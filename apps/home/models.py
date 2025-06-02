@@ -724,37 +724,87 @@ from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
 
+from django.db import models
+from django.contrib.auth.models import User
+from decimal import Decimal
+import datetime
+
+# ──────────────────────────────────────────────────────────────
+# 1) Truck, Driver, and Customer/Broker
+# ──────────────────────────────────────────────────────────────
+
 class Truck(models.Model):
-    """
-    If you already have a Vehicle model and want to reuse it for trucks,
-    you can skip this and reference Vehicle instead. Otherwise, use Truck.
-    """
     name = models.CharField(max_length=100)
     license_plate = models.CharField(max_length=50, blank=True)
+    # If you want to track odometer, you could:
+    odometer = models.PositiveIntegerField(default=0)
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name or f"Truck #{self.pk}"
+        return f"{self.name} ({self.license_plate})"
 
+
+class Driver(models.Model):
+    """
+    A CDL driver who can be assigned to loads.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    cdl_number = models.CharField(max_length=50, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    hire_date = models.DateField(null=True, blank=True)
+    # Hours Of Service tracking fields could be added here
+
+    def __str__(self):
+        return self.user.get_full_name() or self.user.username
+
+
+class Customer(models.Model):
+    """
+    Shipper or Broker who gives loads.
+    """
+    name = models.CharField(max_length=200)
+    contact_name = models.CharField(max_length=100, blank=True)
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=20, blank=True)
+    address = models.CharField(max_length=300, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+# ──────────────────────────────────────────────────────────────
+# 2) Truck Expense & FuelEntry
+# ──────────────────────────────────────────────────────────────
 
 class TruckExpense(models.Model):
     """
-    Monthly or variable expense for the trucking business.
+    General expense (fuel, maintenance, insurance, tolls, etc.).
     """
     truck = models.ForeignKey(
-        'Truck',
+        Truck,
         on_delete=models.CASCADE,
         related_name='expenses'
     )
     description = models.CharField(max_length=200)
-    amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    date_incurred = models.DateField(default=datetime.date.today)
+    category_choices = [
+        ('fuel', 'Fuel'),
+        ('maintenance', 'Maintenance'),
+        ('insurance', 'Insurance'),
+        ('tolls', 'Tolls'),
+        ('permits', 'Permits'),
+        ('other', 'Other'),
+    ]
+    category = models.CharField(max_length=20, choices=category_choices, default='other')
+
+    # If you want to assign part of this expense to a specific load(s):
+    loads = models.ManyToManyField(
+        'TruckLoad',
+        blank=True,
+        related_name='allocated_expenses',
+        help_text="Optionally associate this expense with one or more loads."
     )
-    date_incurred = models.DateField()
-    # e.g. fuel, insurance, maintenance, tolls, etc.
-    category = models.CharField(max_length=50, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -762,79 +812,319 @@ class TruckExpense(models.Model):
         return f"{self.truck.name} – {self.description} (${self.amount})"
 
 
+class FuelEntry(models.Model):
+    """
+    A specific fill-up record for fuel tracking.
+    """
+    truck = models.ForeignKey(
+        Truck,
+        on_delete=models.CASCADE,
+        related_name='fuel_entries'
+    )
+    date = models.DateField(default=datetime.date.today)
+    gallons = models.DecimalField(max_digits=6, decimal_places=2)
+    price_per_gallon = models.DecimalField(max_digits=5, decimal_places=2)
+    total_cost = models.DecimalField(max_digits=8, decimal_places=2, editable=False)
+    odometer_reading = models.PositiveIntegerField(help_text="Truck odometer at time of fill")
+
+    def save(self, *args, **kwargs):
+        # Automatically calculate total_cost
+        self.total_cost = (self.gallons * self.price_per_gallon).quantize(Decimal('0.01'))
+        super().save(*args, **kwargs)
+
+    def miles_since_last_fill(self):
+        """
+        Returns: difference between this odometer and the previous fill entry.
+        """
+        previous = FuelEntry.objects.filter(
+            truck=self.truck,
+            date__lt=self.date
+        ).order_by('-date').first()
+        if previous:
+            return self.odometer_reading - previous.odometer_reading
+        return None
+
+    def mpg(self):
+        """
+        miles per gallon since last fill.
+        """
+        miles = self.miles_since_last_fill()
+        if miles is not None and self.gallons > 0:
+            return (Decimal(miles) / self.gallons).quantize(Decimal('0.01'))
+        return None
+
+    def __str__(self):
+        return f"{self.truck.name} – {self.date} – {self.gallons} gal"
+
+
+# ──────────────────────────────────────────────────────────────
+# 3) Maintenance Scheduling & History
+# ──────────────────────────────────────────────────────────────
+
+class MaintenanceSchedule(models.Model):
+    """
+    Recurring maintenance triggers (e.g. every 10,000 miles or 6 months).
+    """
+    truck = models.ForeignKey(
+        Truck,
+        on_delete=models.CASCADE,
+        related_name='maintenance_schedules'
+    )
+    service_type = models.CharField(max_length=100)
+    interval_miles = models.PositiveIntegerField(null=True, blank=True,
+        help_text="If set, schedule every X miles")
+    interval_months = models.PositiveIntegerField(null=True, blank=True,
+        help_text="If set, schedule every X months")
+
+    last_service_date = models.DateField(null=True, blank=True)
+    last_service_odometer = models.PositiveIntegerField(null=True, blank=True)
+
+    next_service_date = models.DateField(null=True, blank=True)
+    next_service_odometer = models.PositiveIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Compute next due if last known is provided
+        if self.last_service_date and self.interval_months:
+            self.next_service_date = (
+                self.last_service_date + datetime.timedelta(days=30 * self.interval_months)
+            )
+        if self.last_service_odometer and self.interval_miles:
+            self.next_service_odometer = self.last_service_odometer + self.interval_miles
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.truck.name} – {self.service_type}"
+
+
+class MaintenanceRecord(models.Model):
+    """
+    Actual maintenance event tied to a schedule (or ad-hoc).
+    """
+    truck = models.ForeignKey(
+        Truck,
+        on_delete=models.CASCADE,
+        related_name='maintenance_records'
+    )
+    schedule = models.ForeignKey(
+        MaintenanceSchedule,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='records'
+    )
+    date = models.DateField(default=datetime.date.today)
+    odometer = models.PositiveIntegerField(help_text="Odometer reading at service")
+    description = models.CharField(max_length=200)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    parts_replaced = models.TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        # If this record is from a schedule, update schedule’s last service data
+        if self.schedule:
+            self.schedule.last_service_date = self.date
+            self.schedule.last_service_odometer = self.odometer
+            self.schedule.save()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.truck.name} – {self.date} – {self.description}"
+
+
+# ──────────────────────────────────────────────────────────────
+# 4) Truck Load & Route Mapping
+# ──────────────────────────────────────────────────────────────
+
 class TruckLoad(models.Model):
     """
-    Record each load: pay, miles, hours, load/unload times, etc.
+    Record each load: pay, miles, hours, driver assignment, etc.
     """
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
     ]
 
     truck = models.ForeignKey(
-        'Truck',
+        Truck,
         on_delete=models.CASCADE,
         related_name='loads'
     )
-    date_started = models.DateField()
+    driver = models.ForeignKey(
+        Driver,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loads'
+    )
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='loads'
+    )
+
+    date_started = models.DateField(default=datetime.date.today)
     date_completed = models.DateField(null=True, blank=True)
-    customer = models.CharField(max_length=100, blank=True)
-    pay_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-    miles = models.PositiveIntegerField(default=0)
-    hours_total = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-    hours_load_unload = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal('0.00')
-    )
-    # Optional timestamp fields if you want exact times:
     time_loaded = models.TimeField(null=True, blank=True)
     time_unloaded = models.TimeField(null=True, blank=True)
 
-    status = models.CharField(
-        max_length=10,
-        choices=STATUS_CHOICES,
-        default='active'
-    )
+    pay_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    miles = models.PositiveIntegerField(default=0)
+    hours_total = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    hours_load_unload = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+
+    # For route mapping:
+    pickup_address = models.CharField(max_length=300, blank=True)
+    dropoff_address = models.CharField(max_length=300, blank=True)
+    route_distance = models.PositiveIntegerField(null=True, blank=True,
+        help_text="Miles as computed by a routing API")
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def profit(self):
+    def mark_completed(self):
+        self.status = 'completed'
+        self.date_completed = datetime.date.today()
+        self.save()
+
+    def total_load_expenses(self):
         """
-        (Example) Net profit = pay_amount – all expenses allocated to this load.
-        For simplicity, we won't allocate expenses per load here.
+        Sum of all expenses linked via TruckExpense.loads M2M for this load.
         """
-        return self.pay_amount
+        allocated = self.allocated_expenses.aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+        return allocated
+
+    def net_profit(self):
+        """
+        pay_amount minus allocated expenses. (Route‐level margins.)
+        """
+        return (self.pay_amount - self.total_load_expenses()).quantize(Decimal('0.01'))
+
+    def cost_per_mile(self):
+        """
+        If route_distance > 0, compute (allocated_expenses / miles).
+        """
+        if self.miles > 0:
+            return (self.total_load_expenses() / Decimal(self.miles)).quantize(Decimal('0.01'))
+        return None
+
+    def profit_per_mile(self):
+        """
+        If route_distance > 0, compute (net_profit / miles).
+        """
+        if self.miles > 0:
+            return (self.net_profit() / Decimal(self.miles)).quantize(Decimal('0.01'))
+        return None
 
     def __str__(self):
-        return f"Load #{self.pk} ({self.truck.name}) – ${self.pay_amount}"
+        return f"Load #{self.pk} | {self.truck.name} → {self.customer.name if self.customer else '—'}"
 
+
+# ──────────────────────────────────────────────────────────────
+# 5) TruckFile (with Annotations)
+# ──────────────────────────────────────────────────────────────
 
 class TruckFile(models.Model):
-    """
-    Upload truck-related documents (IFTA, gas card copy, registration, etc.).
-    """
     truck = models.ForeignKey(
-        'Truck',
+        Truck,
         on_delete=models.CASCADE,
         related_name='files'
     )
     title = models.CharField(max_length=100)
     file = models.FileField(upload_to='trucking/files/%Y/%m/')
+    notes = models.TextField(blank=True, help_text="Optional annotation or description")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} – {self.truck.name}"
+        return f"{self.truck.name} – {self.title}"
 
 
+# ──────────────────────────────────────────────────────────────
+# 6) E-Logging & HOS (optional MVP fields on Driver)
+# ──────────────────────────────────────────────────────────────
+
+class HosLog(models.Model):
+    """
+    Hours of Service log for each driver, each shift/day.
+    """
+    driver = models.ForeignKey(
+        Driver,
+        on_delete=models.CASCADE,
+        related_name='hos_logs'
+    )
+    date = models.DateField(default=datetime.date.today)
+    on_duty_time = models.TimeField()
+    off_duty_time = models.TimeField()
+    driving_hours = models.DecimalField(max_digits=4, decimal_places=2,
+        help_text="Total hours spent driving today")
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.driver.user.username} – {self.date} HOS"
+
+
+# ──────────────────────────────────────────────────────────────
+# 7) Category for Invoice/Rate Confirmation (future)
+# ──────────────────────────────────────────────────────────────
+
+class Invoice(models.Model):
+    """
+    Invoice or Rate Confirmation generated after load completion.
+    """
+    load = models.OneToOneField(
+        TruckLoad,
+        on_delete=models.CASCADE,
+        related_name='invoice'
+    )
+    invoice_number = models.CharField(max_length=50, unique=True)
+    date_issued = models.DateField(default=datetime.date.today)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    paid = models.BooleanField(default=False)
+    paid_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Invoice {self.invoice_number} for Load {self.load.pk}"
+
+
+class LineItem(models.Model):
+    """
+    Each line item on the Invoice (service, materials, etc.).
+    """
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='line_items')
+    description = models.CharField(max_length=200)
+    quantity = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('1.00'))
+    unit_price = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal('0.00'))
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+
+    def save(self, *args, **kwargs):
+        self.total_price = (self.quantity * self.unit_price).quantize(Decimal('0.01'))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.description} × {self.quantity} @ {self.unit_price}"
+
+
+# ──────────────────────────────────────────────────────────────
+# 8) Toll Reimbursement (per load, if desired)
+# ──────────────────────────────────────────────────────────────
+
+class TollEntry(models.Model):
+    """
+    A toll expense that can be directly linked to a specific load.
+    """
+    load = models.ForeignKey(
+        TruckLoad,
+        on_delete=models.CASCADE,
+        related_name='tolls'
+    )
+    date = models.DateField(default=datetime.date.today)
+    toll_location = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal('0.00'))
+
+    def __str__(self):
+        return f"Load {self.load.pk} – {self.toll_location} – ${self.amount}"
 
 
 

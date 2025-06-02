@@ -1,14 +1,34 @@
 {# home/templates/home/trucking.html #}
-{% extends "home/base.html" %}   {# Or whatever your base template is called #}
+{% extends "home/base.html" %}
 {% load static %}
-
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-3">
+
   <h2>Trucking Dashboard</h2>
-  <ul class="nav nav-tabs mt-3" id="truckingTab" role="tablist">
+  <ul class="nav nav-tabs mt-4" id="truckingTab">
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'hub' %}active{% endif %}"
          href="{% url 'trucking_hub' %}?tab=hub">Hub</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'drivers' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=drivers">Drivers</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'customers' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=customers">Customers</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'maintenance' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=maintenance">Maintenance</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'fuel' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=fuel">Fuel</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'hos' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=hos">HOS Logs</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'files' %}active{% endif %}"
@@ -16,7 +36,7 @@
     </li>
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'add' %}active{% endif %}"
-         href="{% url 'trucking_hub' %}?tab=add">Add Expense/Load</a>
+         href="{% url 'trucking_hub' %}?tab=add">Add Record</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'accounting' %}active{% endif %}"
@@ -26,25 +46,56 @@
       <a class="nav-link {% if selected_tab == 'active_loads' %}active{% endif %}"
          href="{% url 'trucking_hub' %}?tab=active_loads">Active Loads</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'invoices' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=invoices">Invoices</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'tolls' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=tolls">Tolls</a>
+    </li>
   </ul>
 
   <div class="tab-content mt-4">
-    {# ======= HUB TAB ======= #}
+
+    {# ─────────────────────── HUB TAB ─────────────────────── #}
     {% if selected_tab == 'hub' %}
       <div class="tab-pane fade show active">
-        <h4 class="mb-3">Overview</h4>
-        <p><strong>Total Revenue:</strong> ${{ total_revenue|floatformat:2 }}</p>
-        <p><strong>Total Expenses:</strong> ${{ total_expenses|floatformat:2 }}</p>
-        <p><strong>Net Profit:</strong> ${{ net_profit|floatformat:2 }}</p>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Total Revenue</h5>
+                <p class="card-text">${{ total_revenue|floatformat:2 }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Total Expenses</h5>
+                <p class="card-text">${{ total_expenses|floatformat:2 }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Net Profit</h5>
+                <p class="card-text">${{ net_profit|floatformat:2 }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <hr>
-        <h5>Per-Truck Summary</h5>
+        <h4>Per-Truck Summary</h4>
         <table class="table table-bordered table-sm">
           <thead class="thead-light">
             <tr>
               <th>Truck</th>
-              <th>Total Revenue</th>
-              <th>Total Expenses</th>
+              <th>Revenue</th>
+              <th>Expenses</th>
               <th>Profit</th>
               <th>Active Loads</th>
             </tr>
@@ -59,45 +110,255 @@
                 <td>{{ item.active_loads }}</td>
               </tr>
             {% empty %}
-              <tr><td colspan="5">No trucks yet.</td></tr>
+              <tr><td colspan="5">No trucks defined.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <hr>
+        <h4>Average MPG per Truck</h4>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Truck</th>
+              <th>Avg. MPG (Latest Fill)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in avg_mpg %}
+              <tr>
+                <td>{{ m.truck.name }}</td>
+                <td>{{ m.mpg }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">No fuel data yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <hr>
+        <h4>Revenue vs. Expenses (Last 12 Months)</h4>
+        <canvas id="plChart" width="400" height="180"></canvas>
+      </div>
+    {% endif %}
+
+    {# ───────────────── DRIVERS TAB ───────────────── #}
+    {% if selected_tab == 'drivers' %}
+      <div class="tab-pane fade show active">
+        <h4>Driver Management</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ driver_form.as_p }}
+          <button type="submit" class="btn btn-primary">Add Driver</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Name</th><th>CDL #</th><th>Phone</th><th>Hire Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in drivers %}
+              <tr>
+                <td>{{ d.user.get_full_name }} ({{ d.user.username }})</td>
+                <td>{{ d.cdl_number }}</td>
+                <td>{{ d.phone }}</td>
+                <td>{{ d.hire_date }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4">No drivers yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
 
-    {# ======= FILES TAB ======= #}
-    {% if selected_tab == 'files' %}
+    {# ───────────────── CUSTOMERS TAB ───────────────── #}
+    {% if selected_tab == 'customers' %}
       <div class="tab-pane fade show active">
-        <h4>Upload Truck Documents</h4>
-        <form method="post" enctype="multipart/form-data">
+        <h4>Customers / Brokers</h4>
+        <form method="post">
           {% csrf_token %}
-          <div class="form-row">
-            <div class="col-md-4">
-              {{ file_form.truck.label_tag }} 
-              {{ file_form.truck }}
-            </div>
-            <div class="col-md-4">
-              {{ file_form.title.label_tag }} 
-              {{ file_form.title }}
-            </div>
-            <div class="col-md-4">
-              {{ file_form.file.label_tag }} 
-              {{ file_form.file }}
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary mt-2">Upload File</button>
+          {{ customer_form.as_p }}
+          <button type="submit" class="btn btn-primary">Add Customer</button>
         </form>
-
         <hr>
-        <h5 class="mt-4">Existing Files</h5>
-        <table class="table table-striped table-sm">
+        <table class="table table-sm table-striped">
           <thead>
             <tr>
-              <th>Truck</th>
-              <th>Title</th>
-              <th>Uploaded At</th>
-              <th>Download</th>
+              <th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in customers %}
+              <tr>
+                <td>{{ c.name }}</td>
+                <td>{{ c.contact_name }}</td>
+                <td>{{ c.contact_email }}</td>
+                <td>{{ c.contact_phone }}</td>
+                <td>{{ c.address }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No customers yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {# ───────────────── MAINTENANCE TAB ───────────────── #}
+    {% if selected_tab == 'maintenance' %}
+      <div class="tab-pane fade show active">
+        <div class="row">
+          <div class="col-md-6">
+            <h4>Maintenance Schedules</h4>
+            <form method="post">
+              {% csrf_token %}
+              {{ schedule_form.as_p }}
+              <button type="submit" name="add_schedule" class="btn btn-success">Save Schedule</button>
+            </form>
+            <hr>
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Truck</th><th>Service Type</th><th>Interval (Miles)</th>
+                  <th>Interval (Months)</th><th>Next Due Date</th><th>Next Due Odometer</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in schedules %}
+                  <tr>
+                    <td>{{ s.truck.name }}</td>
+                    <td>{{ s.service_type }}</td>
+                    <td>{{ s.interval_miles }}</td>
+                    <td>{{ s.interval_months }}</td>
+                    <td>{{ s.next_service_date }}</td>
+                    <td>{{ s.next_service_odometer }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="6">No maintenance schedules yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="col-md-6">
+            <h4>Maintenance Records</h4>
+            <form method="post">
+              {% csrf_token %}
+              {{ record_form.as_p }}
+              <button type="submit" name="add_record" class="btn btn-success">Save Record</button>
+            </form>
+            <hr>
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Truck</th><th>Date</th><th>Odometer</th><th>Description</th><th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in records %}
+                  <tr>
+                    <td>{{ r.truck.name }}</td>
+                    <td>{{ r.date }}</td>
+                    <td>{{ r.odometer }}</td>
+                    <td>{{ r.description }}</td>
+                    <td>${{ r.cost|floatformat:2 }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5">No maintenance records yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {# ───────────────── FUEL TAB ───────────────── #}
+    {% if selected_tab == 'fuel' %}
+      <div class="tab-pane fade show active">
+        <h4>Fuel Entries</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ fuel_form.as_p }}
+          <button type="submit" name="add_fuel" class="btn btn-success">Save Fuel Entry</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Date</th><th>Truck</th><th>Gallons</th><th>$/Gal</th>
+              <th>Total Cost</th><th>Odometer</th><th>MPG</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fe in entries %}
+              <tr>
+                <td>{{ fe.date }}</td>
+                <td>{{ fe.truck.name }}</td>
+                <td>{{ fe.gallons }}</td>
+                <td>${{ fe.price_per_gallon }}</td>
+                <td>${{ fe.total_cost }}</td>
+                <td>{{ fe.odometer_reading }}</td>
+                <td>{{ fe.mpg|default:"—" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="7">No fuel entries yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {# ───────────────── HOS TAB ───────────────── #}
+    {% if selected_tab == 'hos' %}
+      <div class="tab-pane fade show active">
+        <h4>Hours of Service Logs</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ hos_form.as_p }}
+          <button type="submit" class="btn btn-success">Save HOS Log</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Driver</th><th>Date</th><th>On Duty</th><th>Off Duty</th><th>Driving Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in hos_logs %}
+              <tr>
+                <td>{{ log.driver.user.get_full_name }}</td>
+                <td>{{ log.date }}</td>
+                <td>{{ log.on_duty_time }}</td>
+                <td>{{ log.off_duty_time }}</td>
+                <td>{{ log.driving_hours }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No HOS logs yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {# ───────────────── FILES TAB ───────────────── #}
+    {% if selected_tab == 'files' %}
+      <div class="tab-pane fade show active">
+        <h4>Truck Documents</h4>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ file_form.as_p }}
+          <button type="submit" class="btn btn-primary">Upload File</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Truck</th><th>Title</th><th>Notes</th><th>Uploaded At</th><th>Download</th>
             </tr>
           </thead>
           <tbody>
@@ -105,25 +366,24 @@
               <tr>
                 <td>{{ f.truck.name }}</td>
                 <td>{{ f.title }}</td>
+                <td>{{ f.notes|default:"–" }}</td>
                 <td>{{ f.uploaded_at|date:"Y-m-d H:i" }}</td>
-                <td>
-                  <a href="{{ f.file.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">Download</a>
-                </td>
+                <td><a href="{{ f.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">↧</a></td>
               </tr>
             {% empty %}
-              <tr><td colspan="4">No files uploaded yet.</td></tr>
+              <tr><td colspan="5">No files uploaded yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
 
-    {# ======= ADD EXPENSE/LOAD TAB ======= #}
+    {# ───────────────── ADD RECORDS TAB ───────────────── #}
     {% if selected_tab == 'add' %}
       <div class="tab-pane fade show active">
         <div class="row">
           <div class="col-md-6">
-            <h4>Add Expense</h4>
+            <h5>Add Expense</h5>
             <form method="post">
               {% csrf_token %}
               {{ expense_form.as_p }}
@@ -131,7 +391,7 @@
             </form>
           </div>
           <div class="col-md-6">
-            <h4>Add Load</h4>
+            <h5>Add Load</h5>
             <form method="post">
               {% csrf_token %}
               {{ load_form.as_p }}
@@ -139,121 +399,218 @@
             </form>
           </div>
         </div>
+        <hr>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h5>Add Toll</h5>
+            <form method="post">
+              {% csrf_token %}
+              {{ toll_form.as_p }}
+              <button type="submit" name="add_toll" class="btn btn-success">Save Toll</button>
+            </form>
+          </div>
+        </div>
       </div>
     {% endif %}
 
-    {# ======= ACCOUNTING TAB ======= #}
+    {# ───────────────── ACCOUNTING TAB ───────────────── #}
     {% if selected_tab == 'accounting' %}
       <div class="tab-pane fade show active">
-        <h4>All Expenses</h4>
-        <table class="table table-sm table-bordered">
-          <thead>
+        <div class="d-flex justify-content-between mb-3">
+          <h4>All Expenses & Loads</h4>
+          <a href="{% url 'export_accounting_csv' %}?format=csv" class="btn btn-outline-primary btn-sm">Export CSV</a>
+        </div>
+        <table class="table table-bordered table-sm mb-4">
+          <thead class="thead-light">
             <tr>
-              <th>Date</th>
-              <th>Truck</th>
-              <th>Description</th>
-              <th>Category</th>
-              <th>Amount</th>
+              <th>Type</th><th>Date</th><th>Truck</th><th>Category/Customer</th>
+              <th>Description/Load ID</th><th>Amount</th><th>Miles</th><th>Profit</th>
             </tr>
           </thead>
           <tbody>
-            {% for exp in all_expenses %}
+            {% for e in all_expenses %}
               <tr>
-                <td>{{ exp.date_incurred }}</td>
-                <td>{{ exp.truck.name }}</td>
-                <td>{{ exp.description }}</td>
-                <td>{{ exp.category }}</td>
-                <td>${{ exp.amount|floatformat:2 }}</td>
+                <td>Expense</td>
+                <td>{{ e.date_incurred }}</td>
+                <td>{{ e.truck.name }}</td>
+                <td>{{ e.category }}</td>
+                <td>{{ e.description }}</td>
+                <td>${{ e.amount|floatformat:2 }}</td>
+                <td>—</td>
+                <td>—</td>
               </tr>
-            {% empty %}
-              <tr><td colspan="5">No expenses recorded.</td></tr>
             {% endfor %}
-          </tbody>
-        </table>
-
-        <hr class="my-4">
-
-        <h4>All Loads</h4>
-        <table class="table table-sm table-bordered">
-          <thead>
-            <tr>
-              <th>Start Date</th>
-              <th>Completed Date</th>
-              <th>Truck</th>
-              <th>Customer</th>
-              <th>Pay</th>
-              <th>Miles</th>
-              <th>Total Hours</th>
-              <th>Load/Unload Hours</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for load in all_loads %}
+            {% for l in all_loads %}
               <tr>
-                <td>{{ load.date_started }}</td>
-                <td>{{ load.date_completed|default:"—" }}</td>
-                <td>{{ load.truck.name }}</td>
-                <td>{{ load.customer }}</td>
-                <td>${{ load.pay_amount|floatformat:2 }}</td>
-                <td>{{ load.miles }}</td>
-                <td>{{ load.hours_total }}</td>
-                <td>{{ load.hours_load_unload }}</td>
-                <td>{{ load.get_status_display }}</td>
+                <td>Load</td>
+                <td>{{ l.date_started }}</td>
+                <td>{{ l.truck.name }}</td>
+                <td>{{ l.customer.name if l.customer else '—' }}</td>
+                <td>Load #{{ l.pk }}</td>
+                <td>${{ l.pay_amount|floatformat:2 }}</td>
+                <td>{{ l.miles }}</td>
+                <td>${{ l.net_profit|floatformat:2 }}</td>
               </tr>
-            {% empty %}
-              <tr><td colspan="9">No loads recorded.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
 
-    {# ======= ACTIVE LOADS TAB ======= #}
+    {# ───────────────── ACTIVE LOADS TAB ───────────────── #}
     {% if selected_tab == 'active_loads' %}
       <div class="tab-pane fade show active">
         <h4>Active Loads</h4>
         <table class="table table-sm table-striped">
           <thead>
             <tr>
-              <th>Truck</th>
-              <th>Date Started</th>
-              <th>Customer</th>
-              <th>Pay</th>
-              <th>Miles</th>
-              <th>Hours Total</th>
-              <th>Load/Unload Hours</th>
-              <th>Mark Completed</th>
+              <th>Truck</th><th>Driver</th><th>Customer</th><th>Started</th>
+              <th>Pay</th><th>Miles</th><th>Action</th>
             </tr>
           </thead>
           <tbody>
             {% for load in active_loads %}
               <tr>
                 <td>{{ load.truck.name }}</td>
+                <td>{{ load.driver.user.get_full_name if load.driver else '—' }}</td>
+                <td>{{ load.customer.name if load.customer else '—' }}</td>
                 <td>{{ load.date_started }}</td>
-                <td>{{ load.customer }}</td>
                 <td>${{ load.pay_amount|floatformat:2 }}</td>
                 <td>{{ load.miles }}</td>
-                <td>{{ load.hours_total }}</td>
-                <td>{{ load.hours_load_unload }}</td>
                 <td>
                   <form method="post" action="{% url 'trucking_hub' %}?tab=active_loads">
                     {% csrf_token %}
-                    <input type="hidden" name="load_id" value="{{ load.id }}">
                     <input type="hidden" name="mark_complete" value="true">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">
-                      Complete
-                    </button>
+                    <input type="hidden" name="load_id" value="{{ load.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Complete</button>
                   </form>
                 </td>
               </tr>
             {% empty %}
-              <tr><td colspan="8">No active loads at the moment.</td></tr>
+              <tr><td colspan="7">No active loads.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
+
+    {# ───────────────── INVOICES TAB ───────────────── #}
+    {% if selected_tab == 'invoices' %}
+      <div class="tab-pane fade show active">
+        <h4>Invoices</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ invoice_form.as_p }}
+          <button type="submit" class="btn btn-success">Generate Invoice</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Invoice #</th><th>Load #</th><th>Date Issued</th><th>Total</th><th>Paid?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in invoices %}
+              <tr>
+                <td>{{ inv.invoice_number }}</td>
+                <td>{{ inv.load.pk }}</td>
+                <td>{{ inv.date_issued }}</td>
+                <td>${{ inv.total_amount|floatformat:2 }}</td>
+                <td>{{ inv.paid|yesno:"Yes,No" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No invoices yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {# ───────────────── TOLLS TAB ───────────────── #}
+    {% if selected_tab == 'tolls' %}
+      <div class="tab-pane fade show active">
+        <h4>Toll Entries</h4>
+        <form method="post">
+          {% csrf_token %}
+          {{ toll_form.as_p }}
+          <button type="submit" class="btn btn-success">Save Toll</button>
+        </form>
+        <hr>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Load #</th><th>Date</th><th>Location</th><th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tolls %}
+              <tr>
+                <td>{{ t.load.pk }}</td>
+                <td>{{ t.date }}</td>
+                <td>{{ t.toll_location }}</td>
+                <td>${{ t.amount|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4">No toll entries yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
   </div>
 </div>
+
+{# ─────────── Additional JS for Charts ─────────── #}
+{% if selected_tab == 'hub' %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Fetch monthly P&L data and render Chart.js line chart
+    fetch("{% url 'monthly_pl_data' %}")
+      .then(res => res.json())
+      .then(json => {
+        const labels = json.data.map(item => item.month);
+        const revenues = json.data.map(item => item.revenue);
+        const expenses = json.data.map(item => item.expense);
+
+        const ctx = document.getElementById('plChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Revenue',
+                data: revenues,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                fill: false,
+                tension: 0.1
+              },
+              {
+                label: 'Expenses',
+                data: expenses,
+                borderColor: 'rgba(220, 53, 69, 1)',
+                backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                fill: false,
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: value => '$' + value
+                }
+              }
+            }
+          }
+        });
+      });
+  </script>
+{% endif %}
 {% endblock %}

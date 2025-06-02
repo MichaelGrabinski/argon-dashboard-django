@@ -80,7 +80,6 @@ urlpatterns = [
     path('services/<int:service_id>/edit/', views.service_edit, name='service_edit'),
    # path('invoices/<int:invoice_id>/pdf/', views.invoice_pdf_view, name='invoice_pdf'),
     #path('send-invoice-email/<int:invoice_id>/', views.send_invoice_email, name='send_invoice_email'),
-    path('trucking/', views.trucking_hub, name='trucking_hub'),
     
     path('showcase/', views.showcase, name='showcase'),
     path('generate_letter/', views.generate_letter_pdf, name='generate_letter_pdf'),
@@ -92,6 +91,13 @@ urlpatterns = [
     path('store/product/<int:product_id>/', views.store_product_detail, name='store_product_detail'),
     path('store/cart/', views.store_cart_detail, name='store_cart_detail'),
     path('store/checkout/', views.store_checkout, name='store_checkout'),
+    
+    path('trucking/', views.trucking_hub, name='trucking_hub'),
+    path('trucking/export-accounting/', views.export_accounting_csv, name='export_accounting_csv'),
+    path('trucking/monthly-pl-data/', views.monthly_pl_data, name='monthly_pl_data'),
+    path('trucking/ifta-report/', views.ifta_report, name='ifta_report'),
+    
+    
     
     re_path(r'^.*\.*', views.pages, name='pages'),
     
