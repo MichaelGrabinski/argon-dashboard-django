@@ -98,7 +98,6 @@ urlpatterns = [
     path('trucking/ifta-report/', views.ifta_report, name='ifta_report'),
     
     
-    
     re_path(r'^.*\.*', views.pages, name='pages'),
     
 ]

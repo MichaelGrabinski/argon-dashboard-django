@@ -348,6 +348,97 @@ class MaintenanceRecordForm(forms.ModelForm):
 # 4) Truck Load & File Forms
 # ──────────────────────────────────────────────────────────────
 
+from django import forms
+from .models import (
+    Truck, Driver, Customer,
+    TruckExpense, FuelEntry, TruckMaintenanceSchedule,
+    TruckMaintenanceRecord, TruckLoad, TruckFile,
+    HosLog, TruckInvoice, TruckLineItem, TollEntry
+)
+
+# ──────────────────────────────────────────────────────────────
+# 1) Truck, Driver, Customer Forms
+# ──────────────────────────────────────────────────────────────
+
+class TruckForm(forms.ModelForm):
+    class Meta:
+        model = Truck
+        fields = ['name', 'license_plate', 'odometer', 'active']
+
+
+class DriverForm(forms.ModelForm):
+    hire_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
+    class Meta:
+        model = Driver
+        fields = ['user', 'cdl_number', 'phone', 'hire_date']
+
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['name', 'contact_name', 'contact_email', 'contact_phone', 'address']
+
+
+# ──────────────────────────────────────────────────────────────
+# 2) Expense, Fuel, Toll Forms
+# ──────────────────────────────────────────────────────────────
+
+class TruckExpenseForm(forms.ModelForm):
+    date_incurred = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TruckExpense
+        fields = ['truck', 'description', 'amount', 'date_incurred', 'category', 'loads']
+
+
+class FuelEntryForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = FuelEntry
+        fields = ['truck', 'date', 'gallons', 'price_per_gallon', 'odometer_reading']
+
+
+class TollEntryForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TollEntry
+        fields = ['load', 'date', 'toll_location', 'amount']
+
+
+# ──────────────────────────────────────────────────────────────
+# 3) Maintenance Schedule & Record Forms
+# ──────────────────────────────────────────────────────────────
+
+class TruckMaintenanceScheduleForm(forms.ModelForm):
+    last_service_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
+
+    class Meta:
+        model = TruckMaintenanceSchedule
+        fields = [
+            'truck', 'service_type',
+            'interval_miles', 'interval_months',
+            'last_service_date', 'last_service_odometer'
+        ]
+
+
+class TruckMaintenanceRecordForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TruckMaintenanceRecord
+        fields = [
+            'truck', 'schedule', 'date',
+            'odometer', 'description', 'cost', 'parts_replaced'
+        ]
+
+
+# ──────────────────────────────────────────────────────────────
+# 4) Truck Load & File Forms
+# ──────────────────────────────────────────────────────────────
+
 class TruckLoadForm(forms.ModelForm):
     date_started = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     date_completed = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=False)
@@ -386,28 +477,18 @@ class HosLogForm(forms.ModelForm):
 
 
 # ──────────────────────────────────────────────────────────────
-# 6) Invoice & LineItem Forms
+# 6) Truck Invoice & LineItem Forms
 # ──────────────────────────────────────────────────────────────
 
-class InvoiceForm(forms.ModelForm):
+class TruckInvoiceForm(forms.ModelForm):
     date_issued = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
-        model = Invoice
+        model = TruckInvoice
         fields = ['load', 'invoice_number', 'date_issued', 'total_amount', 'paid', 'paid_date']
 
 
-class LineItemForm(forms.ModelForm):
+class TruckLineItemForm(forms.ModelForm):
     class Meta:
-        model = LineItem
+        model = TruckLineItem
         fields = ['description', 'quantity', 'unit_price']
-
-
-# ──────────────────────────────────────────────────────────────
-# 7) TollEntry is defined above (already included)
-# ──────────────────────────────────────────────────────────────
-
-
-# ──────────────────────────────────────────────────────────────
-# 8) Any Other Tiny Utility Forms (e.g., search/filter) can go here
-# ──────────────────────────────────────────────────────────────

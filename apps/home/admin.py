@@ -97,13 +97,12 @@ class ProductAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 
-
 from django.contrib import admin
 from .models import (
     Truck, Driver, Customer,
-    TruckExpense, FuelEntry, MaintenanceSchedule,
-    MaintenanceRecord, TruckLoad, TruckFile,
-    HosLog, Invoice, LineItem, TollEntry
+    TruckExpense, FuelEntry, TruckMaintenanceSchedule,
+    TruckMaintenanceRecord, TruckLoad, TruckFile,
+    HosLog, TruckInvoice, TruckLineItem, TollEntry
 )
 
 @admin.register(Truck)
@@ -134,14 +133,14 @@ class FuelEntryAdmin(admin.ModelAdmin):
     list_filter = ('truck', 'date')
 
 
-@admin.register(MaintenanceSchedule)
-class MaintenanceScheduleAdmin(admin.ModelAdmin):
+@admin.register(TruckMaintenanceSchedule)
+class TruckMaintenanceScheduleAdmin(admin.ModelAdmin):
     list_display = ('truck', 'service_type', 'interval_miles', 'interval_months', 'next_service_date')
     list_filter = ('truck', 'service_type')
 
 
-@admin.register(MaintenanceRecord)
-class MaintenanceRecordAdmin(admin.ModelAdmin):
+@admin.register(TruckMaintenanceRecord)
+class TruckMaintenanceRecordAdmin(admin.ModelAdmin):
     list_display = ('truck', 'date', 'odometer', 'description', 'cost')
     list_filter = ('truck', 'date')
 
@@ -163,14 +162,14 @@ class HosLogAdmin(admin.ModelAdmin):
     list_display = ('driver', 'date', 'driving_hours')
 
 
-@admin.register(Invoice)
-class InvoiceAdmin(admin.ModelAdmin):
+@admin.register(TruckInvoice)
+class TruckInvoiceAdmin(admin.ModelAdmin):
     list_display = ('invoice_number', 'load', 'date_issued', 'total_amount', 'paid')
     list_filter = ('paid',)
 
 
-@admin.register(LineItem)
-class LineItemAdmin(admin.ModelAdmin):
+@admin.register(TruckLineItem)
+class TruckLineItemAdmin(admin.ModelAdmin):
     list_display = ('invoice', 'description', 'quantity', 'unit_price', 'total_price')
 
 
