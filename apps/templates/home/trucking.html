@@ -481,22 +481,25 @@
                 <td>—</td>
               </tr>
             {% endfor %}
-            {% for l in all_loads %}
-              <tr>
-                <td>Load</td>
-                <td>{{ l.date_started }}</td>
-                <td>{{ l.truck.name }}</td>
-                <td>{{ l.customer.name if l.customer else '—' }}</td>
-                <td>Load #{{ l.pk }}</td>
-                <td>${{ l.pay_amount|floatformat:2 }}</td>
-                <td>{{ l.miles }}</td>
-                <td>${{ l.net_profit|floatformat:2 }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% endif %}
+{% for l in all_loads %}
+  <tr>
+    <td>Load</td>
+    <td>{{ l.date_started }}</td>
+    <td>{{ l.truck.name }}</td>
+    <td>
+      {% if l.customer %}
+        {{ l.customer.name }}
+      {% else %}
+        &mdash;
+      {% endif %}
+    </td>
+    <td>Load #{{ l.pk }}</td>
+    <td>${{ l.pay_amount|floatformat:2 }}</td>
+    <td>{{ l.miles }}</td>
+    <td>${{ l.net_profit|floatformat:2 }}</td>
+  </tr>
+{% endfor %}
+
 
     {# ──────────────── ACTIVE LOADS TAB ──────────────── #}
     {% if selected_tab == 'active_loads' %}
@@ -515,30 +518,38 @@
             </tr>
           </thead>
           <tbody>
-            {% for load in active_loads %}
-              <tr>
-                <td>{{ load.truck.name }}</td>
-                <td>{{ load.driver.user.get_full_name if load.driver else '—' }}</td>
-                <td>{{ load.customer.name if load.customer else '—' }}</td>
-                <td>{{ load.date_started }}</td>
-                <td>${{ load.pay_amount|floatformat:2 }}</td>
-                <td>{{ load.miles }}</td>
-                <td>
-                  <form method="post" action="{% url 'trucking_hub' %}?tab=active_loads">
-                    {% csrf_token %}
-                    <input type="hidden" name="mark_complete" value="true">
-                    <input type="hidden" name="load_id" value="{{ load.id }}">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Complete</button>
-                  </form>
-                </td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="7">No active loads.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% endif %}
+{% for load in active_loads %}
+  <tr>
+    <td>{{ load.truck.name }}</td>
+    <td>
+      {% if load.driver %}
+        {{ load.driver.user.get_full_name }}
+      {% else %}
+        &mdash;
+      {% endif %}
+    </td>
+    <td>
+      {% if load.customer %}
+        {{ load.customer.name }}
+      {% else %}
+        &mdash;
+      {% endif %}
+    </td>
+    <td>{{ load.date_started }}</td>
+    <td>${{ load.pay_amount|floatformat:2 }}</td>
+    <td>{{ load.miles }}</td>
+    <td>
+      <form method="post" action="{% url 'trucking_hub' %}?tab=active_loads">
+        {% csrf_token %}
+        <input type="hidden" name="mark_complete" value="true">
+        <input type="hidden" name="load_id" value="{{ load.id }}">
+        <button type="submit" class="btn btn-sm btn-outline-primary">Complete</button>
+      </form>
+    </td>
+  </tr>
+{% empty %}
+  <tr><td colspan="7">No active loads.</td></tr>
+{% endfor %}
 
     {# ──────────────── INVOICES TAB ──────────────── #}
     {% if selected_tab == 'invoices' %}
