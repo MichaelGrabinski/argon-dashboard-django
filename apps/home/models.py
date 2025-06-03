@@ -1095,6 +1095,7 @@ class TollEntry(models.Model):
     def __str__(self):
         return f"Load {self.load.pk} – {self.toll_location} – ${self.amount}"
 
+
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
