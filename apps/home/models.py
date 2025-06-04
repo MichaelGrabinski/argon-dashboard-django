@@ -1095,7 +1095,105 @@ class TollEntry(models.Model):
     def __str__(self):
         return f"Load {self.load.pk} – {self.toll_location} – ${self.amount}"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# New Models for GPS, Documents, Geofencing, Tracking, Stops, and Incidents
+# ──────────────────────────────────────────────────────────────────────────────
 
+class TruckLocation(models.Model):
+    truck     = models.ForeignKey(Truck, on_delete=models.CASCADE)
+    latitude  = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        get_latest_by = 'timestamp'
+
+    def __str__(self):
+        return f"{self.truck.name} @ ({self.latitude}, {self.longitude}) on {self.timestamp}"
+
+class TruckDocument(models.Model):
+    truck      = models.ForeignKey(Truck, on_delete=models.CASCADE)
+    title      = models.CharField(max_length=200)
+    file       = models.FileField(upload_to='truck_documents/')
+    expires_on = models.DateField()
+
+    def is_expired(self):
+        return self.expires_on < timezone.localdate()
+
+    def days_until_expiry(self):
+        return (self.expires_on - timezone.localdate()).days
+
+    def __str__(self):
+        return f"{self.truck.name} – {self.title}"
+
+class DriverDocument(models.Model):
+    driver     = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    title      = models.CharField(max_length=200)
+    file       = models.FileField(upload_to='driver_documents/')
+    expires_on = models.DateField()
+
+    def is_expired(self):
+        return self.expires_on < timezone.localdate()
+
+    def days_until_expiry(self):
+        return (self.expires_on - timezone.localdate()).days
+
+    def __str__(self):
+        return f"{self.driver.user.username} – {self.title}"
+
+class Geofence(models.Model):
+    name    = models.CharField(max_length=100)
+    polygon = models.TextField(
+        help_text="JSON array of [lat, lng] points defining a polygon. e.g. [[41.8, -73.1], [41.9, -73.1], ...]"
+    )
+
+    def __str__(self):
+        return self.name
+
+class GeofenceAlert(models.Model):
+    truck       = models.ForeignKey(Truck, on_delete=models.CASCADE)
+    geofence    = models.ForeignKey(Geofence, on_delete=models.CASCADE)
+    location    = models.ForeignKey(TruckLocation, on_delete=models.CASCADE)
+    timestamp   = models.DateTimeField(auto_now_add=True)
+    acknowledged = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.truck.name} entered {self.geofence.name} @ {self.timestamp}"
+
+class LoadTrackingToken(models.Model):
+    load      = models.OneToOneField(TruckLoad, on_delete=models.CASCADE)
+    token     = models.CharField(max_length=32, unique=True, default=secrets.token_hex)
+    created   = models.DateTimeField(auto_now_add=True)
+
+    def get_tracking_url(self):
+        from django.urls import reverse
+        return reverse('public_load_tracking', args=[self.token])
+
+    def __str__(self):
+        return f"Token for Load {self.load.id}"
+
+class LoadStop(models.Model):
+    load      = models.ForeignKey(TruckLoad, on_delete=models.CASCADE, related_name='stops')
+    order     = models.PositiveIntegerField()
+    address   = models.CharField(max_length=250)
+    latitude  = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
+    def __str__(self):
+        return f"Stop {self.order} for Load {self.load.id}"
+
+class IncidentReport(models.Model):
+    truck       = models.ForeignKey(Truck, on_delete=models.CASCADE, null=True, blank=True)
+    load        = models.ForeignKey(TruckLoad, on_delete=models.CASCADE, null=True, blank=True)
+    driver      = models.ForeignKey(Driver, on_delete=models.CASCADE, null=True, blank=True)
+    date        = models.DateField()
+    description = models.TextField()
+    photos      = models.FileField(upload_to='incident_photos/', null=True, blank=True)
+    created_by  = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Incident on {self.date} (Truck: {self.truck or 'N/A'})"
 '''        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

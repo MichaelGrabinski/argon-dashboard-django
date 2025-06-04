@@ -401,3 +401,47 @@ class TruckLineItemForm(forms.ModelForm):
     class Meta:
         model = TruckLineItem
         fields = ['description', 'quantity', 'unit_price']
+
+# apps/home/forms.py
+
+from django import forms
+from .models import (
+    Truck, Driver, Customer,
+    TruckDocument, DriverDocument,
+    IncidentReport, LoadStop
+)
+
+class TruckForm(forms.ModelForm):
+    class Meta:
+        model  = Truck
+        fields = ['name', 'license_plate', 'odometer', 'active']
+
+class DriverForm(forms.ModelForm):
+    class Meta:
+        model  = Driver
+        fields = ['user', 'cdl_number', 'phone', 'hire_date']
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model  = Customer
+        fields = ['name', 'contact_name', 'contact_email', 'contact_phone', 'address']
+
+class TruckDocumentForm(forms.ModelForm):
+    class Meta:
+        model  = TruckDocument
+        fields = ['truck', 'title', 'file', 'expires_on']
+
+class DriverDocumentForm(forms.ModelForm):
+    class Meta:
+        model  = DriverDocument
+        fields = ['driver', 'title', 'file', 'expires_on']
+
+class IncidentForm(forms.ModelForm):
+    class Meta:
+        model  = IncidentReport
+        fields = ['truck', 'load', 'driver', 'date', 'description', 'photos']
+
+class StopForm(forms.ModelForm):
+    class Meta:
+        model  = LoadStop
+        fields = ['load', 'order', 'address', 'latitude', 'longitude']

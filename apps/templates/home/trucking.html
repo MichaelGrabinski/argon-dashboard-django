@@ -1,9 +1,14 @@
+{# apps/home/templates/home/trucking.html #}
 {% extends "home/base.html" %}
 {% load static %}
 {% block content %}
 <div class="container-fluid mt-3">
 
   <h2>Trucking Dashboard</h2>
+
+  {# ─────────────────────────────────────────────────────────────────────────── #}
+  {#   NAV TABS                                                                  #}
+  {# ─────────────────────────────────────────────────────────────────────────── #}
   <ul class="nav nav-tabs mt-4" id="truckingTab">
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'hub' %}active{% endif %}"
@@ -30,12 +35,16 @@
          href="{% url 'trucking_hub' %}?tab=hos">HOS Logs</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if selected_tab == 'files' %}active{% endif %}"
-         href="{% url 'trucking_hub' %}?tab=files">Files</a>
+      <a class="nav-link {% if selected_tab == 'documents' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=documents">Documents</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if selected_tab == 'add' %}active{% endif %}"
-         href="{% url 'trucking_hub' %}?tab=add">Add Record</a>
+      <a class="nav-link {% if selected_tab == 'route_planner' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=route_planner">Route Planner</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'add_records' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=add_records">Add Records</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if selected_tab == 'accounting' %}active{% endif %}"
@@ -53,148 +62,197 @@
       <a class="nav-link {% if selected_tab == 'tolls' %}active{% endif %}"
          href="{% url 'trucking_hub' %}?tab=tolls">Tolls</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'geofence_alerts' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=geofence_alerts">Geofence Alerts</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if selected_tab == 'incidents' %}active{% endif %}"
+         href="{% url 'trucking_hub' %}?tab=incidents">Incidents</a>
+    </li>
   </ul>
 
   <div class="tab-content mt-4">
 
-    {# ──────────────── HUB TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   HUB TAB                                                                  #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'hub' %}
       <div class="tab-pane fade show active">
+        {# Maintenance Alerts Banner #}
+        {% if maintenance_alerts %}
+          <div class="alert alert-warning">
+            <strong>Upcoming Maintenance Due:</strong>
+            <ul class="mb-0">
+              {% for a in maintenance_alerts %}
+                <li>
+                  {{ a.truck }} ({{ a.service_type }}):
+                  {% if a.miles_left <= 500 %}
+                    <span class="text-danger">{{ a.miles_left }} miles left</span>
+                  {% endif %}
+                  {% if a.days_left <= 15 %}
+                    <span class="text-danger">{{ a.days_left }} days left</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {# Live Truck Locations Map #}
+        <h4>Live Truck Locations</h4>
+        <div id="mapCanvas" style="height: 400px;"></div>
+
+        <hr>
+        {# Driver HOS (Last 7 Days) #}
+        <h4>Driver HOS (Last 7 Days)</h4>
+        <table class="table table-sm">
+          <thead>
+            <tr><th>Driver</th><th>Total Hours</th></tr>
+          </thead>
+          <tbody>
+            {% for dh in driver_hos %}
+              <tr>
+                <td>{{ dh.driver_name }}</td>
+                <td>{{ dh.hours_last_week }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">No HOS logs recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <hr>
+        {# Driver Fuel Efficiency #}
+        <h4>Driver Fuel Efficiency</h4>
+        <a href="{% url 'export_drivers_excel' %}" class="btn btn-outline-info btn-sm mb-2">
+          Export Drivers Data
+        </a>
+        <table class="table table-sm">
+          <thead>
+            <tr><th>Driver</th><th>Avg. MPG</th></tr>
+          </thead>
+          <tbody>
+            {% for dm in driver_mpg %}
+              <tr>
+                <td>{{ dm.driver }}</td>
+                <td>{{ dm.mpg }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="2">No fuel data for drivers.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <hr>
+        {# Documents Expiring Soon #}
+        <h4>Documents Expiring Within 30 Days</h4>
         <div class="row">
-          <div class="col-md-4">
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Total Revenue</h5>
-                <p class="card-text">${{ total_revenue|floatformat:2 }}</p>
-              </div>
-            </div>
+          <div class="col-md-6">
+            <h5>Truck Documents</h5>
+            <a href="{% url 'export_maintenance_excel' %}" class="btn btn-outline-warning btn-sm mb-2">
+              Export Maintenance Records
+            </a>
+            <table class="table table-sm">
+              <thead>
+                <tr><th>Truck</th><th>Title</th><th>Expires On</th><th>Days Left</th></tr>
+              </thead>
+              <tbody>
+                {% for doc in expiring_truck_docs %}
+                  <tr>
+                    <td>{{ doc.truck.name }}</td>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.expires_on }}</td>
+                    <td>{{ doc.days_until_expiry }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="4">No truck docs expiring soon.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-          <div class="col-md-4">
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Total Expenses</h5>
-                <p class="card-text">${{ total_expenses|floatformat:2 }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Net Profit</h5>
-                <p class="card-text">${{ net_profit|floatformat:2 }}</p>
-              </div>
-            </div>
+          <div class="col-md-6">
+            <h5>Driver Documents</h5>
+            <table class="table table-sm">
+              <thead>
+                <tr><th>Driver</th><th>Title</th><th>Expires On</th><th>Days Left</th></tr>
+              </thead>
+              <tbody>
+                {% for doc in expiring_driver_docs %}
+                  <tr>
+                    <td>{{ doc.driver.user.get_full_name }}</td>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.expires_on }}</td>
+                    <td>{{ doc.days_until_expiry }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="4">No driver docs expiring soon.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
 
         <hr>
-        <h4>Per-Truck Summary</h4>
-        <table class="table table-bordered table-sm">
-          <thead class="thead-light">
-            <tr>
-              <th>Truck</th>
-              <th>Revenue</th>
-              <th>Expenses</th>
-              <th>Profit</th>
-              <th>Active Loads</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in per_truck %}
-              <tr>
-                <td>{{ item.truck.name }}</td>
-                <td>${{ item.revenue_total|floatformat:2 }}</td>
-                <td>${{ item.expense_total|floatformat:2 }}</td>
-                <td>${{ item.profit|floatformat:2 }}</td>
-                <td>{{ item.active_loads }}</td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="5">No trucks defined.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        {# Fuel vs. Maintenance Costs Chart #}
+        <h4>Fuel vs. Maintenance Spend (Last 12 Months)</h4>
+        <canvas id="costChart" width="400" height="180"></canvas>
 
-        <hr>
-        <h4>Average MPG per Truck</h4>
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Truck</th>
-              <th>Avg. MPG (Latest Fill)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for m in avg_mpg %}
-              <tr>
-                <td>{{ m.truck.name }}</td>
-                <td>{{ m.mpg }}</td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="2">No fuel data yet.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <hr>
-        <h4>Revenue vs. Expenses (Last 12 Months)</h4>
-        <canvas id="plChart" width="400" height="180"></canvas>
       </div>
     {% endif %}
 
-    {# ──────────────── DRIVERS TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   DRIVERS TAB                                                              #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'drivers' %}
       <div class="tab-pane fade show active">
         <h4>Driver Management</h4>
-        <form method="post">
+        <form method="post" class="mb-3">
           {% csrf_token %}
           {{ driver_form.as_p }}
-          <button type="submit" class="btn btn-primary">Add Driver</button>
+          <button type="submit" name="add_driver" class="btn btn-primary">Add Driver</button>
         </form>
-        <hr>
+        <a href="{% url 'export_drivers_excel' %}" class="btn btn-outline-info btn-sm mb-2">
+          Export Drivers
+        </a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>CDL #</th>
-              <th>Phone</th>
-              <th>Hire Date</th>
-            </tr>
+            <tr><th>Username</th><th>Full Name</th><th>CDL #</th><th>Phone</th><th>Hire Date</th></tr>
           </thead>
           <tbody>
             {% for d in drivers %}
               <tr>
-                <td>{{ d.user.get_full_name }} ({{ d.user.username }})</td>
+                <td>{{ d.user.username }}</td>
+                <td>{{ d.user.get_full_name }}</td>
                 <td>{{ d.cdl_number }}</td>
                 <td>{{ d.phone }}</td>
                 <td>{{ d.hire_date }}</td>
               </tr>
             {% empty %}
-              <tr><td colspan="4">No drivers yet.</td></tr>
+              <tr><td colspan="5">No drivers yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
 
-    {# ──────────────── CUSTOMERS TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   CUSTOMERS TAB                                                             #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'customers' %}
       <div class="tab-pane fade show active">
         <h4>Customers / Brokers</h4>
-        <form method="post">
+        <form method="post" class="mb-3">
           {% csrf_token %}
           {{ customer_form.as_p }}
-          <button type="submit" class="btn btn-primary">Add Customer</button>
+          <button type="submit" name="add_customer" class="btn btn-primary">Add Customer</button>
         </form>
-        <hr>
+        <a href="{% url 'export_customers_excel' %}" class="btn btn-outline-info btn-sm mb-2">
+          Export Customers
+        </a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Contact</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Address</th>
-            </tr>
+            <tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Address</th></tr>
           </thead>
           <tbody>
             {% for c in customers %}
@@ -213,107 +271,51 @@
       </div>
     {% endif %}
 
-    {# ──────────────── MAINTENANCE TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   MAINTENANCE TAB                                                           #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'maintenance' %}
       <div class="tab-pane fade show active">
-        <div class="row">
-          <div class="col-md-6">
-            <h4>Maintenance Schedules</h4>
-            <form method="post">
-              {% csrf_token %}
-              {{ schedule_form.as_p }}
-              <button type="submit" name="add_schedule" class="btn btn-success">Save Schedule</button>
-            </form>
-            <hr>
-            <table class="table table-sm table-striped">
-              <thead>
-                <tr>
-                  <th>Truck</th>
-                  <th>Service Type</th>
-                  <th>Interval (Miles)</th>
-                  <th>Interval (Months)</th>
-                  <th>Next Due Date</th>
-                  <th>Next Due Odometer</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for s in schedules %}
-                  <tr>
-                    <td>{{ s.truck.name }}</td>
-                    <td>{{ s.service_type }}</td>
-                    <td>{{ s.interval_miles }}</td>
-                    <td>{{ s.interval_months }}</td>
-                    <td>{{ s.next_service_date }}</td>
-                    <td>{{ s.next_service_odometer }}</td>
-                  </tr>
-                {% empty %}
-                  <tr><td colspan="6">No maintenance schedules yet.</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="col-md-6">
-            <h4>Maintenance Records</h4>
-            <form method="post">
-              {% csrf_token %}
-              {{ record_form.as_p }}
-              <button type="submit" name="add_record" class="btn btn-success">Save Record</button>
-            </form>
-            <hr>
-            <table class="table table-sm table-striped">
-              <thead>
-                <tr>
-                  <th>Truck</th>
-                  <th>Date</th>
-                  <th>Odometer</th>
-                  <th>Description</th>
-                  <th>Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for r in records %}
-                  <tr>
-                    <td>{{ r.truck.name }}</td>
-                    <td>{{ r.date }}</td>
-                    <td>{{ r.odometer }}</td>
-                    <td>{{ r.description }}</td>
-                    <td>${{ r.cost|floatformat:2 }}</td>
-                  </tr>
-                {% empty %}
-                  <tr><td colspan="5">No maintenance records yet.</td></tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <h4>Maintenance Records</h4>
+        <a href="{% url 'export_maintenance_excel' %}" class="btn btn-outline-warning btn-sm mb-2">
+          Export Maintenance
+        </a>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr><th>Date</th><th>Truck</th><th>Odometer</th><th>Description</th><th>Cost</th></tr>
+          </thead>
+          <tbody>
+            {% for r in maintenance_records %}
+              <tr>
+                <td>{{ r.date_incurred }}</td>
+                <td>{{ r.truck.name }}</td>
+                <td>{{ r.odometer }}</td>
+                <td>{{ r.description }}</td>
+                <td>${{ r.cost|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No maintenance records yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     {% endif %}
 
-    {# ──────────────── FUEL TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   FUEL TAB                                                                  #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'fuel' %}
       <div class="tab-pane fade show active">
         <h4>Fuel Entries</h4>
-        <form method="post">
-          {% csrf_token %}
-          {{ fuel_form.as_p }}
-          <button type="submit" name="add_fuel" class="btn btn-success">Save Fuel Entry</button>
-        </form>
-        <hr>
+        <a href="{% url 'export_fuel_entries_excel' %}" class="btn btn-outline-success btn-sm mb-2">
+          Export Fuel Entries
+        </a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Truck</th>
-              <th>Gallons</th>
-              <th>$/Gal</th>
-              <th>Total Cost</th>
-              <th>Odometer</th>
-              <th>MPG</th>
-            </tr>
+            <tr><th>Date</th><th>Truck</th><th>Gallons</th><th>$/Gal</th><th>Total Cost</th><th>Odometer</th></tr>
           </thead>
           <tbody>
-            {% for fe in entries %}
+            {% for fe in fuel_entries %}
               <tr>
                 <td>{{ fe.date }}</td>
                 <td>{{ fe.truck.name }}</td>
@@ -321,35 +323,27 @@
                 <td>${{ fe.price_per_gallon }}</td>
                 <td>${{ fe.total_cost }}</td>
                 <td>{{ fe.odometer_reading }}</td>
-                <td>{{ fe.mpg|default:"—" }}</td>
               </tr>
             {% empty %}
-              <tr><td colspan="7">No fuel entries yet.</td></tr>
+              <tr><td colspan="6">No fuel entries yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% endif %}
 
-    {# ──────────────── HOS TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   HOS TAB                                                                   #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'hos' %}
       <div class="tab-pane fade show active">
         <h4>Hours of Service Logs</h4>
-        <form method="post">
-          {% csrf_token %}
-          {{ hos_form.as_p }}
-          <button type="submit" class="btn btn-success">Save HOS Log</button>
-        </form>
-        <hr>
+        <a href="{% url 'export_hos_logs_excel' %}" class="btn btn-outline-secondary btn-sm mb-2">
+          Export HOS Logs
+        </a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Driver</th>
-              <th>Date</th>
-              <th>On Duty</th>
-              <th>Off Duty</th>
-              <th>Driving Hours</th>
-            </tr>
+            <tr><th>Driver</th><th>Date</th><th>On Duty</th><th>Off Duty</th><th>Driving Hours</th></tr>
           </thead>
           <tbody>
             {% for log in hos_logs %}
@@ -368,92 +362,265 @@
       </div>
     {% endif %}
 
-    {# ──────────────── FILES TAB ──────────────── #}
-    {% if selected_tab == 'files' %}
-      <div class="tab-pane fade show active">
-        <h4>Truck Documents</h4>
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ file_form.as_p }}
-          <button type="submit" class="btn btn-primary">Upload File</button>
-        </form>
-        <hr>
-        <table class="table table-sm table-striped">
-          <thead>
-            <tr>
-              <th>Truck</th>
-              <th>Title</th>
-              <th>Notes</th>
-              <th>Uploaded At</th>
-              <th>Download</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for f in files %}
-              <tr>
-                <td>{{ f.truck.name }}</td>
-                <td>{{ f.title }}</td>
-                <td>{{ f.notes|default:"–" }}</td>
-                <td>{{ f.uploaded_at|date:"Y-m-d H:i" }}</td>
-                <td><a href="{{ f.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">↧</a></td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="5">No files uploaded yet.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% endif %}
-
-    {# ──────────────── ADD RECORDS TAB ──────────────── #}
-    {% if selected_tab == 'add' %}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   DOCUMENTS TAB                                                             #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {% if selected_tab == 'documents' %}
       <div class="tab-pane fade show active">
         <div class="row">
           <div class="col-md-6">
-            <h5>Add Expense</h5>
-            <form method="post">
+            <h4>Truck Documents</h4>
+            <form method="post" enctype="multipart/form-data" class="mb-3">
               {% csrf_token %}
-              {{ expense_form.as_p }}
-              <button type="submit" name="add_expense" class="btn btn-success">Save Expense</button>
+              {{ truck_doc_form.as_p }}
+              <button type="submit" name="upload_truck_doc" class="btn btn-primary">Upload Truck Doc</button>
             </form>
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr><th>Truck</th><th>Title</th><th>Expires On</th><th>Days Left</th><th>Download</th></tr>
+              </thead>
+              <tbody>
+                {% for doc in truck_docs %}
+                  <tr>
+                    <td>{{ doc.truck.name }}</td>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.expires_on }}</td>
+                    <td>{{ doc.days_until_expiry }}</td>
+                    <td><a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">↧</a></td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5">No truck docs.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
           <div class="col-md-6">
-            <h5>Add Load</h5>
-            <form method="post">
+            <h4>Driver Documents</h4>
+            <form method="post" enctype="multipart/form-data" class="mb-3">
               {% csrf_token %}
-              {{ load_form.as_p }}
-              <button type="submit" name="add_load" class="btn btn-success">Save Load</button>
+              {{ driver_doc_form.as_p }}
+              <button type="submit" name="upload_driver_doc" class="btn btn-primary">Upload Driver Doc</button>
             </form>
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr><th>Driver</th><th>Title</th><th>Expires On</th><th>Days Left</th><th>Download</th></tr>
+              </thead>
+              <tbody>
+                {% for doc in driver_docs %}
+                  <tr>
+                    <td>{{ doc.driver.user.get_full_name }}</td>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.expires_on }}</td>
+                    <td>{{ doc.days_until_expiry }}</td>
+                    <td><a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">↧</a></td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5">No driver docs.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
-        <hr>
-        <div class="row mt-3">
+      </div>
+    {% endif %}
+
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   ROUTE PLANNER TAB                                                         #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {% if selected_tab == 'route_planner' %}
+      <div class="tab-pane fade show active">
+        <h4>Route Planner</h4>
+        <p>You can add intermediate stops for a load and visualize the optimized route.</p>
+
+        <form method="post" class="mb-3">
+          {% csrf_token %}
+          {{ stop_form.as_p }}
+          <button type="submit" name="add_stop" class="btn btn-success">Add Stop</button>
+        </form>
+
+        {% comment %}
+        In a real scenario, you'd select a specific load from a dropdown. For simplicity, 
+        this demo form only records new LoadStop records. To visualize, pick a load in Python or via admin.
+        {% endcomment %}
+
+        {% for load in all_loads %}
+          {% if load.stops.exists %}
+            <h5>Optimized Route for Load #{{ load.pk }}</h5>
+            <div id="routeMap{{ load.pk }}" style="height:300px;"></div>
+            <script>
+              (function() {
+                var stops = [
+                  {% for s in load.stops.all|dictsort:"order" %}
+                    [{{ s.latitude }}, {{ s.longitude }}]{% if not forloop.last %},{% endif %}
+                  {% endfor %}
+                ];
+                var optimized = stops; // fallback to input order if JS fails
+
+                // Fetch optimized from OSRM
+                fetch("https://router.project-osrm.org/trip/v1/driving/" + 
+                  stops.map(pt => pt[1] + "," + pt[0]).join(";") +
+                  "?source=first&destination=last"
+                )
+                .then(r => r.json())
+                .then(json => {
+                  if (json.waypoints) {
+                    optimized = json.waypoints
+                      .sort((a,b) => a.waypoint_index - b.waypoint_index)
+                      .map(wp => [wp.location[1], wp.location[0]]);
+                  }
+                  var map = L.map('routeMap{{ load.pk }}').setView(optimized[0], 8);
+                  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                  }).addTo(map);
+                  var poly = L.polyline(optimized, { color: 'blue' }).addTo(map);
+                  map.fitBounds(poly.getBounds());
+                });
+              })();
+            </script>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   ADD RECORDS TAB                                                           #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {% if selected_tab == 'add_records' %}
+      <div class="tab-pane fade show active">
+        <div class="row">
           <div class="col-md-6">
-            <h5>Add Fuel Entry</h5>
-            <form method="post">
+            <h5>Add Truck Load</h5>
+            <form method="post" class="mb-3">
               {% csrf_token %}
-              {{ fuel_form.as_p }}
-              <button type="submit" name="add_fuel" class="btn btn-success">Save Fuel</button>
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="truck">Truck</label>
+                  <select name="truck" id="truck" class="form-control">
+                    {% for t in all_trucks %}
+                      <option value="{{ t.id }}">{{ t.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="driver">Driver</label>
+                  <select name="driver" id="driver" class="form-control">
+                    {% for d in drivers %}
+                      <option value="{{ d.id }}">{{ d.user.get_full_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="customer">Customer</label>
+                  <select name="customer" id="customer" class="form-control">
+                    {% for c in customers %}
+                      <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="date_started">Date Started</label>
+                  <input type="date" name="date_started" id="date_started" class="form-control" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="pay_amount">Pay Amount</label>
+                  <input type="number" step="0.01" name="pay_amount" id="pay_amount" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="miles">Miles</label>
+                  <input type="number" name="miles" id="miles" class="form-control" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="hours_total">Total Hours</label>
+                  <input type="number" step="0.1" name="hours_total" id="hours_total" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="hours_load_unload">Load/Unload Hours</label>
+                  <input type="number" step="0.1" name="hours_load_unload" id="hours_load_unload" class="form-control" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="pickup_address">Pickup Address</label>
+                  <input type="text" name="pickup_address" id="pickup_address" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="dropoff_address">Dropoff Address</label>
+                  <input type="text" name="dropoff_address" id="dropoff_address" class="form-control" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="route_distance">Route Distance</label>
+                  <input type="number" name="route_distance" id="route_distance" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="time_loaded">Time Loaded</label>
+                  <input type="time" name="time_loaded" id="time_loaded" class="form-control" required>
+                </div>
+              </div>
+              <button type="submit" name="add_load" class="btn btn-success mt-3">Save Load</button>
             </form>
           </div>
           <div class="col-md-6">
-            <h5>Add Toll Entry</h5>
-            <form method="post">
+            <h5>Add Truck Expense</h5>
+            <form method="post" class="mb-3">
               {% csrf_token %}
-              {{ toll_form.as_p }}
-              <button type="submit" name="add_toll" class="btn btn-success">Save Toll</button>
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="truck_expense_truck">Truck</label>
+                  <select name="truck" id="truck_expense_truck" class="form-control">
+                    {% for t in all_trucks %}
+                      <option value="{{ t.id }}">{{ t.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="date_incurred">Date</label>
+                  <input type="date" name="date_incurred" id="date_incurred" class="form-control" required>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="odometer">Odometer</label>
+                  <input type="number" name="odometer" id="odometer" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="cost">Cost</label>
+                  <input type="number" step="0.01" name="cost" id="cost" class="form-control" required>
+                </div>
+              </div>
+              <div class="mt-2">
+                <label for="description">Description</label>
+                <input type="text" name="description" id="description" class="form-control" required>
+              </div>
+              <div class="mt-2">
+                <label for="category">Category</label>
+                <input type="text" name="category" id="category" class="form-control" required>
+              </div>
+              <button type="submit" name="add_expense" class="btn btn-success mt-3">Save Expense</button>
             </form>
           </div>
         </div>
       </div>
     {% endif %}
 
-    {# ──────────────── ACCOUNTING TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   ACCOUNTING TAB                                                            #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'accounting' %}
       <div class="tab-pane fade show active">
         <div class="d-flex justify-content-between mb-3">
           <h4>All Expenses & Loads</h4>
-          <a href="{% url 'export_accounting_csv' %}?format=csv" class="btn btn-outline-primary btn-sm">Export CSV</a>
+          <div>
+            <a href="{% url 'export_maintenance_excel' %}" class="btn btn-outline-warning btn-sm me-2">Export Maintenance</a>
+            <a href="{% url 'export_loads_excel' %}" class="btn btn-outline-primary btn-sm">Export Loads</a>
+          </div>
         </div>
         <table class="table table-bordered table-sm mb-4">
           <thead class="thead-light">
@@ -476,100 +643,97 @@
                 <td>{{ e.truck.name }}</td>
                 <td>{{ e.category }}</td>
                 <td>{{ e.description }}</td>
-                <td>${{ e.amount|floatformat:2 }}</td>
+                <td>${{ e.cost|floatformat:2 }}</td>
                 <td>—</td>
                 <td>—</td>
               </tr>
             {% endfor %}
-{% for l in all_loads %}
-  <tr>
-    <td>Load</td>
-    <td>{{ l.date_started }}</td>
-    <td>{{ l.truck.name }}</td>
-    <td>
-      {% if l.customer %}
-        {{ l.customer.name }}
-      {% else %}
-        &mdash;
-      {% endif %}
-    </td>
-    <td>Load #{{ l.pk }}</td>
-    <td>${{ l.pay_amount|floatformat:2 }}</td>
-    <td>{{ l.miles }}</td>
-    <td>${{ l.net_profit|floatformat:2 }}</td>
-  </tr>
-{% endfor %}
+            {% for l in all_loads %}
+              <tr>
+                <td>Load</td>
+                <td>{{ l.date_started }}</td>
+                <td>{{ l.truck.name }}</td>
+                <td>
+                  {% if l.customer %}
+                    {{ l.customer.name }}
+                  {% else %}
+                    &mdash;
+                  {% endif %}
+                </td>
+                <td>Load #{{ l.pk }}</td>
+                <td>${{ l.pay_amount|floatformat:2 }}</td>
+                <td>{{ l.miles }}</td>
+                <td>${{ l.net_profit|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
 
-
-    {# ──────────────── ACTIVE LOADS TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   ACTIVE LOADS TAB                                                          #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'active_loads' %}
       <div class="tab-pane fade show active">
         <h4>Active Loads</h4>
+        <a href="{% url 'export_loads_excel' %}" class="btn btn-outline-primary btn-sm mb-2">Export Loads</a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Truck</th>
-              <th>Driver</th>
-              <th>Customer</th>
-              <th>Started</th>
-              <th>Pay</th>
-              <th>Miles</th>
-              <th>Action</th>
-            </tr>
+            <tr><th>Truck</th><th>Driver</th><th>Customer</th><th>Started</th><th>Pay</th><th>Miles</th><th>Action</th></tr>
           </thead>
           <tbody>
-{% for load in active_loads %}
-  <tr>
-    <td>{{ load.truck.name }}</td>
-    <td>
-      {% if load.driver %}
-        {{ load.driver.user.get_full_name }}
-      {% else %}
-        &mdash;
-      {% endif %}
-    </td>
-    <td>
-      {% if load.customer %}
-        {{ load.customer.name }}
-      {% else %}
-        &mdash;
-      {% endif %}
-    </td>
-    <td>{{ load.date_started }}</td>
-    <td>${{ load.pay_amount|floatformat:2 }}</td>
-    <td>{{ load.miles }}</td>
-    <td>
-      <form method="post" action="{% url 'trucking_hub' %}?tab=active_loads">
-        {% csrf_token %}
-        <input type="hidden" name="mark_complete" value="true">
-        <input type="hidden" name="load_id" value="{{ load.id }}">
-        <button type="submit" class="btn btn-sm btn-outline-primary">Complete</button>
-      </form>
-    </td>
-  </tr>
-{% empty %}
-  <tr><td colspan="7">No active loads.</td></tr>
-{% endfor %}
+            {% for load in active_loads %}
+              <tr>
+                <td>{{ load.truck.name }}</td>
+                <td>
+                  {% if load.driver %}
+                    {{ load.driver.user.get_full_name }}
+                  {% else %}
+                    &mdash;
+                  {% endif %}
+                </td>
+                <td>
+                  {% if load.customer %}
+                    {{ load.customer.name }}
+                  {% else %}
+                    &mdash;
+                  {% endif %}
+                </td>
+                <td>{{ load.date_started }}</td>
+                <td>${{ load.pay_amount|floatformat:2 }}</td>
+                <td>{{ load.miles }}</td>
+                <td>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mark_complete" value="true">
+                    <input type="hidden" name="load_id" value="{{ load.id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Complete</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="7">No active loads.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
 
-    {# ──────────────── INVOICES TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   INVOICES TAB                                                              #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'invoices' %}
       <div class="tab-pane fade show active">
         <h4>Invoices</h4>
-        <form method="post">
+        <form method="post" class="mb-3">
           {% csrf_token %}
-          {{ invoice_form.as_p }}
-          <button type="submit" class="btn btn-success">Generate Invoice</button>
+          <button type="submit" name="gen_weekly_invoices" class="btn btn-success">Generate Weekly Invoices</button>
         </form>
-        <hr>
+        <a href="{% url 'export_invoices_excel' %}" class="btn btn-outline-secondary btn-sm mb-2">Export Invoices</a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Invoice #</th>
-              <th>Load #</th>
-              <th>Date Issued</th>
-              <th>Total</th>
-              <th>Paid?</th>
-            </tr>
+            <tr><th>Invoice #</th><th>Load #</th><th>Date Issued</th><th>Total</th><th>Paid?</th></tr>
           </thead>
           <tbody>
             {% for inv in invoices %}
@@ -588,24 +752,16 @@
       </div>
     {% endif %}
 
-    {# ──────────────── TOLLS TAB ──────────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   TOLLS TAB                                                                 #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
     {% if selected_tab == 'tolls' %}
       <div class="tab-pane fade show active">
         <h4>Toll Entries</h4>
-        <form method="post">
-          {% csrf_token %}
-          {{ toll_form.as_p }}
-          <button type="submit" class="btn btn-success">Save Toll</button>
-        </form>
-        <hr>
+        <a href="{% url 'export_tolls_excel' %}" class="btn btn-outline-dark btn-sm mb-2">Export Tolls</a>
         <table class="table table-sm table-striped">
           <thead>
-            <tr>
-              <th>Load #</th>
-              <th>Date</th>
-              <th>Location</th>
-              <th>Amount</th>
-            </tr>
+            <tr><th>Load #</th><th>Date</th><th>Location</th><th>Amount</th></tr>
           </thead>
           <tbody>
             {% for t in tolls %}
@@ -622,53 +778,148 @@
         </table>
       </div>
     {% endif %}
-  </div>
-</div>
 
-{# ─────────── Additional JS for Charts (HUB Tab) ─────────── #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   GEOFENCE ALERTS TAB                                                        #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {% if selected_tab == 'geofence_alerts' %}
+      <div class="tab-pane fade show active">
+        <h4>Geofence Alerts</h4>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr><th>Truck</th><th>Geofence</th><th>Timestamp</th><th>Acknowledged</th></tr>
+          </thead>
+          <tbody>
+            {% for ga in geo_alerts %}
+              <tr>
+                <td>{{ ga.truck.name }}</td>
+                <td>{{ ga.geofence.name }}</td>
+                <td>{{ ga.timestamp }}</td>
+                <td>{{ ga.acknowledged|yesno:"Yes,No" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4">No geofence alerts.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {#   INCIDENTS TAB                                                             #}
+    {# ─────────────────────────────────────────────────────────────────────────── #}
+    {% if selected_tab == 'incidents' %}
+      <div class="tab-pane fade show active">
+        <h4>Report Incident</h4>
+        <form method="post" enctype="multipart/form-data" class="mb-3">
+          {% csrf_token %}
+          {{ incident_form.as_p }}
+          <button type="submit" name="add_incident" class="btn btn-danger">Submit Report</button>
+        </form>
+        <hr>
+        <h5>Recent Incident Logs</h5>
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr><th>Date</th><th>Truck</th><th>Load</th><th>Driver</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            {% for inc in incidents %}
+              <tr>
+                <td>{{ inc.date }}</td>
+                <td>{{ inc.truck.name if inc.truck else '–' }}</td>
+                <td>{{ inc.load.pk if inc.load else '–' }}</td>
+                <td>{{ inc.driver.user.get_full_name if inc.driver else '–' }}</td>
+                <td>{{ inc.description|truncatechars:50 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">No incidents reported.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+  </div> {# .tab-content #}
+</div>   {# .container-fluid #}
+
+{# ────────────────────────────────────────────────────────────────────────────── #}
+{#   SCRIPTS for Charts & Maps                                                  #}
+{# ────────────────────────────────────────────────────────────────────────────── #}
 {% if selected_tab == 'hub' %}
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-XQoYMqMTK8LvdlxUm0GY5ojTJgpVAnQ+0Z6pYWaaV6N5FRmM3NiVf5Eyu0+vF9peb4c8tcHpvTD+BE5mX1zedg==" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+          integrity="sha512-1rPcECGifl+vMgVAb9YSEtX571v+1YFVdkPFVjHGHvhuF0hISHgU9Y4hWYXcWiqcUVkGvT641ZjF3WmlaGFoOQ==" crossorigin=""></script>
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
-    fetch("{% url 'monthly_pl_data' %}")
-      .then(res => res.json())
+    // ────────────────────────────────────────────────────────────────────────────
+    // 1) Live Truck Locations (poll every 15 seconds)
+    // ────────────────────────────────────────────────────────────────────────────
+    var map = L.map('mapCanvas').setView([41.8, -73.1], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var truckMarkers = {};  // keep track by truck_id
+
+    function updateMarkers() {
+      fetch("{% url 'truck_locations_api' %}")
+        .then(response => response.json())
+        .then(json => {
+          json.locations.forEach(loc => {
+            var key = loc.truck_id;
+            var latlng = [loc.latitude, loc.longitude];
+            if (truckMarkers[key]) {
+              truckMarkers[key].setLatLng(latlng);
+              truckMarkers[key].bindPopup(`${loc.truck_name}<br>${loc.timestamp}`);
+            } else {
+              var marker = L.marker(latlng)
+                            .bindPopup(`${loc.truck_name}<br>${loc.timestamp}`);
+              marker.addTo(map);
+              truckMarkers[key] = marker;
+            }
+          });
+        });
+    }
+    updateMarkers();
+    setInterval(updateMarkers, 15000);
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // 2) Fuel vs. Maintenance Costs Chart
+    // ────────────────────────────────────────────────────────────────────────────
+    fetch("{% url 'monthly_costs_data' %}")
+      .then(response => response.json())
       .then(json => {
         const labels = json.data.map(item => item.month);
-        const revenues = json.data.map(item => item.revenue);
-        const expenses = json.data.map(item => item.expense);
+        const fuelData = json.data.map(item => item.fuel);
+        const maintData = json.data.map(item => item.maintenance);
 
-        const ctx = document.getElementById('plChart').getContext('2d');
+        const ctx = document.getElementById('costChart').getContext('2d');
         new Chart(ctx, {
-          type: 'line',
+          type: 'bar',
           data: {
             labels: labels,
             datasets: [
               {
-                label: 'Revenue',
-                data: revenues,
-                borderColor: 'rgba(40, 167, 69, 1)',
-                backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                fill: false,
-                tension: 0.1
+                label: 'Fuel Spend',
+                data: fuelData,
+                backgroundColor: 'rgba(40, 167, 69, 0.5)'
               },
               {
-                label: 'Expenses',
-                data: expenses,
-                borderColor: 'rgba(220, 53, 69, 1)',
-                backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                fill: false,
-                tension: 0.1
+                label: 'Maintenance Spend',
+                data: maintData,
+                backgroundColor: 'rgba(220, 53, 69, 0.5)'
               }
             ]
           },
           options: {
             responsive: true,
             scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: value => '$' + value
-                }
-              }
+              y: { beginAtZero: true, ticks: { callback: value => '$' + value } }
             }
           }
         });

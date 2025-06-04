@@ -96,7 +96,26 @@ urlpatterns = [
     path('trucking/export-accounting/', views.export_accounting_csv, name='export_accounting_csv'),
     path('trucking/monthly-pl-data/', views.monthly_pl_data, name='monthly_pl_data'),
     path('trucking/ifta-report/', views.ifta_report, name='ifta_report'),
-    
+    # apps/home/urls.py
+
+    # GPS endpoints
+    path('api/update_location/', views.update_truck_location, name='update_truck_location'),
+    path('api/locations/', views.truck_locations_api, name='truck_locations_api'),
+    # Public tracking
+    path('track/<str:token>/', views.public_load_tracking, name='public_load_tracking'),
+    # Excel exports
+    path('export/loads/', views.export_loads_excel, name='export_loads_excel'),
+    path('export/fuel/', views.export_fuel_entries_excel, name='export_fuel_entries_excel'),
+    path('export/maintenance/', views.export_maintenance_excel, name='export_maintenance_excel'),
+    path('export/drivers/', views.export_drivers_excel, name='export_drivers_excel'),
+    path('export/customers/', views.export_customers_excel, name='export_customers_excel'),
+    path('export/tolls/', views.export_tolls_excel, name='export_tolls_excel'),
+    path('export/invoices/', views.export_invoices_excel, name='export_invoices_excel'),
+    path('export/hos/', views.export_hos_logs_excel, name='export_hos_logs_excel'),
+    # Generate weekly invoices
+    path('generate_weekly_invoices/', views.generate_weekly_invoices, name='generate_weekly_invoices'),
+]
+
     
     re_path(r'^.*\.*', views.pages, name='pages'),
     

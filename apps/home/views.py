@@ -2548,3 +2548,516 @@ def ifta_report(request):
         'q2': {'NY': 1200, 'CT': 600},
     }
     return JsonResponse(data)
+
+# apps/home/views.py
+
+import json
+import datetime
+import random
+from decimal import Decimal
+from datetime import timedelta
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, HttpResponse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
+from django.db.models import Sum, F, FloatField
+from django.db.models.functions import TruncMonth
+from shapely.geometry import Point, Polygon  # pip install shapely
+
+from .models import (
+    Truck, Driver, Customer,
+    TruckExpense, FuelEntry, TruckLoad,
+    TollEntry, HosLog, TruckInvoice, TruckLineItem,
+    TruckLocation, TruckDocument, DriverDocument,
+    Geofence, GeofenceAlert, LoadTrackingToken,
+    LoadStop, IncidentReport
+)
+from .forms import (
+    TruckForm, DriverForm, CustomerForm,
+    TruckDocumentForm, DriverDocumentForm,
+    IncidentForm, StopForm
+)
+from .utils import export_to_excel
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Helper: send email utility
+# ──────────────────────────────────────────────────────────────────────────────
+
+def send_email(subject, message, recipient_list):
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        recipient_list,
+        fail_silently=False
+    )
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 1) API: Update Truck Location (called by GPS device or mobile app)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@csrf_exempt
+def update_truck_location(request):
+    """
+    Expects JSON POST:
+    {
+      "truck_id": <int>,
+      "latitude": <float>,
+      "longitude": <float>
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+    try:
+        data = json.loads(request.body)
+        truck_id = data['truck_id']
+        lat      = data['latitude']
+        lng      = data['longitude']
+    except (KeyError, json.JSONDecodeError):
+        return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+
+    try:
+        truck = Truck.objects.get(pk=truck_id)
+    except Truck.DoesNotExist:
+        return JsonResponse({'error': 'Invalid truck_id'}, status=400)
+
+    new_loc = TruckLocation.objects.create(
+        truck=truck,
+        latitude=lat,
+        longitude=lng
+    )
+
+    # Geofence check
+    point = Point(float(lng), float(lat))
+    for fence in Geofence.objects.all():
+        coords       = json.loads(fence.polygon)  # e.g. [[lat, lng], ...]
+        poly_points  = [(float(c[1]), float(c[0])) for c in coords]
+        polygon      = Polygon(poly_points)
+        if polygon.contains(point):
+            GeofenceAlert.objects.create(
+                truck=truck,
+                geofence=fence,
+                location=new_loc
+            )
+
+    return JsonResponse({'status': 'ok'})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 2) API: Get Latest Location for All Active Trucks
+# ──────────────────────────────────────────────────────────────────────────────
+
+def truck_locations_api(request):
+    latest = (
+        TruckLocation.objects
+        .order_by('truck', '-timestamp')
+        .distinct('truck')
+    )
+    data = []
+    for loc in latest:
+        # only include active trucks
+        if not loc.truck.active:
+            continue
+        data.append({
+            'truck_id': loc.truck.id,
+            'truck_name': loc.truck.name,
+            'latitude': float(loc.latitude),
+            'longitude': float(loc.longitude),
+            'timestamp': loc.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        })
+    return JsonResponse({'locations': data})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 3) Public Tracking URL View (no login required)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def public_load_tracking(request, token):
+    token_obj = get_object_or_404(LoadTrackingToken, token=token)
+    load      = token_obj.load
+    loc = TruckLocation.objects.filter(truck=load.truck).order_by('-timestamp').first()
+    return render(request, 'home/public_load_tracking.html', {
+        'load': load,
+        'latest_loc': loc
+    })
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 4) Export to Excel Views
+# ──────────────────────────────────────────────────────────────────────────────
+
+def export_loads_excel(request):
+    columns = [
+        ('Load ID', 'id'),
+        ('Truck', 'truck__name'),
+        ('Driver', 'driver__user__username'),
+        ('Customer', 'customer__name'),
+        ('Date Started', 'date_started'),
+        ('Date Completed', 'date_completed'),
+        ('Status', 'status'),
+        ('Pay Amount', 'pay_amount'),
+        ('Miles', 'miles'),
+    ]
+    loads = TruckLoad.objects.select_related('truck', 'driver__user', 'customer').all()
+    return export_to_excel('truck_loads.xlsx', columns, loads)
+
+def export_fuel_entries_excel(request):
+    columns = [
+        ('Date', 'date'),
+        ('Truck', 'truck__name'),
+        ('Gallons', 'gallons'),
+        ('Price/Gal', 'price_per_gallon'),
+        ('Total Cost', 'total_cost')  # We’ll annotate total_cost in queryset
+    ]
+    entries = FuelEntry.objects.select_related('truck').annotate(
+        total_cost=F('gallons') * F('price_per_gallon')
+    ).all()
+    return export_to_excel('fuel_entries.xlsx', columns, entries)
+
+def export_maintenance_excel(request):
+    columns = [
+        ('Date', 'date_incurred'),
+        ('Truck', 'truck__name'),
+        ('Odometer', 'odometer'),
+        ('Description', 'description'),
+        ('Cost', 'cost'),
+    ]
+    records = TruckExpense.objects.select_related('truck').all()
+    return export_to_excel('maintenance_records.xlsx', columns, records)
+
+def export_drivers_excel(request):
+    columns = [
+        ('Username', 'user__username'),
+        ('Full Name', 'user__first_name'),  # simplistic; combine in a real scenario
+        ('CDL #', 'cdl_number'),
+        ('Phone', 'phone'),
+        ('Hire Date', 'hire_date'),
+    ]
+    drivers = Driver.objects.select_related('user').all()
+    return export_to_excel('drivers.xlsx', columns, drivers)
+
+def export_customers_excel(request):
+    columns = [
+        ('Name', 'name'),
+        ('Contact Name', 'contact_name'),
+        ('Email', 'contact_email'),
+        ('Phone', 'contact_phone'),
+        ('Address', 'address'),
+    ]
+    customers = Customer.objects.all()
+    return export_to_excel('customers.xlsx', columns, customers)
+
+def export_tolls_excel(request):
+    columns = [
+        ('Load ID', 'load__id'),
+        ('Date', 'date'),
+        ('Location', 'toll_location'),
+        ('Amount', 'amount'),
+    ]
+    tolls = TollEntry.objects.select_related('load').all()
+    return export_to_excel('toll_entries.xlsx', columns, tolls)
+
+def export_invoices_excel(request):
+    columns = [
+        ('Invoice #', 'invoice_number'),
+        ('Load ID', 'load__id'),
+        ('Date Issued', 'date_issued'),
+        ('Total Amount', 'total_amount'),
+        ('Paid', 'paid'),
+        ('Paid Date', 'paid_date'),
+    ]
+    invoices = TruckInvoice.objects.select_related('load').all()
+    return export_to_excel('invoices.xlsx', columns, invoices)
+
+def export_hos_logs_excel(request):
+    columns = [
+        ('Driver', 'driver__user__username'),
+        ('Date', 'date'),
+        ('On Duty', 'on_duty_time'),
+        ('Off Duty', 'off_duty_time'),
+        ('Driving Hours', 'driving_hours'),
+    ]
+    logs = HosLog.objects.select_related('driver__user').all()
+    return export_to_excel('hos_logs.xlsx', columns, logs)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 5) Generate Weekly Invoices (for completed loads in last 7 days)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def generate_weekly_invoices(request):
+    one_week_ago = timezone.localdate() - timedelta(days=7)
+    completed_loads = TruckLoad.objects.filter(
+        status='completed',
+        date_completed__gte=one_week_ago
+    ).exclude(truckinvoice__isnull=False)
+
+    for load in completed_loads:
+        invoice_number = f"INV-{load.pk:06d}"
+        date_issued = load.date_completed or load.date_started
+        total_amount = load.pay_amount
+        inv = TruckInvoice.objects.create(
+            load=load,
+            invoice_number=invoice_number,
+            date_issued=date_issued,
+            total_amount=total_amount,
+            paid=False
+        )
+        TruckLineItem.objects.create(
+            invoice=inv,
+            description="Freight Charge",
+            quantity=Decimal('1.00'),
+            unit_price=total_amount
+        )
+    return redirect('trucking_hub')  # Adjust to the named URL for your trucking hub
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 6) Route Optimization Helper (OSRM-based)
+# ──────────────────────────────────────────────────────────────────────────────
+
+import requests
+
+def get_optimized_waypoints(stops):
+    """
+    stops: list of (lat, lng) tuples
+    returns: list of (lat, lng) in optimized order
+    Using OSRM Trip service (free, open-source).
+    """
+    coords = ';'.join([f"{lng},{lat}" for lat, lng in stops])
+    url = f"http://router.project-osrm.org/trip/v1/driving/{coords}?source=first&destination=last"
+    try:
+        resp = requests.get(url, timeout=5).json()
+        waypoints = resp.get('waypoints', [])
+        ordered = sorted(waypoints, key=lambda w: w['waypoint_index'])
+        return [(wp['location'][1], wp['location'][0]) for wp in ordered]  # (lat, lng)
+    except Exception:
+        return stops  # fallback: return in original order
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 7) Main Trucking Hub View (all context for tabs)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def trucking_hub(request):
+    """
+    Renders trucking.html with context for all tabs:
+    - Hub (maintenance alerts, driver HOS, driver MPG, expiring docs, live map)
+    - Drivers, Customers, Maintenance, Fuel, HOS, Documents, Add Records, Accounting,
+      Active Loads, Invoices, Tolls, Geofencing Alerts, Incidents, etc.
+    """
+    today = timezone.localdate()
+    week_ago = today - timedelta(days=7)
+    soon30  = today + timedelta(days=30)
+
+    # ---------------------------
+    # Maintenance Alerts (miles left <= 500 or days left <= 15)
+    # ---------------------------
+    maintenance_alerts = []
+    for t in Truck.objects.filter(active=True):
+        sched = TruckExpense.objects.filter(
+            truck=t, category='maintenance'
+        ).order_by('-date_incurred').first()
+        # If you used TruckMaintenanceSchedule model, adapt accordingly
+        if sched:
+            # Next due odometer and date were updated via signal when saving maint record
+            next_miles = sched.odometer + 10000  # example interval, adjust as needed
+            next_date  = sched.date_incurred + timedelta(days=180)  # example 6 months
+            miles_left = next_miles - t.odometer
+            days_left  = (next_date - today).days
+            if miles_left <= 500 or days_left <= 15:
+                maintenance_alerts.append({
+                    'truck': t.name,
+                    'service_type': sched.description,
+                    'miles_left': max(miles_left, 0),
+                    'days_left': max(days_left, 0),
+                })
+
+    # ---------------------------
+    # Driver HOS (last 7 days)
+    # ---------------------------
+    driver_hos = []
+    for d in Driver.objects.all():
+        total_hours = HosLog.objects.filter(
+            driver=d,
+            date__gte=week_ago,
+            date__lte=today
+        ).aggregate(total=Sum('driving_hours'))['total'] or 0
+        driver_hos.append({
+            'driver_name': d.user.get_full_name(),
+            'hours_last_week': total_hours
+        })
+
+    # ---------------------------
+    # Driver Fuel Efficiency (approximate)
+    # ---------------------------
+    driver_mpg = []
+    for d in Driver.objects.all():
+        total_miles   = 0
+        total_gallons = 0
+        loads_by_d    = TruckLoad.objects.filter(driver=d)
+        for load in loads_by_d:
+            # find fuel entries for that truck on that date
+            entries = FuelEntry.objects.filter(truck=load.truck, date=load.date_started)
+            for fe in entries:
+                total_gallons += fe.gallons
+                total_miles   += load.miles
+        avg_mpg = (float(total_miles) / float(total_gallons)) if total_gallons > 0 else 0
+        driver_mpg.append({'driver': d.user.get_full_name(), 'mpg': round(avg_mpg, 2)})
+
+    # ---------------------------
+    # Expiring Documents (next 30 days)
+    # ---------------------------
+    expiring_truck_docs  = TruckDocument.objects.filter(expires_on__lte=soon30).order_by('expires_on')
+    expiring_driver_docs = DriverDocument.objects.filter(expires_on__lte=soon30).order_by('expires_on')
+
+    # ---------------------------
+    # Fuel vs. Maintenance Monthly Data (last 12 months)
+    # ---------------------------
+    # Fuel spend per month
+    fuel_qs = FuelEntry.objects.annotate(
+        month=TruncMonth('date')
+    ).values('month').annotate(
+        fuel_spend=Sum(F('gallons') * F('price_per_gallon'), output_field=FloatField())
+    ).order_by('month')
+
+    # Maintenance spend per month
+    maint_qs = TruckExpense.objects.annotate(
+        month=TruncMonth('date_incurred')
+    ).values('month').annotate(
+        maint_spend=Sum('cost')
+    ).order_by('month')
+
+    cost_data = {}
+    for item in fuel_qs:
+        key = item['month'].strftime('%Y-%m')
+        cost_data[key] = {'fuel': item['fuel_spend'], 'maintenance': 0}
+    for item in maint_qs:
+        key = item['month'].strftime('%Y-%m')
+        if key not in cost_data:
+            cost_data[key] = {'fuel': 0, 'maintenance': 0}
+        cost_data[key]['maintenance'] = item['maint_spend']
+    monthly_costs = [{'month': k, 'fuel': v['fuel'], 'maintenance': v['maintenance']} for k, v in sorted(cost_data.items())]
+
+    # ---------------------------
+    # Geofence Alerts (unacknowledged)
+    # ---------------------------
+    geo_alerts = GeofenceAlert.objects.filter(acknowledged=False).select_related('truck', 'geofence', 'location').order_by('-timestamp')[:10]
+
+    # ---------------------------
+    # Incident Reports (latest 10)
+    # ---------------------------
+    incidents = IncidentReport.objects.select_related('truck', 'load', 'driver__user').order_by('-date')[:10]
+
+    # ---------------------------
+    # Forms for tabs
+    # ---------------------------
+    driver_form    = DriverForm()
+    customer_form  = CustomerForm()
+    truck_doc_form = TruckDocumentForm()
+    driver_doc_form = DriverDocumentForm()
+    incident_form  = IncidentForm()
+    stop_form      = StopForm()
+
+    # ---------------------------
+    # Handle POSTs for various forms
+    # ---------------------------
+    if request.method == 'POST':
+        # Add Driver
+        if 'add_driver' in request.POST:
+            form = DriverForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('trucking_hub') + "?tab=drivers"
+
+        # Add Customer
+        if 'add_customer' in request.POST:
+            form = CustomerForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('trucking_hub') + "?tab=customers"
+
+        # Upload Truck Document
+        if 'upload_truck_doc' in request.POST:
+            form = TruckDocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect('trucking_hub') + "?tab=documents"
+
+        # Upload Driver Document
+        if 'upload_driver_doc' in request.POST:
+            form = DriverDocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect('trucking_hub') + "?tab=documents"
+
+        # Report Incident
+        if 'add_incident' in request.POST:
+            form = IncidentForm(request.POST, request.FILES)
+            if form.is_valid():
+                inc = form.save(commit=False)
+                inc.created_by = request.user
+                inc.save()
+                return redirect('trucking_hub') + "?tab=incidents"
+
+        # Add Stop
+        if 'add_stop' in request.POST:
+            form = StopForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('trucking_hub') + "?tab=route_planner"
+
+        # Mark load as completed
+        if 'mark_complete' in request.POST:
+            load_id = request.POST.get('load_id')
+            try:
+                load = TruckLoad.objects.get(pk=load_id)
+                load.status = 'completed'
+                load.date_completed = timezone.localdate()
+                load.save()
+            except TruckLoad.DoesNotExist:
+                pass
+            return redirect('trucking_hub') + "?tab=active_loads"
+
+        # Generate Weekly Invoices
+        if 'gen_weekly_invoices' in request.POST:
+            return generate_weekly_invoices(request)
+
+    # ---------------------------
+    # Context for “Hub” tab (Live Map, Maintenance Alerts, Driver HOS, Driver MPG, Docs, Costs)
+    # ---------------------------
+    context = {
+        'maintenance_alerts': maintenance_alerts,
+        'driver_hos': driver_hos,
+        'driver_mpg': driver_mpg,
+        'expiring_truck_docs': expiring_truck_docs,
+        'expiring_driver_docs': expiring_driver_docs,
+        'monthly_costs': monthly_costs,
+        'geo_alerts': geo_alerts,
+        'incidents': incidents,
+        'driver_form': driver_form,
+        'customer_form': customer_form,
+        'truck_doc_form': truck_doc_form,
+        'driver_doc_form': driver_doc_form,
+        'incident_form': incident_form,
+        'stop_form': stop_form,
+    }
+
+    # ---------------------------
+    # Additional data for other tabs:
+    # ---------------------------
+    context.update({
+        'drivers': Driver.objects.select_related('user').all(),
+        'customers': Customer.objects.all(),
+        'maintenance_records': TruckExpense.objects.select_related('truck').all(),
+        'fuel_entries': FuelEntry.objects.select_related('truck').all(),
+        'hos_logs': HosLog.objects.select_related('driver__user').all(),
+        'truck_docs': TruckDocument.objects.select_related('truck').all(),
+        'driver_docs': DriverDocument.objects.select_related('driver__user').all(),
+        'all_expenses': TruckExpense.objects.select_related('truck').all(),
+        'all_loads': TruckLoad.objects.select_related('truck', 'customer').all(),
+        'active_loads': TruckLoad.objects.filter(status='active').select_related('truck', 'driver', 'customer'),
+        'invoices': TruckInvoice.objects.select_related('load').all(),
+        'tolls': TollEntry.objects.select_related('load').all(),
+    })
+
+    # Determine which tab to show:
+    context['selected_tab'] = request.GET.get('tab', 'hub')
+
+    return render(request, 'home/trucking.html', context)
