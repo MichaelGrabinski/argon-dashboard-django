@@ -1293,6 +1293,16 @@ ALLOWED_MODELS = [
     "dall-e-edit",
     "tts-1",
 ]
+# These are the models that should be driven via the chat/completions endpoint
+CHAT_MODELS = [
+    "gpt-4",
+    "gpt-4-vision",
+    "chatgpt-4o-latest",
+    "gpt-3.5-turbo",
+    "o3",
+    "o4-mini",
+    "o4-mini-high",
+]
 
 
 @login_required

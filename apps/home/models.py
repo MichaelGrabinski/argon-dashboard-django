@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from django.db import models
 from django.contrib.auth.models import User
 from decimal import Decimal
-
+import secrets
 
 def get_static_image_path(instance, filename):
     return os.path.join('static', 'tools_images', filename)
