@@ -764,12 +764,11 @@ def other_hub(request):
                 is_model = request.POST.get('is_model', 'off') == 'on'
                 ProjectDocument.objects.create(project=project, file=file, is_model=is_model)
                 return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=documents')
-
             elif 'file' in request.FILES:
                 form = ReferenceMaterialForm(request.POST, request.FILES)
                 if form.is_valid():
                     reference_material = form.save(commit=False)
-                    reference_material.project = project
+                    reference_material.project = get_object_or_404(Project, pk=project_id)
                     reference_material.save()
                     return HttpResponseRedirect(reverse('other_hub') + f'?project_type={project_type}&project_id={project.id}&tab=reference')
                 else:
@@ -857,43 +856,13 @@ def other_hub(request):
                         completed_hours += task.hours
         remaining_hours = total_hours - completed_hours
         completion_percentage = (completed_hours / total_hours) * 100 if total_hours > 0 else 0
-
-        notes = project.project_notes.all()
-        # Access attachments using the corrected related_name
-        attachments = project.project_attachments.all()
-        note_form = ProjectNoteForm()
-        attachment_form = ProjectAttachmentForm()
-
-        materials = project.materials.select_related('category')
-        labor_entries = project.labor_entries.select_related('user')
-        material_form = MaterialForm()
-        labor_form = LaborEntryForm()
-        total_material_cost = sum(Decimal(m.total_cost or 0) for m in materials)
-        total_labor_cost = sum(Decimal(l.total_pay or 0) for l in labor_entries)
-        total_cost = total_material_cost + total_labor_cost
-        cost_per_sqft = (total_cost / Decimal(project.square_footage)) if project.square_footage else Decimal('0')
-        total_labor_hours = sum(Decimal(entry.hours_worked or 0) for entry in labor_entries)
-
         project_data.append({
             'project': project,
             'phases': phase_data,
             'total_hours': total_hours,
             'completed_hours': completed_hours,
             'remaining_hours': remaining_hours,
-            'completion_percentage': completion_percentage,
-            'notes': notes,
-            'attachments': attachments,
-            'note_form': note_form,
-            'attachment_form': attachment_form,
-            'materials': materials,
-            'labor_entries': labor_entries,
-            'material_form': material_form,
-            'labor_form': labor_form,
-            'total_material_cost': total_material_cost,
-            'total_labor_cost': total_labor_cost,
-            'total_cost': total_cost,
-            'cost_per_sqft': cost_per_sqft,
-            'total_labor_hours': total_labor_hours,
+            'completion_percentage': completion_percentage
         })
 
     return render(request, 'home/OtherProjects.html', {
@@ -2068,7 +2037,7 @@ def request_quote(request):
         # Redirect to a success page or render a success template
         return render(request, 'home/quote_submitted.html')
     else:
-        # Render the request quote form
+               # Render the request quote form
         return render(request, 'home/request_quote.html')
         
 from django.shortcuts import render, get_object_or_404, redirect
@@ -2532,10 +2501,10 @@ def monthly_pl_data(request):
 
     data = {}
     for item in exp_by_month:
-        key = f"{item['year']:04d}-{item['month']:02d}"
+        key = item['month'].strftime('%Y-%m')
         data[key] = {'expense': float(item['total_exp']), 'revenue': 0.0}
     for item in rev_by_month:
-        key = f"{item['year']:04d}-{item['month']:02d}"
+        key = item['month'].strftime('%Y-%m')
         if key not in data:
             data[key] = {'expense': 0.0, 'revenue': float(item['total_rev'])}
         else:
@@ -2852,7 +2821,7 @@ def trucking_hub(request):
     - Drivers, Customers, Maintenance, Fuel, HOS, Documents, Add Records, Accounting,
       Active Loads, Invoices, Tolls, Geofencing Alerts, Incidents, etc.
     """
-    today = timezone.localdate()
+    today = timezone.now()
     week_ago = today - timedelta(days=7)
     soon30  = today + timedelta(days=30)
 
