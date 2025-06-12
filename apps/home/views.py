@@ -2900,7 +2900,7 @@ def trucking_hub(request):
     maint_qs = TruckExpense.objects.annotate(
         month=TruncMonth('date_incurred')
     ).values('month').annotate(
-        maint_spend=Sum('cost')
+        maint_spend=Sum('amount')
     ).order_by('month')
 
     cost_data = {}

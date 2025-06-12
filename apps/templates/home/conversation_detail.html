@@ -51,135 +51,112 @@
     color: #fff;
 }
 
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow-y: hidden;
+}
 
-    body {
-        background-color: var(--background-color);
-        color: var(--text-color);
-		overflow-y: hidden;
-    }
+.chat-container {
+    display: flex;
+    height: calc(100vh - 70px);
+}
 
-    .chat-container {
-        display: flex;
-        height: calc(100vh - 70px);
-    }
+/* Hide the sidebar when mobile and toggled */
+.sidebar {
+    width: 200px;
+    overflow-y: auto;
+    padding: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--background-color);
+    transition: transform 0.3s ease;
+}
+.sidebar.hidden {
+    transform: translateX(-220px);
+}
 
-    .sidebar {
-        width: 200px;
-        overflow-y: auto;
-        padding: 20px;
-      
-		        scrollbar-width: thin;
-        scrollbar-color: var(--primary-color) var(--background-color);
-    }
+.sidebar h2 {
+    color: var(--text-color);
+}
 
-    .sidebar h2 {
-        color: var(--text-color);
-    }
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: hidden;
+}
 
-    .chat-window {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 20px;
-        overflow-y: hidden;
-    }
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
 
-    .messages {
-        flex: 1;
-        overflow-y: auto;
-        margin-bottom: 20px;
-    }
+.message {
+    margin-bottom: 15px;
+    display: flex;
+}
 
-    .message {
-        margin-bottom: 15px;
-        display: flex;
-    }
+.message-content {
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+    word-wrap: break-word;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
 
-    .message-content {
-        padding: 10px;
-        border-radius: 10px;
-        max-width: 70%;
-        word-wrap: break-word;
-    }
+/* Message Alignment */
+.message.user {
+    justify-content: flex-end;
+}
+.message.assistant {
+    justify-content: flex-start;
+}
 
-    .message.user {
-        justify-content: flex-end;
-    }
+.message.user .message-content {
+    background-color: var(--message-user-bg);
+}
+.message.assistant .message-content {
+    background-color: var(--message-assistant-bg);
+}
 
-    .message.assistant {
-        justify-content: flex-start;
+/* Sidebar toggle button (visible only on mobile) */
+.toggle-sidebar {
+    display: none;
+}
+@media (max-width: 767px) {
+    .toggle-sidebar {
+        display: block;
+        margin: 10px;
     }
+}
 
-    .message.user .message-content {
-        background-color: var(--message-user-bg);
-        color: var(--text-color);
-    }
+.list-group-item.active {
+    background-color: var(--active-conversation-bg);
+    color: var(--active-conversation-text);
+}
 
-    .message.assistant .message-content {
-        background-color: var(--message-assistant-bg);
-        color: var(--text-color);
-    }
+.list-group-item a {
+    color: inherit;
+    text-decoration: none;
+}
 
-    .message-content {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .list-group-item.active {
-        background-color: var(--active-conversation-bg);
-        color: var(--active-conversation-text);
-    }
-
-    .list-group-item a {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    .list-group-item a:hover {
-        text-decoration: underline;
-    }
-
-    /* Theme toggle switch */
-    .theme-switch {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .theme-switch input {
-        margin-right: 10px;
-    }
-
-    /* Assistant typing indicator */
-    #assistant-typing {
-        display: none;
-        margin-bottom: 15px;
-    }
-
-    /* Scrollbar styling */
-    .messages {
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary-color) var(--background-color);
-    }
-
-    .messages::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .messages::-webkit-scrollbar-track {
-        background: var(--background-color);
-    }
-
-    .messages::-webkit-scrollbar-thumb {
-        background-color: var(--primary-color);
-        border-radius: 10px;
-    }
+.list-group-item a:hover {
+    text-decoration: underline;
+}
 </style>
 {% endblock stylesheets %}
 
 {% block content %}
+
+<div class="toggle-sidebar d-block d-md-none">
+    <button id="toggle-sidebar-btn" class="btn btn-secondary">Toggle Sidebar</button>
+</div>
+
 <div class="chat-container">
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="theme-switch">
             <input type="checkbox" id="theme-toggle">
             <label for="theme-toggle">Dark Mode</label>
@@ -206,7 +183,7 @@
                     <div class="message-content">
                         {% with message.message_type|default:'text' as msg_type %}
                             {% if msg_type == 'text' %}
-                                <p>{{ message.content|markdownify|safe }}</p>
+                                <p class="msg-text">{{ message.content|markdownify|safe }}</p>
                             {% elif msg_type == 'image' %}
                                 <img src="{{ message.content }}" alt="Generated Image" style="max-width: 100%; height: auto;">
                             {% elif msg_type == 'audio' %}
@@ -218,18 +195,20 @@
                         {% endwith %}
                         <!-- Message Timestamp -->
                         <small class="text-muted">{{ message.created_at|date:"Y-m-d H:i" }}</small>
-                        <!-- Delete Button -->
-                        <form action="{% url 'delete_message' message.id %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-link btn-sm text-danger">Delete</button>
-                        </form>
-						
+                        <!-- Action Buttons -->
+                        <div class="mt-1">
+                            <form action="{% url 'delete_message' message.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link btn-sm text-danger">Delete</button>
+                            </form>
+                            <button type="button" class="btn btn-link btn-sm text-primary copy-btn" data-message="{{ message.content|escapejs }}">Copy</button>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
 
             <!-- Assistant Typing Indicator -->
-            <div id="assistant-typing">
+            <div id="assistant-typing" style="display: none;">
                 <div class="message assistant">
                     <div class="message-content">
                         <em>Assistant is typing...</em>
@@ -237,58 +216,51 @@
                 </div>
             </div>
         </div>
-		
-		<!-- Message Input Form -->
-<form method="post" enctype="multipart/form-data" id="message-form">
-    {% csrf_token %}
-    <div class="form-row align-items-center">
-        <div class="col-md-8 mb-2">
-            <textarea name="message" rows="3" class="form-control" placeholder="Type your message here..." required></textarea>
-        </div>
-        <div class="col-auto mb-2">
-            <button type="submit" class="btn btn-send" id="send-button">Send</button>
-        </div>
-    </div>
 
-    <!-- Options Row -->
-    <div class="form-row align-items-center">
-        <!-- File Upload Field -->
-        <div class="col-md-4 mb-2">
-            <div class="custom-file">
-                <input type="file" name="files" accept=".py,.txt,.md,.html,.css,.js,.json" class="custom-file-input" id="fileInput" multiple>
-                <label class="custom-file-label" for="fileInput">Choose files</label>
+        <!-- Message Input Form -->
+        <form method="post" enctype="multipart/form-data" id="message-form">
+            {% csrf_token %}
+            <div class="form-row align-items-center">
+                <div class="col-md-8 mb-2">
+                    <textarea name="message" rows="3" class="form-control" placeholder="Type your message here..." required></textarea>
+                </div>
+                <div class="col-auto mb-2">
+                    <button type="submit" class="btn btn-send" id="send-button">Send</button>
+                </div>
             </div>
-        </div>
 
-        <!-- Clear Context Checkbox -->
-        <div class="col-md-4 mb-2">
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" name="clear_context" id="clear_context">
-                <label class="form-check-label" for="clear_context">Send without previous context</label>
+            <!-- Options Row -->
+            <div class="form-row align-items-center">
+                <!-- File Upload Field -->
+                <div class="col-md-4 mb-2">
+                    <div class="custom-file">
+                        <input type="file" name="files" accept=".py,.txt,.md,.html,.css,.js,.json" class="custom-file-input" id="fileInput" multiple>
+                        <label class="custom-file-label" for="fileInput">Choose files</label>
+                    </div>
+                </div>
+                <!-- Clear Context Checkbox -->
+                <div class="col-md-4 mb-2">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="clear_context" id="clear_context">
+                        <label class="form-check-label" for="clear_context">Send without previous context</label>
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+                <div class="col-md-4 mb-2 text-right">
+                    <div class="btn-group" role="group" aria-label="Conversation actions">
+                        <a href="{% url 'export_conversation' conversation.id %}" class="btn btn-secondary">Export Conversation</a>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="col-md-4 mb-2 text-right">
-            <div class="btn-group" role="group" aria-label="Conversation actions">
-                <a href="{% url 'export_conversation' conversation.id %}" class="btn btn-secondary">Export Conversation</a>
-            </div>
-        </div>
-    </div>
-		
-		
-		
-		
-		
-    </div>
-</div>
+        </form>
+    </div> <!-- End chat-window -->
+</div> <!-- End chat-container -->
 {% endblock content %}
 
 {% block javascripts %}
 <!-- Include jQuery and Bootstrap JS -->
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-
 <!-- Include Highlight.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
@@ -297,12 +269,10 @@
     // Theme Toggle Script
     const toggle = document.getElementById('theme-toggle');
     const currentTheme = localStorage.getItem('theme') || 'light';
-
     document.documentElement.setAttribute('data-theme', currentTheme);
     if (currentTheme === 'dark') {
         toggle.checked = true;
     }
-
     toggle.addEventListener('change', function() {
         if (this.checked) {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -313,6 +283,13 @@
         }
     });
 
+    // Sidebar toggle for mobile
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+    toggleSidebarBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('hidden');
+    });
+
     // Scroll to bottom on page load
     const messagesDiv = document.getElementById('chat-messages');
     function scrollToBottom() {
@@ -320,12 +297,26 @@
     }
     window.onload = scrollToBottom;
 
+    // Copy message functionality
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const messageText = this.getAttribute('data-message');
+            navigator.clipboard.writeText(messageText).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+            });
+        });
+    });
+
     // Prevent duplicate submissions and show typing indicator
     const form = document.getElementById('message-form');
     const typingIndicator = document.getElementById('assistant-typing');
     const sendButton = document.getElementById('send-button');
     let isSubmitting = false;
-
     form.addEventListener('submit', function(event) {
         if (isSubmitting) {
             event.preventDefault();
@@ -335,31 +326,5 @@
         typingIndicator.style.display = 'block';
         sendButton.disabled = true;
     });
-
-    // Hide typing indicator when new message arrives (since the page reloads, this will reset)
-
-    // Notification Permission Request
-    if ('Notification' in window) {
-        if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-            Notification.requestPermission().then(function (permission) {
-                if (permission === 'granted') {
-                    // Notifications are enabled
-                }
-            });
-        }
-    }
-
-    // Function to show browser notification
-    function showNotification(title, body) {
-        if (Notification.permission === 'granted') {
-            var notification = new Notification(title, {
-                body: body,
-                // icon: '{% static "img/notification_icon.png" %}' // Optional icon
-            });
-        }
-    }
-
-    // Example: Call this function when a new assistant message arrives
-    // showNotification('New Message from Assistant', 'You have a new reply.');
 </script>
 {% endblock javascripts %}
