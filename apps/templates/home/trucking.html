@@ -1,5 +1,5 @@
 {# apps/home/templates/home/trucking.html #}
-{% extends "home/base.html" %}
+{% extends "layouts/base.html" %}
 {% load static %}
 {% block content %}
 <div class="container-fluid mt-3">
@@ -826,9 +826,29 @@
             {% for inc in incidents %}
               <tr>
                 <td>{{ inc.date }}</td>
-                <td>{{ inc.truck.name if inc.truck else '–' }}</td>
-                <td>{{ inc.load.pk if inc.load else '–' }}</td>
-                <td>{{ inc.driver.user.get_full_name if inc.driver else '–' }}</td>
+ <td>
+   {% if inc.truck %}
+     {{ inc.truck.name }}
+   {% else %}
+     &mdash;
+   {% endif %}
+ </td>
+ <td>
+   {% if inc.load %}
+     {{ inc.load.pk }}
+   {% else %}
+     &mdash;
+   {% endif %}
+ </td>
+ 
+ <td>
+   {% if inc.driver %}
+     {{ inc.driver.user.get_full_name }}
+   {% else %}
+     &mdash;
+   {% endif %}
+ </td>
+
                 <td>{{ inc.description|truncatechars:50 }}</td>
               </tr>
             {% empty %}
@@ -891,6 +911,8 @@
     // ────────────────────────────────────────────────────────────────────────────
     // 2) Fuel vs. Maintenance Costs Chart
     // ────────────────────────────────────────────────────────────────────────────
+ </script>
+ <!--
     fetch("{% url 'monthly_costs_data' %}")
       .then(response => response.json())
       .then(json => {
@@ -925,5 +947,8 @@
         });
       });
   </script>
+  -->
+  
+  
 {% endif %}
 {% endblock %}

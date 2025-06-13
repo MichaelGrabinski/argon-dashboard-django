@@ -2547,7 +2547,7 @@ from shapely.geometry import Point, Polygon  # pip install shapely
 
 from .models import (
     Truck, Driver, Customer,
-    TruckExpense, FuelEntry, TruckLoad,
+    TruckMaintenanceRecord, TruckExpense FuelEntry, TruckLoad,
     TollEntry, HosLog, TruckInvoice, TruckLineItem,
     TruckLocation, TruckDocument, DriverDocument,
     Geofence, GeofenceAlert, LoadTrackingToken,
@@ -2829,24 +2829,16 @@ def trucking_hub(request):
     # Maintenance Alerts (miles left <= 500 or days left <= 15)
     # ---------------------------
     maintenance_alerts = []
-    for t in Truck.objects.filter(active=True):
-        sched = TruckExpense.objects.filter(
-            truck=t, category='maintenance'
-        ).order_by('-date_incurred').first()
-        # If you used TruckMaintenanceSchedule model, adapt accordingly
-        if sched:
-            # Next due odometer and date were updated via signal when saving maint record
-            next_miles = sched.odometer + 10000  # example interval, adjust as needed
-            next_date  = sched.date_incurred + timedelta(days=180)  # example 6 months
-            miles_left = next_miles - t.odometer
-            days_left  = (next_date - today).days
-            if miles_left <= 500 or days_left <= 15:
-                maintenance_alerts.append({
-                    'truck': t.name,
-                    'service_type': sched.description,
-                    'miles_left': max(miles_left, 0),
-                    'days_left': max(days_left, 0),
-                })
+    for rec in TruckMaintenanceRecord.objects.select_related('truck').all():
+        # rec.odometer exists on TruckMaintenanceRecord
+        next_miles = rec.odometer + 10000     # or better: rec.odometer + your interval_miles
+        miles_left = next_miles - rec.odometer
+        maintenance_alerts.append({
+            'truck': rec.truck,
+            'service_type': rec.description,   # or rec.get_service_type_display()
+            'miles_left': miles_left,
+            'days_left': None,                 # if you also compute date-based alerts
+        })
 
     # ---------------------------
     # Driver HOS (last 7 days)
@@ -3024,7 +3016,7 @@ def trucking_hub(request):
     context.update({
         'drivers': Driver.objects.select_related('user').all(),
         'customers': Customer.objects.all(),
-        'maintenance_records': TruckExpense.objects.select_related('truck').all(),
+        'maintenance_records': TruckMaintenanceRecord..objects.select_related('truck').all(),
         'fuel_entries': FuelEntry.objects.select_related('truck').all(),
         'hos_logs': HosLog.objects.select_related('driver__user').all(),
         'truck_docs': TruckDocument.objects.select_related('truck').all(),
@@ -3040,3 +3032,18 @@ def trucking_hub(request):
     context['selected_tab'] = request.GET.get('tab', 'hub')
 
     return render(request, 'home/trucking.html', context)
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+import datetime
+
+@login_required
+def monthly_costs_data(request):
+    # dummy example: return zeroed data
+    data = [
+        {"month": (datetime.date.today() - datetime.timedelta(days=i*30)).strftime("%Y-%m"), 
+         "fuel": 0, "maintenance": 0}
+        for i in range(11, -1, -1)
+    ]
+    return JsonResponse({"data": data})

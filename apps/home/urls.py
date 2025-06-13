@@ -114,8 +114,7 @@ urlpatterns = [
     path('export/hos/', views.export_hos_logs_excel, name='export_hos_logs_excel'),
     # Generate weekly invoices
     path('generate_weekly_invoices/', views.generate_weekly_invoices, name='generate_weekly_invoices'),
-]
-
+    path('api/monthly-costs/', views.monthly_costs_data, name='monthly_costs_data'),
     
     re_path(r'^.*\.*', views.pages, name='pages'),
     
